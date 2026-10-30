@@ -1,0 +1,765 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}</style>
+<title>Rullo Virtuale</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Saira+Condensed:wght@500;600;700&display=swap">
+<style>
+/* Layout: scena laterale 2D in alto, strip di metriche da ciclocomputer, sotto pannelli di controllo.
+   Palette: grafite viola scuro, accento rosa "maglia rosa", zone di potenza come colori semantici. */
+:root{
+  --bg:#131118; --panel:#1c1922; --panel2:#26222e; --ink:#f3eff4; --ink2:#a9a1af; --line:#352f3d;
+  --accent:#ff6f9c; --accent-ink:#2b0b16; --ok:#4cc38a; --warn:#f2b441; --bad:#ff6b5e;
+  --sky1:#2a2442; --sky2:#6a3f66; --hill1:#3b3150; --hill2:#2f2843; --ground:#1f332f; --road:#4a4452; --mark:#f3eff4;
+  --z1:#7f8fae; --z2:#4aa3df; --z3:#4cc38a; --z4:#f2b441; --z5:#ff8a4c; --z6:#ff5e7a;
+  --f-num:"Saira Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f0f3; --panel:#ffffff; --panel2:#f0eaef; --ink:#1f1a22; --ink2:#645c6a; --line:#ddd3da;
+    --accent:#c9255a; --accent-ink:#ffffff; --ok:#15885a; --warn:#a86400; --bad:#c4362a;
+    --sky1:#cfe3f5; --sky2:#f7e3e8; --hill1:#c8bfd6; --hill2:#b0a6c4; --ground:#8fb79c; --road:#6b6573; --mark:#ffffff;
+    --z1:#5a6a86; --z2:#1f7fc0; --z3:#1a9462; --z4:#c78a0f; --z5:#d9601a; --z6:#cf2e4d;
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f0f3; --panel:#ffffff; --panel2:#f0eaef; --ink:#1f1a22; --ink2:#645c6a; --line:#ddd3da;
+  --accent:#c9255a; --accent-ink:#ffffff; --ok:#15885a; --warn:#a86400; --bad:#c4362a;
+  --sky1:#cfe3f5; --sky2:#f7e3e8; --hill1:#c8bfd6; --hill2:#b0a6c4; --ground:#8fb79c; --road:#6b6573; --mark:#ffffff;
+  --z1:#5a6a86; --z2:#1f7fc0; --z3:#1a9462; --z4:#c78a0f; --z5:#d9601a; --z6:#cf2e4d;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  background:var(--bg); color:var(--ink); font:400 16px/1.45 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:16px; -webkit-text-size-adjust:100%;
+}
+.app{max-width:1280px;margin:0 auto}
+.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
+h1{font:600 30px/1 var(--f-num);letter-spacing:.02em;margin:0}
+.sub{color:var(--ink2);font-size:14px}
+.brand{display:grid;gap:4px;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:10px;min-height:48px;padding:8px 16px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink);font:600 14px/1.2 var(--f-body);text-align:left;cursor:pointer}
+.chip small{display:block;font-weight:400;color:var(--ink2);font-size:12px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--ink2);flex:none}
+.chip.on .dot{background:var(--ok)}
+.chip.busy .dot{background:var(--warn);animation:pulse 1s ease-in-out infinite}
+.chip.err .dot{background:var(--bad)}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.chip.busy .dot{animation:none}}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.note{margin:12px 0 0;padding:10px 14px;border:1px solid var(--warn);border-radius:10px;background:var(--panel);font-size:14px}
+.stage{position:relative;margin-top:14px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
+#scene{display:block;width:100%;height:clamp(220px,36vh,400px)}
+.hud{position:absolute;left:12px;top:10px;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 24px)}
+.hud span{padding:4px 10px;border-radius:8px;background:var(--panel);color:var(--ink);font:600 15px/1.3 var(--f-num);letter-spacing:.03em;font-variant-numeric:tabular-nums;border:1px solid var(--line)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
+.m{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:4px;align-content:start;min-width:0}
+.m label,.card h2{font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);margin:0}
+.val{display:flex;align-items:baseline;gap:6px;min-width:0}
+.val b{font:600 clamp(34px,4.4vw,56px)/1 var(--f-num);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.val u{text-decoration:none;color:var(--ink2);font-size:14px}
+.m small{color:var(--ink2);font-size:13px}
+.m-power{grid-column:span 2}
+@media (max-width:520px){.m-power{grid-column:span 1}}
+.zone{display:inline-block;padding:2px 10px;border-radius:6px;font:600 13px/1.4 var(--f-body);color:var(--bg);background:var(--z1);margin-left:auto;align-self:center}
+.zbar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.zbar i{display:block;height:100%;width:0;background:var(--z1)}
+.gear-row{display:flex;gap:8px;align-items:center}
+.gbtn{width:52px;height:52px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font:600 30px/1 var(--f-num);cursor:pointer;touch-action:manipulation}
+.gbtn:active{background:var(--accent);color:var(--accent-ink)}
+.gear-row .val{flex:1;justify-content:center}
+.gear-row .val b{font-size:clamp(30px,4vw,40px)}
+.m-gear{grid-column:span 2}
+@media (max-width:340px){.m-gear{grid-column:span 1}}
+.gsplit{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.gblock{display:grid;gap:4px;min-width:0}
+.gblock .gl{font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2)}
+.gblock .gear-row{gap:6px}
+.gblock .gear-row b{flex:1;min-width:0;text-align:center;font:600 30px/1 var(--f-num);font-variant-numeric:tabular-nums}
+.gblock .gbtn{width:40px;height:40px;font-size:26px;flex:none}
+.gbtn:disabled{opacity:.3;cursor:default}
+.nm{display:block}
+.dock{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-top:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:12px;align-content:start;min-width:0}
+.btn{min-height:44px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font:600 15px/1.2 var(--f-body);cursor:pointer;touch-action:manipulation}
+.btn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row>*{min-width:0}
+input,select{min-height:44px;width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font:400 16px/1.2 var(--f-body)}
+input[type=range]{padding:0;accent-color:var(--accent)}
+input[type=checkbox]{width:22px;min-height:22px;height:22px;accent-color:var(--accent)}
+.field{display:grid;gap:4px;font-size:13px;color:var(--ink2)}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.check{display:flex;gap:10px;align-items:center;font-size:15px;color:var(--ink)}
+.hint{margin:0;color:var(--ink2);font-size:13px}
+canvas.chart{display:block;width:100%}
+#pwr{height:150px}#prof{height:110px}
+summary{cursor:pointer;font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);min-height:24px}
+details[open] summary{margin-bottom:12px}
+pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;background:var(--panel2);font:12px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all}
+.wide{grid-column:1/-1}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Rullo Virtuale</h1>
+      <span class="sub" id="route-sub">Anello collinare</span>
+    </div>
+    <div class="chips" role="group" aria-label="Dispositivi Bluetooth">
+      <button class="chip" id="chip-tr" data-k="tr"><i class="dot"></i><span><span class="nm">Rullo Van Rysel D100</span><small>Tocca per collegare</small></span></button>
+      <button class="chip" id="chip-pm" data-k="pm"><i class="dot"></i><span><span class="nm">Potenziometro 4iiii</span><small>Tocca per collegare</small></span></button>
+      <button class="chip" id="chip-ck" data-k="ck"><i class="dot"></i><span><span class="nm">Zwift Click 1</span><small>Tocca per collegare</small></span></button>
+      <button class="chip" id="chip-ck2" data-k="ck2"><i class="dot"></i><span><span class="nm">Zwift Click 2</span><small>Tocca per collegare</small></span></button>
+    </div>
+  </header>
+  <p class="note" id="note" hidden></p>
+
+  <section class="stage" aria-label="Percorso">
+    <canvas id="scene"></canvas>
+    <div class="hud"><span id="h-km">0.00 km</span><span id="h-time">00:00:00</span><span id="h-gain">D+ 0 m</span></div>
+  </section>
+
+  <section class="metrics" aria-label="Metriche">
+    <div class="m m-power">
+      <label>Potenza</label>
+      <div class="val"><b id="v-p">0</b><u>W</u><span class="zone" id="zone">Z1</span></div>
+      <div class="zbar"><i id="zfill"></i></div>
+      <small id="p-sub">0.0 W/kg</small>
+    </div>
+    <div class="m"><label>Cadenza</label><div class="val"><b id="v-c">0</b><u>rpm</u></div><small id="c-sub">&nbsp;</small></div>
+    <div class="m"><label>Velocità</label><div class="val"><b id="v-s">0.0</b><u>km/h</u></div><small id="s-sub">&nbsp;</small></div>
+    <div class="m"><label>Pendenza</label><div class="val"><b id="v-g">0.0</b><u>%</u></div><small id="g-sub">Rullo: n.d.</small></div>
+    <div class="m m-gear" id="m-gear">
+      <label>Marcia · rapporto <span id="ratio">2.63</span></label>
+      <div class="val"><b id="v-gear">50×19</b></div>
+      <div class="gsplit">
+        <div class="gblock">
+          <span class="gl">Corona</span>
+          <div class="gear-row">
+            <button class="gbtn" id="r-minus" aria-label="Corona più piccola">−</button>
+            <b id="v-ring">50</b>
+            <button class="gbtn" id="r-plus" aria-label="Corona più grande">+</button>
+          </div>
+          <small id="ring-sub">&nbsp;</small>
+        </div>
+        <div class="gblock">
+          <span class="gl">Pignone</span>
+          <div class="gear-row">
+            <button class="gbtn" id="c-minus" aria-label="Pignone più grande, marcia più agile">−</button>
+            <b id="v-cog">19</b>
+            <button class="gbtn" id="c-plus" aria-label="Pignone più piccolo, marcia più dura">+</button>
+          </div>
+          <small id="cog-sub">&nbsp;</small>
+        </div>
+      </div>
+    </div>
+    <div class="m m-gear" id="m-erg" hidden>
+      <label>Potenza target</label>
+      <div class="gear-row">
+        <button class="gbtn" id="g-minus" aria-label="Meno watt">−</button>
+        <div class="val"><b id="v-erg">150 W</b></div>
+        <button class="gbtn" id="g-plus" aria-label="Più watt">+</button>
+      </div>
+      <small>ERG · pignoni ± 10 W, corone ± 50 W</small>
+    </div>
+  </section>
+
+  <section class="dock">
+    <div class="card">
+      <h2>Modalità</h2>
+      <div class="seg" role="group" aria-label="Modalità di allenamento">
+        <button class="btn on" id="mode-route">Percorso</button>
+        <button class="btn" id="mode-erg">ERG</button>
+      </div>
+      <div class="row" id="erg-box" hidden>
+        <label class="field" style="flex:1;min-width:140px">Potenza target (W)<input type="number" id="erg-w" min="50" max="600" step="5" value="150"></label>
+        <p class="hint" style="flex:2;min-width:180px">In ERG il rullo tiene la potenza fissa. Il Click dei pignoni cambia il target di 10 W, quello delle corone di 50 W.</p>
+      </div>
+      <p class="hint" id="mode-hint">In Percorso il rullo simula la pendenza e la marcia virtuale. Sul Click, + è più duro e − più agile. Tastiera: ↑ e ↓ per i pignoni, → e ← per le corone.</p>
+      <button class="btn" id="reset">Azzera giro</button>
+    </div>
+
+    <div class="card">
+      <h2>Demo senza dispositivi</h2>
+      <button class="btn" id="demo-btn">Attiva demo</button>
+      <label class="field">Potenza <span id="demo-p-v">150 W</span><input type="range" id="demo-p" min="0" max="500" step="5" value="150"></label>
+      <label class="field">Cadenza <span id="demo-c-v">85 rpm</span><input type="range" id="demo-c" min="0" max="130" step="1" value="85"></label>
+      <p class="hint">Simula pedalata per provare marce e percorso. Con la demo attiva non viene inviato nulla al rullo.</p>
+    </div>
+
+    <div class="card wide">
+      <h2>Potenza, ultimi 5 minuti</h2>
+      <canvas class="chart" id="pwr"></canvas>
+      <h2>Altimetria del giro</h2>
+      <canvas class="chart" id="prof"></canvas>
+    </div>
+
+    <details class="card wide">
+      <summary>Impostazioni</summary>
+      <div class="fields">
+        <label class="field">Peso ciclista (kg)<input type="number" data-cfg="mass" step="0.5"></label>
+        <label class="field">Peso bici (kg)<input type="number" data-cfg="bike" step="0.5"></label>
+        <label class="field">FTP (W)<input type="number" data-cfg="ftp" step="5"></label>
+        <label class="field">CdA (m²)<input type="number" data-cfg="cda" step="0.01"></label>
+        <label class="field">Crr<input type="number" data-cfg="crr" step="0.0005"></label>
+        <label class="field">Circonferenza ruota (m)<input type="number" data-cfg="circ" step="0.005"></label>
+        <label class="field">Corone anteriori (denti)<input type="text" data-cfg="rings" inputmode="numeric" id="cfg-rings"></label>
+        <label class="field">Pignoni posteriori (denti)<input type="text" data-cfg="cassette" inputmode="numeric" id="cfg-cassette"></label>
+        <label class="field">Click 1 comanda
+          <select data-cfg="role1" id="cfg-role1"><option value="rear">Pignoni (cambio posteriore)</option><option value="front">Corone (cambio anteriore)</option></select>
+        </label>
+        <label class="field">Click 2 comanda
+          <select data-cfg="role2" id="cfg-role2"><option value="rear">Pignoni (cambio posteriore)</option><option value="front">Corone (cambio anteriore)</option></select>
+        </label>
+        <label class="field">Corona fisica sul rullo (denti)<input type="number" data-cfg="physChain" step="1"></label>
+        <label class="field">Pignone del Cog (denti)<input type="number" data-cfg="physCog" step="1"></label>
+        <label class="field">Pendenza massima rullo (%)<input type="number" data-cfg="maxGrade" step="0.5"></label>
+        <label class="field">Sorgente potenza
+          <select data-cfg="powerSrc"><option value="auto">Automatica (4iiii se presente)</option><option value="pm">Solo 4iiii</option><option value="trainer">Solo rullo D100</option></select>
+        </label>
+      </div>
+      <p class="hint">Corone e pignoni vanno scritti come numeri di denti separati da virgola, in qualsiasi ordine (per esempio 50,34). La corona fisica e il Cog sul rullo servono a calcolare quanto una marcia virtuale è più dura o più agile della marcia fisica del rullo. Il rullo usa una sua massa interna: se le salite sembrano troppo dolci o troppo dure, regola il peso.</p>
+    </details>
+
+    <details class="card wide">
+      <summary>Diagnostica Bluetooth e Click</summary>
+      <div class="fields">
+        <label class="field">Il Click segnala "premuto" con il valore
+          <select data-cfg="pressedVal"><option value="0">0</option><option value="1">1</option></select>
+        </label>
+        <label class="check"><input type="checkbox" data-cfg="swap" id="swap"><span>Inverti + e −</span></label>
+        <label class="check"><input type="checkbox" data-cfg="all" id="all"><span>Mostra tutti i dispositivi nella ricerca</span></label>
+      </div>
+      <pre class="log" id="log" aria-live="off"></pre>
+    </details>
+  </section>
+</div>
+
+<script>
+/*PURE*/
+const G = 9.81;
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+
+/* Percorso: elevazione periodica su un anello, pendenza massima normalizzata al 5% */
+const LOOP = 20000;
+const COMP = [[1, 38, 0.4], [2, 22, 2.1], [3, 15, 4.0], [5, 8, 1.2], [9, 3, 5.0]];
+function zRaw(s) { let z = 0; for (const [k, a, p] of COMP) z += a * Math.sin(2 * Math.PI * k * s / LOOP + p); return z; }
+const SC = (() => { let mx = 0; for (let s = 0; s < LOOP; s += 5) mx = Math.max(mx, Math.abs((zRaw(s + 5) - zRaw(s)) / 5)); return 0.05 / mx; })();
+function elev(s) { const u = ((s % LOOP) + LOOP) % LOOP; return 210 + SC * zRaw(u); }
+function gradeAt(s) { return (elev(s + 10) - elev(s - 10)) / 20; }
+
+/* FTMS Indoor Bike Data (0x2AD2) */
+function parseIndoorBike(dv) {
+  const out = {}; let o = 0;
+  const f = dv.getUint16(o, true); o += 2;
+  if (!(f & 1)) { out.speed = dv.getUint16(o, true) / 100; o += 2; }   // km/h
+  if (f & 2) o += 2;
+  if (f & 4) { out.cad = dv.getUint16(o, true) / 2; o += 2; }
+  if (f & 8) o += 2;
+  if (f & 16) o += 3;
+  if (f & 32) o += 2;
+  if (f & 64) { out.power = dv.getInt16(o, true); o += 2; }
+  if (f & 128) o += 2;
+  if (f & 256) o += 5;
+  if (f & 512) { out.hr = dv.getUint8(o); o += 1; }
+  return out;
+}
+/* Cycling Power Measurement (0x2A63) */
+function parsePower(dv) {
+  const f = dv.getUint16(0, true); let o = 2;
+  const p = dv.getInt16(o, true); o += 2;
+  if (f & 1) o += 1;
+  if (f & 4) o += 2;
+  if (f & 16) o += 6;
+  let crank = null;
+  if (f & 32) { crank = { revs: dv.getUint16(o, true), time: dv.getUint16(o + 2, true) }; }
+  return { p, crank };
+}
+/* Protobuf minimale: solo varint e campi a lunghezza fissa */
+function pbParse(u) {
+  const out = {}; let i = 0;
+  while (i < u.length) {
+    const tag = u[i++]; const f = tag >> 3, w = tag & 7;
+    if (w === 0) { let v = 0, sh = 0, b; do { b = u[i++]; v |= (b & 0x7f) << sh; sh += 7; } while ((b & 0x80) && i < u.length); out[f] = v; }
+    else if (w === 2) { const len = u[i++]; out[f] = u.slice(i, i + len); i += len; }
+    else break;
+  }
+  return out;
+}
+function buildSim(grade, crr, cw) {
+  const b = new DataView(new ArrayBuffer(7));
+  b.setUint8(0, 0x11); b.setInt16(1, 0, true);
+  b.setInt16(3, Math.round(grade * 10000), true);
+  b.setUint8(5, clamp(Math.round(crr / 0.0001), 0, 255));
+  b.setUint8(6, clamp(Math.round(cw / 0.01), 0, 255));
+  return new Uint8Array(b.buffer);
+}
+function buildErg(w) { const b = new DataView(new ArrayBuffer(3)); b.setUint8(0, 0x05); b.setInt16(1, Math.round(w), true); return new Uint8Array(b.buffer); }
+/* Pendenza da inviare al rullo: abbina la forza al rullo F_t = F_virtuale * R/Rfisico */
+function resistanceGrade(p) {
+  const { m, grade, v, vt, R, Rp, Cw, crr, maxG } = p;
+  if (vt == null) return clamp(grade, -0.10, maxG);
+  const th = Math.atan(grade);
+  const base = m * G * (crr * Math.cos(th) + Math.sin(th));
+  const Ft = (base + Cw * v * v) * (R / Rp);
+  return clamp((Ft - Cw * vt * vt) / (m * G) - crr, -0.10, maxG);
+}
+/*ENDPURE*/
+
+(function () {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* ---------- Impostazioni ---------- */
+const DEF = { mass: 75, bike: 9, cda: 0.32, crr: 0.004, rho: 1.2, eff: 0.975, ftp: 200, rings: '50,34',
+  cassette: '11,13,15,17,19,21,23,25,27,30,34', role1: 'rear', role2: 'front', circ: 2.105, maxGrade: 6, physChain: 50, physCog: 14,
+  powerSrc: 'auto', pressedVal: '0', swap: false, all: false };
+const cfg = Object.assign({}, DEF);
+try { Object.assign(cfg, JSON.parse(localStorage.getItem('rv-cfg2') || '{}')); } catch (e) {}
+function saveCfg() { try { localStorage.setItem('rv-cfg2', JSON.stringify(cfg)); } catch (e) {} }
+const teeth = s => String(s).split(/[,\s;\/-]+/).map(Number).filter(x => isFinite(x) && x >= 8 && x <= 80);
+/* pignoni dal più grande (marcia più agile) al più piccolo, corone dalla più piccola alla più grande */
+function cogs() { const a = teeth(cfg.cassette).sort((x, y) => y - x); return a.length ? a : teeth(DEF.cassette).sort((x, y) => y - x); }
+function rings() { const a = teeth(cfg.rings).sort((x, y) => x - y); return a.length ? a : teeth(DEF.rings).sort((x, y) => x - y); }
+
+/* ---------- Stato ---------- */
+const S = {
+  t: performance.now(), pos: 0, v: 0, dist: 0, time: 0, gain: 0, gear: 6, ring: 1, mode: 'route', ergW: 150,
+  pAvg: 0, hist: [], gCmd: 0, free: false, limited: false, crank: 0, wheel: 0, lastElev: elev(0),
+  demo: { on: false, p: 150, c: 85 }, src: { p: 0, cad: 0, cadOk: false, vt: null, pSrc: '—' },
+  live: { pm: { t: 0, p: 0, cad: 0, hasCrank: false, crankT: 0, prev: null }, tr: { t: 0, p: 0, cad: 0, hasCad: false, v: null } },
+  ck: { ck: { base: false, st: { 1: false, 2: false } }, ck2: { base: false, st: { 1: false, 2: false } } }
+};
+S.gear = Math.round((cogs().length - 1) * 0.55); S.ring = rings().length - 1;
+
+/* ---------- Log ---------- */
+const LOG = []; let logDirty = false;
+function log(m) { LOG.push(new Date().toTimeString().slice(0, 8) + ' ' + m); if (LOG.length > 150) LOG.shift(); logDirty = true; }
+setInterval(() => { if (logDirty) { const el = $('#log'); el.textContent = LOG.join('\n'); el.scrollTop = el.scrollHeight; logDirty = false; } }, 500);
+const hex = u => Array.from(u).map(b => b.toString(16).padStart(2, '0')).join(' ');
+function note(msg) { const n = $('#note'); n.textContent = msg || ''; n.hidden = !msg; }
+
+/* ---------- Bluetooth ---------- */
+const U = { ftms: 0x1826, bike: 0x2ad2, cp: 0x2ad9, cps: 0x1818, meas: 0x2a63,
+  z1: '00000001-19ca-4651-86e5-fa29dcdd09d1', zRide: '0000fc82-0000-1000-8000-00805f9b34fb',
+  zAsync: '00000002-19ca-4651-86e5-fa29dcdd09d1', zRx: '00000003-19ca-4651-86e5-fa29dcdd09d1', zTx: '00000004-19ca-4651-86e5-fa29dcdd09d1' };
+const NAMES = { tr: 'Rullo Van Rysel D100', pm: 'Potenziometro 4iiii', ck: 'Zwift Click 1', ck2: 'Zwift Click 2' };
+const D = { tr: null, pm: null, ck: null, ck2: null };
+const userOff = { tr: false, pm: false, ck: false, ck2: false };
+let CP = null, cpChain = Promise.resolve();
+
+function chip(k, state, text) {
+  const el = $('#chip-' + k); el.className = 'chip ' + state;
+  el.querySelector('small').textContent = text;
+}
+function resetChips() { for (const k of ['tr', 'pm', 'ck', 'ck2']) chip(k, '', 'Tocca per collegare'); }
+const roleOf = k => (k === 'ck2' ? cfg.role2 : cfg.role1) === 'front' ? 'front' : 'rear';
+function roleLabels() { for (const k of ['ck', 'ck2']) $('#chip-' + k + ' .nm').textContent = NAMES[k] + ' · ' + (roleOf(k) === 'front' ? 'corone' : 'pignoni'); }
+
+function cpWrite(bytes) {
+  const run = async () => {
+    if (!CP) return;
+    try { if (CP.writeValueWithResponse) await CP.writeValueWithResponse(bytes); else await CP.writeValue(bytes); }
+    catch (e) { log('Scrittura al rullo non riuscita: ' + e.message); }
+  };
+  cpChain = cpChain.then(run, run);
+  return cpChain;
+}
+let lastReq = 0;
+function onCp(dv) {
+  if (dv.byteLength >= 3 && dv.getUint8(0) === 0x80) {
+    const op = dv.getUint8(1), res = dv.getUint8(2);
+    log('Rullo: risposta al comando 0x' + op.toString(16) + ', esito ' + res);
+    if (res === 5 && performance.now() - lastReq > 3000) { lastReq = performance.now(); cpWrite(new Uint8Array([0x00])); }
+  }
+}
+function onBike(dv) {
+  try {
+    const d = parseIndoorBike(dv), L = S.live.tr; L.t = performance.now();
+    if (d.power != null) L.p = Math.max(0, d.power);
+    if (d.cad != null) { L.cad = d.cad; L.hasCad = true; }
+    if (d.speed != null) L.v = d.speed;
+  } catch (e) {}
+}
+function onPower(dv) {
+  try {
+    const d = parsePower(dv), L = S.live.pm, now = performance.now();
+    L.t = now; L.p = Math.max(0, d.p);
+    if (d.crank) {
+      L.hasCrank = true;
+      if (L.prev) {
+        const dR = (d.crank.revs - L.prev.revs) & 0xffff, dT = (d.crank.time - L.prev.time) & 0xffff;
+        if (dT > 0) { L.cad = dR / (dT / 1024) * 60; L.crankT = now; }
+      } else L.crankT = now;
+      L.prev = d.crank;
+    }
+  } catch (e) {}
+}
+/* kind: 'rear' = pignoni, 'front' = corone; dir: +1 più duro, -1 più agile */
+function shift(kind, dir) {
+  if (S.mode === 'erg') { S.ergW = clamp(S.ergW + dir * (kind === 'front' ? 50 : 10), 50, 600); $('#erg-w').value = S.ergW; sendErg(); }
+  else {
+    if (kind === 'front') S.ring = clamp(S.ring + dir, 0, rings().length - 1);
+    else S.gear = clamp(S.gear + dir, 0, cogs().length - 1);
+    sendResistance(true);
+  }
+  gearUI();
+}
+function handleClick(m, k) {
+  const pv = Number(cfg.pressedVal), st = S.ck[k];
+  const now = { 1: m[1] === pv, 2: m[2] === pv };
+  if (!st.base) { st.st = now; st.base = true; return; }
+  for (const f of [1, 2]) if (now[f] && !st.st[f]) { let dir = f === 1 ? 1 : -1; if (cfg.swap) dir = -dir; shift(roleOf(k), dir); }
+  st.st = now;
+}
+function onClick(dv, k) {
+  const u = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
+  if (u[0] === 0x37) { log(NAMES[k] + ': ' + hex(u)); handleClick(pbParse(u.subarray(1)), k); }
+  else if (u[0] !== 0x15 && u[0] !== 0x19) log(NAMES[k] + ', messaggio 0x' + u[0].toString(16) + ': ' + hex(u.subarray(0, 24)));
+}
+function onClickSync(dv, k) {
+  const u = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
+  log(NAMES[k] + ', risposta sincrona: ' + hex(u.subarray(0, 24)));
+}
+
+async function setupTr(d) {
+  const srv = await d.gatt.connect(); const svc = await srv.getPrimaryService(U.ftms);
+  const bike = await svc.getCharacteristic(U.bike);
+  bike.addEventListener('characteristicvaluechanged', e => onBike(e.target.value)); await bike.startNotifications();
+  CP = await svc.getCharacteristic(U.cp);
+  CP.addEventListener('characteristicvaluechanged', e => onCp(e.target.value));
+  try { await CP.startNotifications(); } catch (e) { log('Indicazioni del rullo non attivate: ' + e.message); }
+  await cpWrite(new Uint8Array([0x00])); await sleep(400); await cpWrite(new Uint8Array([0x07]));
+  lastSentG = null; if (S.mode === 'erg') sendErg();
+}
+async function setupPm(d) {
+  const srv = await d.gatt.connect(); const svc = await srv.getPrimaryService(U.cps);
+  const ch = await svc.getCharacteristic(U.meas);
+  ch.addEventListener('characteristicvaluechanged', e => onPower(e.target.value)); await ch.startNotifications();
+  S.live.pm.prev = null;
+}
+async function setupCk(d, k) {
+  const srv = await d.gatt.connect(); log(NAMES[k] + ': collegato al Bluetooth, cerco il servizio'); let svc = null;
+  for (const id of [U.z1, U.zRide]) { try { svc = await srv.getPrimaryService(id); log(NAMES[k] + ': servizio ' + id.slice(0, 8) + ' trovato'); break; } catch (e) { log(NAMES[k] + ': servizio ' + id.slice(0, 8) + ' assente (' + e.name + ')'); } }
+  if (!svc) {
+    try { const all = await srv.getPrimaryServices(); log(NAMES[k] + ': servizi visibili: ' + (all.map(s => s.uuid.slice(0, 8)).join(', ') || 'nessuno')); } catch (e) { log(NAMES[k] + ': elenco servizi non riuscito: ' + e.message); }
+    throw new Error('servizio Zwift non trovato');
+  }
+  try { const cs = await svc.getCharacteristics(); log(NAMES[k] + ': caratteristiche: ' + cs.map(c => c.uuid.slice(0, 8) + ':' + ['notify', 'indicate', 'write', 'writeWithoutResponse', 'read'].filter(p => c.properties[p]).join('+')).join(' | ')); } catch (e) { log(NAMES[k] + ': elenco caratteristiche non riuscito: ' + e.message); }
+  const as = await svc.getCharacteristic(U.zAsync), rx = await svc.getCharacteristic(U.zRx), tx = await svc.getCharacteristic(U.zTx);
+  as.addEventListener('characteristicvaluechanged', e => onClick(e.target.value, k));
+  tx.addEventListener('characteristicvaluechanged', e => onClickSync(e.target.value, k));
+  await as.startNotifications(); log(NAMES[k] + ': notifiche attive');
+  try { await tx.startNotifications(); } catch (e) { log('Click: canale sync non attivato: ' + e.message); }
+  S.ck[k].base = false;
+  const hs = new Uint8Array([0x52, 0x69, 0x64, 0x65, 0x4f, 0x6e, 0x01, 0x02]);
+  if (rx.writeValueWithoutResponse) await rx.writeValueWithoutResponse(hs); else await rx.writeValue(hs);
+  log(NAMES[k] + ': handshake RideOn inviato, ora premi un tasto');
+}
+const SETUP = { tr: setupTr, pm: setupPm, ck: setupCk, ck2: setupCk };
+
+function reqOpts(k) {
+  if (cfg.all) return { acceptAllDevices: true, optionalServices: [U.ftms, U.cps, U.z1, U.zRide] };
+  if (k === 'tr') return { filters: [{ services: [U.ftms] }], optionalServices: [U.ftms] };
+  if (k === 'pm') return { filters: [{ services: [U.cps] }], optionalServices: [U.cps] };
+  return { filters: [{ namePrefix: 'Zwift' }, { namePrefix: 'ZWIFT' }, { services: [U.zRide] }, { services: [U.z1] }], optionalServices: [U.z1, U.zRide] };
+}
+async function attach(k) {
+  chip(k, 'busy', 'Connessione in corso');
+  try {
+    await Promise.race([SETUP[k](D[k], k),new Promise((_, rej) => setTimeout(() => rej(new Error('nessuna risposta dopo 20 s')), 20000))]);
+    chip(k, 'on', 'Collegato · tocca per scollegare'); log(NAMES[k] + ' collegato'); wake(); return true; }
+  catch (e) { chip(k, 'err', 'Errore: ' + e.message); log(NAMES[k] + ': ' + e.message); return false; }
+}
+async function pick(k) {
+  if (!navigator.bluetooth) { note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.'); return; }
+  note('');
+  log(NAMES[k] + ': apro la ricerca Bluetooth (' + (cfg.all ? 'tutti i dispositivi' : 'filtro') + ')');
+  try {
+    const d = await navigator.bluetooth.requestDevice(reqOpts(k));
+    log(NAMES[k] + ': ricerca conclusa');
+    const other = k === 'ck' ? D.ck2 : k === 'ck2' ? D.ck : null;
+    if (other && other.id === d.id) { note("Hai scelto due volte lo stesso Click. Premi un tasto sull'altro Click per svegliarlo e riprova."); chip(k, 'err', 'Stesso Click già collegato'); return; }
+    if (D[k] && D[k] !== d) { try { D[k].gatt.disconnect(); } catch (e) {} }
+    D[k] = d; userOff[k] = false;
+    d.addEventListener('gattserverdisconnected', () => onDisc(k, d));
+    log(NAMES[k] + ': scelto "' + (d.name || 'senza nome') + '"');
+    await attach(k);
+  } catch (e) {
+    log(NAMES[k] + ': ricerca terminata con ' + e.name + ' · ' + e.message);
+    if (e.name === 'NotFoundError') { chip(k, 'err', 'Nessun dispositivo scelto · riprova'); return; }
+    chip(k, 'err', e.name === 'SecurityError' ? 'Bluetooth bloccato' : 'Errore: ' + e.message);
+    log(NAMES[k] + ': ' + e.name + ' ' + e.message);
+    if (e.name === 'SecurityError' || /permission/i.test(e.message)) note('Il browser blocca il Bluetooth in questa cornice. Apri il link direttamente in Bluefy, in una scheda a pagina intera.');
+  }
+}
+async function onDisc(k, d) {
+  if (D[k] !== d) return;
+  if (k === 'tr') CP = null;
+  if (userOff[k]) { chip(k, '', 'Tocca per collegare'); return; }
+  log(NAMES[k] + ' scollegato, provo a ricollegare');
+  for (let i = 1; i <= 5 && !userOff[k]; i++) {
+    chip(k, 'busy', 'Riconnessione ' + i + '/5');
+    await sleep(1500 * i);
+    if (D[k] !== d || userOff[k]) return;
+    if (await attach(k)) return;
+  }
+  chip(k, 'err', 'Scollegato · tocca per riprovare');
+}
+function toggle(k) {
+  const el = $('#chip-' + k);
+  if (el.classList.contains('on') || el.classList.contains('busy')) { userOff[k] = true; try { D[k] && D[k].gatt.disconnect(); } catch (e) {} chip(k, '', 'Tocca per collegare'); if (k === 'tr') CP = null; }
+  else pick(k);
+}
+for (const k of ['tr', 'pm', 'ck', 'ck2']) $('#chip-' + k).addEventListener('click', () => toggle(k));
+
+let wl = null;
+async function wake() { try { if (navigator.wakeLock && !wl) { wl = await navigator.wakeLock.request('screen'); wl.addEventListener('release', () => { wl = null; }); } } catch (e) {} }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') wake(); });
+
+/* ---------- Comandi al rullo ---------- */
+let lastSentG = null, lastSentT = 0, lastErgT = 0;
+const connected = () => D.tr && D.tr.gatt && D.tr.gatt.connected && CP && !S.demo.on;
+function sendResistance(force) {
+  if (!connected() || S.mode !== 'route') return;
+  const t = performance.now(), g = S.gCmd;
+  if (!force && lastSentG !== null && Math.abs(g - lastSentG) < 0.0003 && t - lastSentT < 5000) return;
+  lastSentG = g; lastSentT = t;
+  cpWrite(buildSim(g, cfg.crr, 0.5 * cfg.cda * cfg.rho));
+}
+function sendErg() { if (!connected()) return; lastErgT = performance.now(); cpWrite(buildErg(S.ergW)); }
+setInterval(() => { sendResistance(false); if (S.mode === 'erg' && performance.now() - lastErgT > 5000) sendErg(); }, 1000);
+
+/* ---------- Fisica ---------- */
+function sources(now) {
+  if (S.demo.on) {
+    const j = () => Math.random() - 0.5;
+    return { p: S.demo.p > 0 ? Math.max(0, S.demo.p + j() * 12) : 0, cad: S.demo.c > 0 ? S.demo.c + j() * 3 : 0, cadOk: true, vt: null, pSrc: 'Demo' };
+  }
+  const pm = S.live.pm, tr = S.live.tr, pmF = now - pm.t < 3000, trF = now - tr.t < 3000;
+  let p = 0, pSrc = '—';
+  if (cfg.powerSrc !== 'trainer' && pmF) { p = pm.p; pSrc = '4iiii'; }
+  else if (cfg.powerSrc !== 'pm' && trF) { p = tr.p; pSrc = 'D100'; }
+  let cad = 0, cadOk = false;
+  if (pmF && pm.hasCrank) { cad = now - pm.crankT > 2500 ? 0 : pm.cad; cadOk = true; }
+  else if (trF && tr.hasCad) { cad = tr.cad; cadOk = true; }
+  const vt = trF && tr.v != null ? tr.v / 3.6 : null;
+  return { p, cad, cadOk, vt, pSrc };
+}
+function tick() {
+  const now = performance.now(); let dt = (now - S.t) / 1000; S.t = now; dt = clamp(dt, 0, 0.5); if (dt <= 0) return;
+  const src = sources(now); S.src = src;
+  const cg = cogs(), rg = rings(); S.gear = clamp(S.gear, 0, cg.length - 1); S.ring = clamp(S.ring, 0, rg.length - 1);
+  const R = rg[S.ring] / cg[S.gear], Rp = cfg.physChain / cfg.physCog;
+  const m = cfg.mass + cfg.bike, mEff = m + 2, Cw = 0.5 * cfg.cda * cfg.rho;
+  const grade = gradeAt(S.pos), th = Math.atan(grade);
+  const base = m * G * (cfg.crr * Math.cos(th) + Math.sin(th));
+  const Fres = v => base + Cw * v * v;
+
+  let vGear = null;
+  if (src.cadOk) { if (src.cad > 0.5) vGear = src.cad * R * cfg.circ / 60; }
+  else if (src.vt != null && src.vt > 0.3) vGear = src.vt * R / Rp;
+
+  let v = S.v; const vc = clamp(v - dt * Fres(v) / mEff, 0, 28); let free = false;
+  if (vGear != null) { if (vGear >= vc - 0.05) v += (vGear - v) * (1 - Math.exp(-dt / 0.8)); else { v = vc; free = true; } }
+  else if (!src.cadOk && src.vt == null) { const a = (src.p * cfg.eff / Math.max(v, 1.5) - Fres(v)) / mEff; v = clamp(v + a * dt, 0, 28); }
+  else v = vc;
+  S.v = v; S.free = free;
+
+  S.pos += v * dt; S.dist += v * dt; if (v > 0.5) S.time += dt;
+  const e = elev(S.pos); if (e > S.lastElev) S.gain += e - S.lastElev; S.lastElev = e;
+  S.crank += src.cad * 2 * Math.PI / 60 * dt; S.wheel += v / 0.33 * dt;
+  S.pAvg += (src.p - S.pAvg) * (1 - Math.exp(-dt / 1.5));
+
+  const vt = src.vt != null ? src.vt : (src.cadOk ? src.cad * Rp * cfg.circ / 60 : null);
+  const maxG = cfg.maxGrade / 100;
+  let gc = free ? -0.10 : resistanceGrade({ m, grade, v, vt, R, Rp, Cw, crr: cfg.crr, maxG });
+  S.limited = !free && vt != null && gc >= maxG - 1e-6;
+  S.gCmd += (gc - S.gCmd) * (1 - Math.exp(-dt / 0.7));
+  hud();
+}
+setInterval(tick, 100);
+setInterval(() => { S.hist.push(S.pAvg); if (S.hist.length > 300) S.hist.shift(); }, 1000);
+
+/* ---------- Interfaccia ---------- */
+const ZN = ['Recupero', 'Resistenza', 'Tempo', 'Soglia', 'VO2max', 'Anaerobica'];
+function setT(id, t) { const el = $(id); if (el.textContent !== t) el.textContent = t; }
+const pad = n => String(n).padStart(2, '0');
+function hud() {
+  const pct = S.pAvg / cfg.ftp * 100, z = pct < 55 ? 0 : pct < 76 ? 1 : pct < 91 ? 2 : pct < 106 ? 3 : pct < 121 ? 4 : 5;
+  setT('#v-p', String(Math.round(S.pAvg)));
+  const zl = $('#zone'); zl.textContent = 'Z' + (z + 1) + ' ' + ZN[z]; zl.style.background = 'var(--z' + (z + 1) + ')';
+  const zf = $('#zfill'); zf.style.width = clamp(pct / 1.5, 0, 100) + '%'; zf.style.background = 'var(--z' + (z + 1) + ')';
+  setT('#p-sub', (S.pAvg / cfg.mass).toFixed(1) + ' W/kg · sorgente ' + S.src.pSrc);
+  setT('#v-c', String(Math.round(S.src.cad)));
+  setT('#c-sub', S.src.cadOk ? (S.demo.on ? 'demo' : 'dal sensore') : 'nessun sensore');
+  setT('#v-s', (S.v * 3.6).toFixed(1));
+  setT('#s-sub', S.src.cadOk && S.src.cad > 0.5 ? 'dalla cadenza e dalla marcia' : S.src.vt != null ? 'dal rullo e dalla marcia' : 'dalla potenza');
+  const g = gradeAt(S.pos) * 100; setT('#v-g', (g >= 0 ? '+' : '') + g.toFixed(1));
+  setT('#g-sub', S.mode === 'erg' ? 'Rullo: potenza fissa' : S.free ? 'Rullo: scorrimento' : 'Rullo: ' + (S.gCmd * 100 >= 0 ? '+' : '') + (S.gCmd * 100).toFixed(1) + '%' + (S.limited ? ' (limite)' : ''));
+  setT('#h-km', (S.dist / 1000).toFixed(2) + ' km');
+  setT('#h-time', pad(Math.floor(S.time / 3600)) + ':' + pad(Math.floor(S.time / 60) % 60) + ':' + pad(Math.floor(S.time) % 60));
+  setT('#h-gain', 'D+ ' + Math.round(S.gain) + ' m');
+}
+function gearUI() {
+  const erg = S.mode === 'erg';
+  $('#m-gear').hidden = erg; $('#m-erg').hidden = !erg;
+  if (erg) { setT('#v-erg', S.ergW + ' W'); return; }
+  const cg = cogs(), rg = rings(); S.gear = clamp(S.gear, 0, cg.length - 1); S.ring = clamp(S.ring, 0, rg.length - 1);
+  const r = rg[S.ring], c = cg[S.gear];
+  setT('#v-gear', r + '×' + c); setT('#ratio', (r / c).toFixed(2));
+  setT('#v-ring', String(r)); setT('#v-cog', String(c));
+  setT('#ring-sub', (S.ring + 1) + ' di ' + rg.length); setT('#cog-sub', (S.gear + 1) + ' di ' + cg.length);
+  $('#r-minus').disabled = S.ring === 0; $('#r-plus').disabled = S.ring === rg.length - 1;
+  $('#c-minus').disabled = S.gear === 0; $('#c-plus').disabled = S.gear === cg.length - 1;
+}
+$('#g-plus').addEventListener('click', () => shift('rear', 1));
+$('#g-minus').addEventListener('click', () => shift('rear', -1));
+$('#c-plus').addEventListener('click', () => shift('rear', 1));
+$('#c-minus').addEventListener('click', () => shift('rear', -1));
+$('#r-plus').addEventListener('click', () => shift('front', 1));
+$('#r-minus').addEventListener('click', () => shift('front', -1));
+document.addEventListener('keydown', e => {
+  if (/INPUT|SELECT|TEXTAREA/.test((e.target.tagName || ''))) return;
+  if (e.key === 'ArrowUp' || e.key === '+' || e.key === '=') { e.preventDefault(); shift('rear', 1); }
+  else if (e.key === 'ArrowDown' || e.key === '-') { e.preventDefault(); shift('rear', -1); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); shift('front', 1); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); shift('front', -1); }
+});
+function setMode(m) {
+  S.mode = m; $('#mode-route').classList.toggle('on', m === 'route'); $('#mode-erg').classList.toggle('on', m === 'erg');
+  $('#erg-box').hidden = m !== 'erg';
+  $('#mode-hint').hidden = m === 'erg';
+  if (m === 'erg') sendErg(); else { lastSentG = null; sendResistance(true); }
+  gearUI(); wake();
+}
+$('#mode-route').addEventListener('click', () => setMode('route'));
+$('#mode-erg').addEventListener('click', () => setMode('erg'));
+$('#erg-w').addEventListener('change', e => { S.ergW = clamp(Number(e.target.value) || 150, 50, 600); gearUI(); sendErg(); });
+$('#reset').addEventListener('click', () => { S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; });
+$('#demo-btn').addEventListener('click', () => { S.demo.on = !S.demo.on; $('#demo-btn').classList.toggle('on', S.demo.on); $('#demo-btn').textContent = S.demo.on ? 'Demo attiva' : 'Attiva demo'; wake(); });
+$('#demo-p').addEventListener('input', e => { S.demo.p = Number(e.target.value); setT('#demo-p-v', S.demo.p + ' W'); });
+$('#demo-c').addEventListener('input', e => { S.demo.c = Number(e.target.value); setT('#demo-c-v', S.demo.c + ' rpm'); });
+
+for (const el of document.querySelectorAll('[data-cfg]')) {
+  const k = el.dataset.cfg;
+  if (el.type === 'checkbox') el.checked = !!cfg[k]; else el.value = cfg[k];
+  el.addEventListener('change', () => {
+    if (el.type === 'checkbox') cfg[k] = el.checked;
+    else if (el.type === 'number') { const n = Number(el.value); if (isFinite(n) && n > 0) cfg[k] = n; else el.value = cfg[k]; }
+    else { cfg[k] = el.value; if ((k === 'rings' || k === 'cassette') && !teeth(el.value).length) { cfg[k] = DEF[k]; el.value = DEF[k]; } }
+    saveCfg(); roleLabels(); gearUI(); lastSentG = null;
+  });
+}
+
+/* ---------- Grafica ---------- */
+const CV = { scene: $('#scene'), pwr: $('#pwr'), prof: $('#prof') };
+const COL = {};
+function readColors() { const cs = getComputedStyle(document.documentElement); for (const k of ['ink', 'ink2', 'line', 'accent', 'sky1', 'sky2', 'hill1', 'hill2', 'ground', 'road', 'mark', 'panel']) COL[k] = cs.getPropertyValue('--' + k).trim(); }
+readColors(); setInterval(readColors, 2000);
+function fit(c) { const r = c.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1); const w = Math.max(1, Math.round(r.width * d)), h = Math.max(1, Math.round(r.height * d)); if (c.width !== w || c.height !== h) { c.width = w; c.height = h; } return d; }
+function hills(g, W, H, off, color, base, amp, f) {
+  g.fillStyle = color; g.beginPath(); g.moveTo(0, H);
+  for (let x = 0; x <= W; x += 8) { const u = (x + off) * f; g.lineTo(x, base - amp * (Math.sin(u) + 0.55 * Math.sin(u * 2.3 + 1.7) + 0.3 * Math.sin(u * 5.1))); }
+  g.lineTo(W, H); g.closePath(); g.fill();
+}
+function knee(hx, hy, fx, fy, l) {
+  const dx = fx - hx, dy = fy - hy; const dd = Math.min(Math.hypot(dx, dy), 2 * l - 0.01);
+  const a = Math.atan2(dy, dx), b = Math.acos(dd / (2 * l)); return [hx + l * Math.cos(a - b), hy + l * Math.sin(a - b)];
+}
+function drawRider(g, d, H) {
+  const k = H / 300 * 1.15;
+  const line = (x1, y1, x2, y2, w, c) => { g.beginPath(); g.moveTo(x1 * k, y1 * k); g.lineTo(x2 * k, y2 * k); g.lineWidth = w * d; g.strokeStyle = c; g.lineCap = 'round'; g.stroke(); };
+  for (const wx of [-26, 26]) {
+    g.beginPath(); g.arc(wx * k, -14 * k, 14 * k, 0, 7); g.lineWidth = 2.4 * d; g.strokeStyle = COL.ink; g.stroke();
+    for (let i = 0; i < 3; i++) { const a = S.wheel + i * Math.PI / 3; line(wx + 14 * Math.cos(a), -14 + 14 * Math.sin(a), wx - 14 * Math.cos(a), -14 - 14 * Math.sin(a), 0.8, COL.ink2); }
+  }
+  const acc = COL.accent;
+  line(-26, -14, 0, -14, 2.6, acc); line(0, -14, -8, -34, 2.6, acc); line(-8, -34, 18, -34, 2.6, acc);
+  line(18, -34, 26, -14, 2.6, acc); line(0, -14, 18, -34, 2.6, acc); line(-26, -14, -8, -34, 2.6, acc);
+  const hx = -8, hy = -38, sx = 12, sy = -54;
+  line(hx, hy, sx, sy, 5, COL.ink); g.beginPath(); g.arc(17 * k, -60 * k, 5 * k, 0, 7); g.fillStyle = COL.ink; g.fill();
+  line(sx, sy, 20, -36, 3, COL.ink);
+  for (const ph of [0, Math.PI]) {
+    const a = S.crank + ph, fx = 0 + 7 * Math.cos(a), fy = -14 + 7 * Math.sin(a), [kx, ky] = knee(hx, hy, fx, fy, 19);
+    line(hx, hy, kx, ky, 4, COL.ink); line(kx, ky, fx, fy, 3.4, COL.ink);
+  }
+}
+function drawScene() {
+  const c = CV.scene, d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height;
+  const sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, COL.sky1); sky.addColorStop(1, COL.sky2);
+  g.fillStyle = sky; g.fillRect(0, 0, W, H);
+  const pxm = W / 650, vex = 5, rx = W * 0.28, ry = H * 0.62, z0 = elev(S.pos);
+  hills(g, W, H, S.pos * pxm * 0.12, COL.hill1, H * 0.46, H * 0.09, 0.005 / d);
+  hills(g, W, H, S.pos * pxm * 0.3, COL.hill2, H * 0.58, H * 0.07, 0.009 / d);
+  const pts = [];
+  g.beginPath(); g.moveTo(0, H);
+  for (let x = 0; x <= W; x += 6) { const s = S.pos + (x - rx) / pxm, y = ry - (elev(s) - z0) * pxm * vex; pts.push([x, y]); g.lineTo(x, y); }
+  g.lineTo(W, H); g.closePath(); g.fillStyle = COL.ground; g.fill();
+  g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y));
+  g.lineWidth = 7 * d; g.strokeStyle = COL.road; g.lineJoin = 'round'; g.stroke();
+  const step = 25, first = Math.ceil((S.pos - rx / pxm) / step) * step;
+  g.fillStyle = COL.mark;
+  for (let s = first; s < S.pos + (W - rx) / pxm; s += step) {
+    const x = rx + (s - S.pos) * pxm, y = ry - (elev(s) - z0) * pxm * vex, big = Math.round(s) % 100 === 0;
+    g.fillRect(x - d, y - (big ? 18 : 7) * d - 4 * d, 2 * d, (big ? 18 : 7) * d);
+  }
+  const slope = (elev(S.pos + 4) - elev(S.pos - 4)) / 8;
+  g.save(); g.translate(rx, ry - 4 * d); g.rotate(-Math.atan(slope * vex * 0.8)); drawRider(g, d, H); g.restore();
+}
+function drawPwr() {
+  const c = CV.pwr, d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
+  const pl = 40 * d, pr = 8 * d, pt = 10 * d, pb = 22 * d, iw = W - pl - pr, ih = H - pt - pb;
+  const mx = Math.max(300, Math.ceil(Math.max(...S.hist, cfg.ftp * 1.2) / 100) * 100);
+  g.font = (11 * d) + 'px Barlow, system-ui, sans-serif'; g.fillStyle = COL.ink2; g.textBaseline = 'middle'; g.textAlign = 'right';
+  for (const f of [0, 0.5, 1]) { const y = pt + ih * (1 - f); g.strokeStyle = COL.line; g.lineWidth = d; g.beginPath(); g.moveTo(pl, y); g.lineTo(W - pr, y); g.stroke(); g.fillText(String(Math.round(mx * f)), pl - 6 * d, y); }
+  const fy = pt + ih * (1 - cfg.ftp / mx); g.setLineDash([6 * d, 5 * d]); g.strokeStyle = COL.ink2; g.beginPath(); g.moveTo(pl, fy); g.lineTo(W - pr, fy); g.stroke(); g.setLineDash([]);
+  g.textAlign = 'left'; g.fillText('FTP', pl + 4 * d, fy - 8 * d);
+  g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.fillText('−5 min', pl + 24 * d, H - 5 * d); g.fillText('ora', W - pr - 10 * d, H - 5 * d);
+  const n = S.hist.length; if (n < 2) return;
+  const px = i => pl + iw * (300 - n + i) / 299, py = v => pt + ih * (1 - Math.min(v, mx) / mx);
+  g.beginPath(); g.moveTo(px(0), pt + ih); S.hist.forEach((v, i) => g.lineTo(px(i), py(v))); g.lineTo(px(n - 1), pt + ih); g.closePath();
+  g.globalAlpha = 0.22; g.fillStyle = COL.accent; g.fill(); g.globalAlpha = 1;
+  g.beginPath(); S.hist.forEach((v, i) => i ? g.lineTo(px(i), py(v)) : g.moveTo(px(i), py(v))); g.lineWidth = 2 * d; g.strokeStyle = COL.accent; g.lineJoin = 'round'; g.stroke();
+}
+let PROF = null;
+function drawProf() {
+  const c = CV.prof, d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
+  if (!PROF) { PROF = []; let lo = 1e9, hi = -1e9; for (let i = 0; i <= 200; i++) { const e = elev(i * LOOP / 200); PROF.push(e); lo = Math.min(lo, e); hi = Math.max(hi, e); } PROF.lo = lo; PROF.hi = hi; }
+  const pl = 40 * d, pr = 8 * d, pt = 10 * d, pb = 22 * d, iw = W - pl - pr, ih = H - pt - pb, span = (PROF.hi - PROF.lo) || 1;
+  const X = i => pl + iw * i / 200, Y = e => pt + ih * (1 - (e - PROF.lo) / span);
+  g.beginPath(); g.moveTo(X(0), pt + ih); PROF.forEach((e, i) => g.lineTo(X(i), Y(e))); g.lineTo(X(200), pt + ih); g.closePath();
+  g.globalAlpha = 0.5; g.fillStyle = COL.ground; g.fill(); g.globalAlpha = 1;
+  g.beginPath(); PROF.forEach((e, i) => i ? g.lineTo(X(i), Y(e)) : g.moveTo(X(i), Y(e))); g.lineWidth = 2 * d; g.strokeStyle = COL.ink; g.stroke();
+  g.font = (11 * d) + 'px Barlow, system-ui, sans-serif'; g.fillStyle = COL.ink2; g.textAlign = 'right'; g.textBaseline = 'middle';
+  g.fillText(Math.round(PROF.hi) + ' m', pl - 6 * d, Y(PROF.hi)); g.fillText(Math.round(PROF.lo) + ' m', pl - 6 * d, Y(PROF.lo));
+  g.textBaseline = 'alphabetic'; g.textAlign = 'center';
+  for (const km of [0, 5, 10, 15, 20]) g.fillText(km + ' km', Math.min(W - 14 * d, Math.max(pl + 8 * d, pl + iw * km / 20)), H - 5 * d);
+  const f = (((S.pos % LOOP) + LOOP) % LOOP) / LOOP, mx = pl + iw * f;
+  g.strokeStyle = COL.accent; g.lineWidth = 2 * d; g.beginPath(); g.moveTo(mx, pt); g.lineTo(mx, pt + ih); g.stroke();
+  g.fillStyle = COL.accent; g.beginPath(); g.arc(mx, Y(elev(S.pos)), 5 * d, 0, 7); g.fill();
+}
+let lastCharts = 0;
+function frame(t) { drawScene(); if (t - lastCharts > 500) { lastCharts = t; drawPwr(); drawProf(); } requestAnimationFrame(frame); }
+requestAnimationFrame(frame);
+
+/* ---------- Avvio ---------- */
+(function () {
+  let gain = 0, prev = elev(0); for (let s = 20; s <= LOOP; s += 20) { const e = elev(s); if (e > prev) gain += e - prev; prev = e; }
+  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5%';
+})();
+if (!navigator.bluetooth) note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.');
+roleLabels(); gearUI(); hud();
+log('Pronto. Collega rullo, potenziometro e Click con i pulsanti in alto.');
+})();
+</script>
