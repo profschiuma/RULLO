@@ -140,14 +140,14 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
     <div class="guide" id="guide" aria-live="polite"><b id="guide-title">Controller</b><span id="guide-text">Collega un Zwift Click con i pulsanti qui sopra.</span><button class="btn" id="learn-cancel" hidden>Annulla</button></div>
     <div class="padrow">
       <div class="padcard">
-        <div class="padhead"><b>Click 1</b><small id="pad-ck-st">non collegato</small></div>
-        <div class="padmap" id="pad-ck-map">&nbsp;</div>
-        <div class="padbtns"><button class="btn" id="learn-ck-rear" disabled>Associa pignoni</button><button class="btn" id="learn-ck-front" disabled>Associa corone</button></div>
+        <div class="padhead"><b>Pignoni</b><small id="pad-rear-st">&nbsp;</small></div>
+        <div class="padmap" id="pad-rear-map">&nbsp;</div>
+        <div class="padbtns"><button class="btn" id="learn-rear" disabled>Associa pignoni</button></div>
       </div>
       <div class="padcard">
-        <div class="padhead"><b>Click 2</b><small id="pad-ck2-st">non collegato</small></div>
-        <div class="padmap" id="pad-ck2-map">&nbsp;</div>
-        <div class="padbtns"><button class="btn" id="learn-ck2-rear" disabled>Associa pignoni</button><button class="btn" id="learn-ck2-front" disabled>Associa corone</button></div>
+        <div class="padhead"><b>Corone</b><small id="pad-front-st">&nbsp;</small></div>
+        <div class="padmap" id="pad-front-map">&nbsp;</div>
+        <div class="padbtns"><button class="btn" id="learn-front" disabled>Associa corone</button></div>
       </div>
     </div>
   </section>
@@ -370,11 +370,11 @@ const DEF = { mass: 75, bike: 9, cda: 0.32, crr: 0.004, rho: 1.2, eff: 0.975, ft
 const cfg = Object.assign({}, DEF);
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('rv-cfg2') || '{}')); } catch (e) {}
 /* maschere dei tasti + e − di ogni Click, imparate al primo collegamento */
-cfg.map = (cfg.map && typeof cfg.map === 'object') ? cfg.map : {};
-for (const k of ['ck', 'ck2']) {
-  const o = cfg.map[k] || {};
-  cfg.map[k] = { rear: Object.assign({ plus: 0, minus: 0 }, o.rear), front: Object.assign({ plus: 0, minus: 0 }, o.front) };
-}
+/* tasti: ogni comando (pignoni/corone, + e −) è un tasto di uno dei due Click, quindi si possono mescolare i controller */
+const nk = o => (o && (o.k === 'ck' || o.k === 'ck2') && typeof o.bit === 'number' && o.bit) ? { k: o.k, bit: o.bit >>> 0 } : null;
+{ const q = (cfg.keys && typeof cfg.keys === 'object') ? cfg.keys : {};
+  cfg.keys = { rear: { plus: nk(q.rear && q.rear.plus), minus: nk(q.rear && q.rear.minus) }, front: { plus: nk(q.front && q.front.plus), minus: nk(q.front && q.front.minus) } };
+  delete cfg.map; }
 function saveCfg() { try { localStorage.setItem('rv-cfg2', JSON.stringify(cfg)); } catch (e) {} }
 const teeth = s => String(s).split(/[,\s;\/-]+/).map(Number).filter(x => isFinite(x) && x >= 8 && x <= 80);
 /* pignoni dal più grande (marcia più agile) al più piccolo, corone dalla più piccola alla più grande */
@@ -387,7 +387,8 @@ const S = {
   pAvg: 0, hist: [], gCmd: 0, free: false, limited: false, crank: 0, wheel: 0, lastElev: elev(0),
   demo: { on: false, p: 150, c: 85 }, src: { p: 0, cad: 0, cadOk: false, vt: null, pSrc: '—' },
   live: { pm: { t: 0, p: 0, cad: 0, hasCrank: false, crankT: 0, prev: null }, tr: { t: 0, p: 0, cad: 0, hasCad: false, v: null } },
-  ck: { ck: { base: false, st: { 1: false, 2: false } }, ck2: { base: false, st: { 1: false, 2: false } } }
+  ck: { ck: { base: false, st: { 1: false, 2: false } }, ck2: { base: false, st: { 1: false, 2: false } } },
+  learn: null, backup: null, mirror: false, dupHits: 0, lastPress: null, lastProc: null
 };
 S.gear = Math.round((cogs().length - 1) * 0.55); S.ring = rings().length - 1;
 
@@ -485,46 +486,43 @@ const FN = { rear: { plus: 'la marcia più dura (pignone più piccolo)', minus: 
              front: { plus: 'la corona più grande', minus: 'la corona più piccola' } };
 function learnNote() { refreshPad(); }
 function roleLabels() { refreshPad(); }
-function startLearn(k, fn, chain) {
-  if (!(D[k] && D[k].gatt && D[k].gatt.connected)) { note('Collega prima ' + NAMES[k] + ', poi associa i tasti.'); return; }
-  const st = S.ck[k];
-  st.backup = { fn, map: Object.assign({}, cfg.map[k][fn]) };
-  cfg.map[k][fn] = { plus: 0, minus: 0 };
-  st.learn = { fn, step: 'plus' }; st.chain = !!chain; note(''); refreshPad();
+const keyTxt = m => m ? NAMES[m.k].replace('Zwift ', '') + ' · tasto 0x' + m.bit.toString(16) : '—';
+const clickOn = k => !!(D[k] && D[k].gatt && D[k].gatt.connected);
+function startLearn(fn, chain) {
+  if (!clickOn('ck') && !clickOn('ck2')) { note('Collega prima un Click, poi associa i tasti.'); return; }
+  cancelLearn(true);
+  S.backup = { fn, keys: Object.assign({}, cfg.keys[fn]) };
+  cfg.keys[fn] = { plus: null, minus: null };
+  S.learn = { fn, step: 'plus', chain: !!chain }; note(''); refreshPad();
 }
-function cancelLearnFor(k) {
-  const st = S.ck[k];
-  if (st.learn && st.backup) cfg.map[k][st.backup.fn] = st.backup.map;
-  st.learn = null; st.chain = false;
+function cancelLearn(silent) {
+  if (S.learn && S.backup) cfg.keys[S.backup.fn] = S.backup.keys;
+  S.learn = null; S.backup = null;
+  if (!silent) { note(''); refreshPad(); }
 }
-function cancelLearn() { for (const k of ['ck', 'ck2']) cancelLearnFor(k); note(''); refreshPad(); }
 function refreshPad() {
-  let learning = null; const conn = [];
-  for (const k of ['ck', 'ck2']) {
-    const on = $('#chip-' + k).classList.contains('on'), m = cfg.map[k], l = S.ck[k].learn;
-    const r = !!(m.rear.plus && m.rear.minus), f = !!(m.front.plus && m.front.minus), p = [];
-    if (r) p.push('pignoni'); if (f) p.push('corone');
-    $('#chip-' + k + ' .nm').textContent = NAMES[k] + (p.length ? ' · ' + p.join(' e ') : '');
-    $('#pad-' + k + '-st').textContent = on ? 'collegato' : 'non collegato';
-    $('#pad-' + k + '-map').textContent = 'Pignoni: ' + (r ? 'associati' : 'da associare') + ' · Corone: ' + (f ? 'associate' : 'da associare');
-    for (const fn of ['rear', 'front']) $('#learn-' + k + '-' + fn).disabled = !on || !!l;
-    if (on) conn.push({ k, r, f });
-    if (l && !learning) learning = { k, l, chain: S.ck[k].chain };
+  const any = $('#chip-ck').classList.contains('on') || $('#chip-ck2').classList.contains('on'), l = S.learn, kk = cfg.keys;
+  const done = fn => !!(kk[fn].plus && kk[fn].minus);
+  for (const fn of ['rear', 'front']) {
+    $('#pad-' + fn + '-map').textContent = done(fn) ? '+ ' + keyTxt(kk[fn].plus) + '  ·  − ' + keyTxt(kk[fn].minus) : 'Da associare';
+    $('#pad-' + fn + '-st').textContent = (l && l.fn === fn) ? 'in corso' : done(fn) ? 'associati' : '';
+    $('#learn-' + fn).disabled = !any || !!l;
   }
   const g = $('#guide'), title = $('#guide-title'), text = $('#guide-text');
-  g.classList.toggle('learn', !!learning); $('#learn-cancel').hidden = !learning;
-  if (learning) {
-    const { k, l, chain } = learning, n = (chain && l.fn === 'front' ? 2 : 0) + (l.step === 'plus' ? 1 : 2), tot = chain ? 4 : 2;
-    title.textContent = NAMES[k] + ' · passo ' + n + ' di ' + tot;
-    text.textContent = 'Premi sul controller il tasto che vuoi usare per ' + FN[l.fn][l.step] + '.' + (chain && l.fn === 'front' ? ' Non ti servono le corone? Tocca Annulla.' : '');
-  } else if (!conn.length) {
+  g.classList.toggle('learn', !!l); $('#learn-cancel').hidden = !l;
+  if (l) {
+    const n = (l.chain && l.fn === 'front' ? 2 : 0) + (l.step === 'plus' ? 1 : 2), tot = l.chain ? 4 : 2;
+    title.textContent = 'Passo ' + n + ' di ' + tot;
+    text.textContent = 'Premi il tasto, su uno qualsiasi dei due Click, che vuoi usare per ' + FN[l.fn][l.step] + '.' + (l.chain && l.fn === 'front' ? ' Non ti servono le corone? Tocca Annulla.' : '');
+  } else if (!any) {
     title.textContent = 'Controller';
     text.textContent = "Collega un Zwift Click con i pulsanti qui sopra. Al primo collegamento ti guido passo passo nell'associazione dei tasti, che poi resta salvata.";
   } else {
     const todo = [];
-    for (const c of conn) { if (!c.r) todo.push(NAMES[c.k] + ': per cambiare pignone tocca «Associa pignoni»'); if (!c.f) todo.push(NAMES[c.k] + ': per cambiare corona tocca «Associa corone»'); }
+    if (!done('rear')) todo.push('per cambiare pignone tocca «Associa pignoni»');
+    if (!done('front')) todo.push('per cambiare corona tocca «Associa corone»');
     title.textContent = 'Pronto';
-    text.textContent = todo.length ? todo.join('. ') + '.' : 'Tasti associati. Premili per cambiare marcia.';
+    text.textContent = todo.length ? todo.join('. ').replace(/^p/, 'P') + '.' : 'Tasti associati. Premili per cambiare marcia.';
   }
 }
 function handleRide(u, k) {
@@ -536,23 +534,38 @@ function handleRide(u, k) {
   if (!fresh) return;
   log(NAMES[k] + ': premuto 0x' + fresh.toString(16) + ' (' + hex(u) + ')');
   $('#chip-' + k + ' small').textContent = 'Collegato · ultimo tasto 0x' + fresh.toString(16);
-  const now = performance.now(), lp = S.lastPress; S.lastPress = { k, mask: fresh, t: now };
-  if (lp && lp.k !== k && lp.mask === fresh && now - lp.t < 250) {
-    note("Click 1 e Click 2 risultano lo stesso controller. Scollega uno dei due e ricollegalo scegliendo l'altro controller dalla lista."); return;
+  const now = performance.now(), lp = S.lastPress, from = k;
+  S.lastPress = { k: from, mask: fresh, t: now };
+  /* se Bluefy recapita lo stesso tasto a entrambi i Click, li tratto come un controller solo */
+  if (S.mirror) {
+    k = 'ck';
+    if (S.lastProc && S.lastProc.mask === fresh && now - S.lastProc.t < 100) return;
+  } else if (lp && lp.k !== from && lp.mask === fresh && now - lp.t < 100) {
+    if (++S.dupHits < 2) return;
+    S.mirror = true;
+    for (const fn of ['rear', 'front']) for (const sp of ['plus', 'minus']) if (cfg.keys[fn][sp] && cfg.keys[fn][sp].k === 'ck2') cfg.keys[fn][sp].k = 'ck';
+    saveCfg(); log('I due Click inviano gli stessi tasti: li uso come un controller solo');
+    note('I due Click risultano lo stesso controller: li uso come uno solo. Usa i tasti di un solo Click per pignoni e corone.');
+    return;
   }
-  const mp = cfg.map[k];
-  if (st.learn) {
-    const bit = (fresh & -fresh) >>> 0, L = st.learn;
-    if ([mp.rear.plus, mp.rear.minus, mp.front.plus, mp.front.minus].includes(bit)) { note('Quel tasto è già assegnato a un altro comando. Premine un altro.'); return; }
-    mp[L.fn][L.step] = bit;
+  S.lastProc = { mask: fresh, t: now };
+  if (S.learn) {
+    const bit = (fresh & -fresh) >>> 0, L = S.learn;
+    const used = ['rear', 'front'].some(fn => ['plus', 'minus'].some(sp => cfg.keys[fn][sp] && cfg.keys[fn][sp].k === k && cfg.keys[fn][sp].bit === bit));
+    if (used) { note('Quel tasto è già assegnato a un altro comando. Premine un altro.'); return; }
+    note('');
+    cfg.keys[L.fn][L.step] = { k, bit };
     if (L.step === 'plus') L.step = 'minus';
-    else { st.learn = null; saveCfg(); if (st.chain && L.fn === 'rear') setTimeout(() => startLearn(k, 'front', true), 0); else st.chain = false; log(NAMES[k] + ': tasti associati per ' + (L.fn === 'rear' ? 'i pignoni' : 'le corone') + ' (+ 0x' + mp[L.fn].plus.toString(16) + ', − 0x' + mp[L.fn].minus.toString(16) + ')'); }
-    learnNote(); return;
+    else {
+      S.learn = null; S.backup = null; saveCfg();
+      log('Tasti associati per ' + (L.fn === 'rear' ? 'i pignoni' : 'le corone') + ': + ' + keyTxt(cfg.keys[L.fn].plus) + ', − ' + keyTxt(cfg.keys[L.fn].minus));
+      if (L.chain && L.fn === 'rear') setTimeout(() => startLearn('front', true), 0);
+    }
+    refreshPad(); return;
   }
-  for (const fn of ['rear', 'front']) {
-    const m = mp[fn];
-    if (m.plus && (fresh & m.plus)) shift(fn, cfg.swap ? -1 : 1);
-    if (m.minus && (fresh & m.minus)) shift(fn, cfg.swap ? 1 : -1);
+  for (const fn of ['rear', 'front']) for (const sp of ['plus', 'minus']) {
+    const m = cfg.keys[fn][sp];
+    if (m && m.k === k && (fresh & m.bit)) shift(fn, (sp === 'plus' ? 1 : -1) * (cfg.swap ? -1 : 1));
   }
 }
 function onClick(dv, k) {
@@ -595,8 +608,8 @@ async function setupCk(d, k) {
   tx.addEventListener('characteristicvaluechanged', e => onClickSync(e.target.value, k));
   await as.startNotifications(); log(NAMES[k] + ': notifiche attive');
   try { await tx.startNotifications(); } catch (e) { log('Click: canale sync non attivato: ' + e.message); }
-  cancelLearnFor(k); S.ck[k].base = false; S.ck[k].prev = 0;
-  const mm = cfg.map[k]; if (!(mm.rear.plus || mm.rear.minus || mm.front.plus || mm.front.minus)) startLearn(k, 'rear', true);
+  S.ck[k].base = false; S.ck[k].prev = 0; S.mirror = false; S.dupHits = 0; S.lastPress = null; S.lastProc = null;
+  const kk = cfg.keys; if (!S.learn && !(kk.rear.plus || kk.rear.minus || kk.front.plus || kk.front.minus)) startLearn('rear', true);
   refreshPad();
   const hs = new Uint8Array([0x52, 0x69, 0x64, 0x65, 0x4f, 0x6e, 0x01, 0x02]);
   if (rx.writeValueWithoutResponse) await rx.writeValueWithoutResponse(hs); else await rx.writeValue(hs);
@@ -629,7 +642,7 @@ async function pick(k) {
     if (D[k] && D[k] !== d) { try { D[k].gatt.disconnect(); } catch (e) {} }
     D[k] = d; userOff[k] = false;
     d.addEventListener('gattserverdisconnected', () => onDisc(k, d));
-    log(NAMES[k] + ': scelto "' + (d.name || 'senza nome') + '"');
+    log(NAMES[k] + ': scelto "' + (d.name || 'senza nome') + '" id ' + String(d.id).slice(0, 8));
     await attach(k);
   } catch (e) {
     const et = errText(e);
@@ -787,7 +800,7 @@ $('#demo-btn').addEventListener('click', () => { S.demo.on = !S.demo.on; $('#dem
 $('#demo-p').addEventListener('input', e => { S.demo.p = Number(e.target.value); setT('#demo-p-v', S.demo.p + ' W'); });
 $('#demo-c').addEventListener('input', e => { S.demo.c = Number(e.target.value); setT('#demo-c-v', S.demo.c + ' rpm'); });
 
-try { for (const k of ['ck', 'ck2']) for (const fn of ['rear', 'front']) $('#learn-' + k + '-' + fn).addEventListener('click', () => startLearn(k, fn, false)); $('#learn-cancel').addEventListener('click', cancelLearn); } catch (e) { log('Associazione tasti non disponibile: ' + errText(e)); }
+try { for (const fn of ['rear', 'front']) $('#learn-' + fn).addEventListener('click', () => startLearn(fn, false)); $('#learn-cancel').addEventListener('click', () => cancelLearn(false)); } catch (e) { log('Associazione tasti non disponibile: ' + errText(e)); }
 for (const el of document.querySelectorAll('[data-cfg]')) {
   const k = el.dataset.cfg;
   if (el.type === 'checkbox') el.checked = !!cfg[k]; else el.value = cfg[k];
@@ -887,13 +900,14 @@ function drawProf() {
   g.fillStyle = COL.accent; g.beginPath(); g.arc(mx, Y(elev(S.pos)), 5 * d, 0, 7); g.fill();
 }
 let lastCharts = 0;
-function frame(t) { drawScene(); if (t - lastCharts > 500) { lastCharts = t; drawPwr(); drawProf(); } requestAnimationFrame(frame); }
+let frameErr = false;
+function frame(t) { try { drawScene(); if (t - lastCharts > 500) { lastCharts = t; drawPwr(); drawProf(); } } catch (e) { if (!frameErr) { frameErr = true; log('Errore di disegno: ' + errText(e)); } } requestAnimationFrame(frame); }
 requestAnimationFrame(frame);
 
 /* ---------- Avvio ---------- */
 (function () {
   let gain = 0, prev = elev(0); for (let s = 20; s <= LOOP; s += 20) { const e = elev(s); if (e > prev) gain += e - prev; prev = e; }
-  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5% · v8';
+  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5% · v9';
 })();
 if (!navigator.bluetooth) note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.');
 try { roleLabels(); } catch (e) { log('Etichette Click: ' + errText(e)); }
