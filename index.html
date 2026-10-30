@@ -112,7 +112,7 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
   <header class="top">
     <div class="brand">
       <h1>Rullo Virtuale</h1>
-      <span class="sub" id="route-sub">Anello collinare</span>
+      <span class="sub" id="route-sub">Anello collinare · v6</span>
     </div>
     <div class="chips" role="group" aria-label="Dispositivi Bluetooth">
       <button class="chip" id="chip-tr" data-k="tr"><i class="dot"></i><span><span class="nm">Rullo Van Rysel D100</span><small>Tocca per collegare</small></span></button>
@@ -242,6 +242,13 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
   </section>
 </div>
 
+<script>
+window.addEventListener('error', function (e) {
+  var n = document.getElementById('note'); if (!n) return;
+  n.hidden = false; n.style.borderColor = 'var(--bad)';
+  n.textContent = 'Errore nella pagina: ' + (e.message || 'sconosciuto') + (e.lineno ? ' (riga ' + e.lineno + ')' : '');
+});
+</script>
 <script>
 /*PURE*/
 const G = 9.81;
@@ -706,7 +713,7 @@ $('#demo-btn').addEventListener('click', () => { S.demo.on = !S.demo.on; $('#dem
 $('#demo-p').addEventListener('input', e => { S.demo.p = Number(e.target.value); setT('#demo-p-v', S.demo.p + ' W'); });
 $('#demo-c').addEventListener('input', e => { S.demo.c = Number(e.target.value); setT('#demo-c-v', S.demo.c + ' rpm'); });
 
-for (const k of ['ck', 'ck2']) for (const fn of ['rear', 'front']) $('#learn-' + k + '-' + fn).addEventListener('click', () => startLearn(k, fn));
+try { for (const k of ['ck', 'ck2']) for (const fn of ['rear', 'front']) $('#learn-' + k + '-' + fn).addEventListener('click', () => startLearn(k, fn)); } catch (e) { log('Associazione tasti non disponibile: ' + e.message); }
 for (const el of document.querySelectorAll('[data-cfg]')) {
   const k = el.dataset.cfg;
   if (el.type === 'checkbox') el.checked = !!cfg[k]; else el.value = cfg[k];
@@ -801,4 +808,22 @@ function drawProf() {
   g.fillText(Math.round(PROF.hi) + ' m', pl - 6 * d, Y(PROF.hi)); g.fillText(Math.round(PROF.lo) + ' m', pl - 6 * d, Y(PROF.lo));
   g.textBaseline = 'alphabetic'; g.textAlign = 'center';
   for (const km of [0, 5, 10, 15, 20]) g.fillText(km + ' km', Math.min(W - 14 * d, Math.max(pl + 8 * d, pl + iw * km / 20)), H - 5 * d);
-  const f = (((
+  const f = (((S.pos % LOOP) + LOOP) % LOOP) / LOOP, mx = pl + iw * f;
+  g.strokeStyle = COL.accent; g.lineWidth = 2 * d; g.beginPath(); g.moveTo(mx, pt); g.lineTo(mx, pt + ih); g.stroke();
+  g.fillStyle = COL.accent; g.beginPath(); g.arc(mx, Y(elev(S.pos)), 5 * d, 0, 7); g.fill();
+}
+let lastCharts = 0;
+function frame(t) { drawScene(); if (t - lastCharts > 500) { lastCharts = t; drawPwr(); drawProf(); } requestAnimationFrame(frame); }
+requestAnimationFrame(frame);
+
+/* ---------- Avvio ---------- */
+(function () {
+  let gain = 0, prev = elev(0); for (let s = 20; s <= LOOP; s += 20) { const e = elev(s); if (e > prev) gain += e - prev; prev = e; }
+  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5% · v6';
+})();
+if (!navigator.bluetooth) note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.');
+try { roleLabels(); } catch (e) { log('Etichette Click: ' + e.message); }
+gearUI(); hud();
+log('Pronto. Collega rullo, potenziometro e Click con i pulsanti in alto.');
+})();
+</script>
