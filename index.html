@@ -3,7 +3,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Saira+Condensed:wght@500;600;700&display=swap">
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Saira+Condensed:wght@500;600;700&display=swap">
 <style>
 /* Layout: scena laterale 2D in alto, strip di metriche da ciclocomputer, sotto pannelli di controllo.
    Palette: grafite viola scuro, accento rosa "maglia rosa", zone di potenza come colori semantici. */
@@ -125,7 +125,7 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
   <header class="top">
     <div class="brand">
       <h1>Rullo Virtuale</h1>
-      <span class="sub" id="route-sub">Anello collinare · v7</span>
+      <span class="sub" id="route-sub">Anello collinare · caricamento…</span>
     </div>
     <div class="chips" role="group" aria-label="Dispositivi Bluetooth">
       <button class="chip" id="chip-tr" data-k="tr"><i class="dot"></i><span><span class="nm">Rullo Van Rysel D100</span><small>Tocca per collegare</small></span></button>
@@ -269,12 +269,16 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
   </section>
 </div>
 
+<noscript><div style="position:fixed;left:0;right:0;top:0;z-index:99;padding:12px 16px;background:#c4362a;color:#fff;font:600 15px system-ui">JavaScript disattivato in questo browser: l'app non può funzionare.</div></noscript>
+<div id="errbar" hidden style="position:fixed;left:0;right:0;top:0;z-index:99;padding:12px 16px;background:#c4362a;color:#fff;font:600 14px/1.35 system-ui;white-space:pre-wrap"></div>
 <script>
-window.addEventListener('error', function (e) {
-  var n = document.getElementById('note'); if (!n) return;
-  n.hidden = false; n.style.borderColor = 'var(--bad)';
-  n.textContent = 'Errore nella pagina: ' + (e.message || 'sconosciuto') + (e.lineno ? ' (riga ' + e.lineno + ')' : '');
-});
+(function () {
+  function show(t) { var b = document.getElementById('errbar'); if (!b) return; b.hidden = false; b.textContent = t; }
+  window.__rvErr = [];
+  window.addEventListener('error', function (e) { var m = 'Errore nella pagina: ' + (e.message || 'sconosciuto') + (e.lineno ? ' (riga ' + e.lineno + ')' : ''); window.__rvErr.push(m); show(m); });
+  window.addEventListener('unhandledrejection', function (e) { var r = e.reason; show('Errore asincrono: ' + (r && (r.message || r.name) || String(r))); });
+  setTimeout(function () { if (!window.__rvOk) show('Lo script principale non è partito.' + (window.__rvErr.length ? '\n' + window.__rvErr.join('\n') : ' Nessun errore segnalato: ricarica la pagina.')); }, 4000);
+})();
 </script>
 <script>
 /*PURE*/
@@ -827,18 +831,4 @@ function drawScene() {
   g.fillStyle = sky; g.fillRect(0, 0, W, H);
   const pxm = W / 650, vex = 5, rx = W * 0.28, ry = H * 0.62, z0 = elev(S.pos);
   hills(g, W, H, S.pos * pxm * 0.12, COL.hill1, H * 0.46, H * 0.09, 0.005 / d);
-  hills(g, W, H, S.pos * pxm * 0.3, COL.hill2, H * 0.58, H * 0.07, 0.009 / d);
-  const pts = [];
-  g.beginPath(); g.moveTo(0, H);
-  for (let x = 0; x <= W; x += 6) { const s = S.pos + (x - rx) / pxm, y = ry - (elev(s) - z0) * pxm * vex; pts.push([x, y]); g.lineTo(x, y); }
-  g.lineTo(W, H); g.closePath(); g.fillStyle = COL.ground; g.fill();
-  g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y));
-  g.lineWidth = 7 * d; g.strokeStyle = COL.road; g.lineJoin = 'round'; g.stroke();
-  const step = 25, first = Math.ceil((S.pos - rx / pxm) / step) * step;
-  g.fillStyle = COL.mark;
-  for (let s = first; s < S.pos + (W - rx) / pxm; s += step) {
-    const x = rx + (s - S.pos) * pxm, y = ry - (elev(s) - z0) * pxm * vex, big = Math.round(s) % 100 === 0;
-    g.fillRect(x - d, y - (big ? 18 : 7) * d - 4 * d, 2 * d, (big ? 18 : 7) * d);
-  }
-  const slope = (elev(S.pos + 4) - elev(S.pos - 4)) / 8;
-  g.save(); g.translate(rx, ry - 4 * d); g.r
+  hills(g, W, H, S.pos * pxm * 0.3, COL.hill2, H * 0.58
