@@ -62,8 +62,8 @@ h1{font:600 30px/1 var(--f-num);letter-spacing:.02em;margin:0}
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
 .m{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:4px;align-content:start;min-width:0}
 .m label,.card h2{font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);margin:0}
-.val{display:flex;align-items:baseline;gap:6px;min-width:0}
-.val b{font:600 clamp(34px,4.4vw,56px)/1 var(--f-num);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.val{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;min-width:0}
+.val b{font:600 clamp(32px,4vw,52px)/1 var(--f-num);font-variant-numeric:tabular-nums;letter-spacing:.01em}
 .val u{text-decoration:none;color:var(--ink2);font-size:14px}
 .m small{color:var(--ink2);font-size:13px}
 .m-power{grid-column:span 2}
@@ -86,6 +86,19 @@ h1{font:600 30px/1 var(--f-num);letter-spacing:.02em;margin:0}
 .gblock .gbtn{width:40px;height:40px;font-size:26px;flex:none}
 .gbtn:disabled{opacity:.3;cursor:default}
 .nm{display:block}
+.pad{margin-top:12px;display:grid;gap:10px}
+.guide{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:15px}
+.guide.learn{border-color:var(--accent);background:var(--panel2)}
+.guide b{font:600 13px/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.guide span{flex:1;min-width:220px}
+.padrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.padcard{display:grid;gap:8px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);min-width:0}
+.padhead{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.padhead b{font:600 17px/1.2 var(--f-body)}
+.padhead small,.padmap{color:var(--ink2);font-size:14px}
+.padbtns{display:flex;flex-wrap:wrap;gap:8px}
+.padbtns .btn{flex:1;min-width:130px}
+.btn:disabled{opacity:.4;cursor:default}
 .dock{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-top:12px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:12px;align-content:start;min-width:0}
 .btn{min-height:44px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font:600 15px/1.2 var(--f-body);cursor:pointer;touch-action:manipulation}
@@ -112,7 +125,7 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
   <header class="top">
     <div class="brand">
       <h1>Rullo Virtuale</h1>
-      <span class="sub" id="route-sub">Anello collinare · v6</span>
+      <span class="sub" id="route-sub">Anello collinare · v7</span>
     </div>
     <div class="chips" role="group" aria-label="Dispositivi Bluetooth">
       <button class="chip" id="chip-tr" data-k="tr"><i class="dot"></i><span><span class="nm">Rullo Van Rysel D100</span><small>Tocca per collegare</small></span></button>
@@ -122,6 +135,23 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
     </div>
   </header>
   <p class="note" id="note" hidden></p>
+
+  <section class="pad" aria-label="Tasti dei controller">
+    <div class="guide" id="guide" aria-live="polite"><b id="guide-title">Controller</b><span id="guide-text">Collega un Zwift Click con i pulsanti qui sopra.</span><button class="btn" id="learn-cancel" hidden>Annulla</button></div>
+    <div class="padrow">
+      <div class="padcard">
+        <div class="padhead"><b>Click 1</b><small id="pad-ck-st">non collegato</small></div>
+        <div class="padmap" id="pad-ck-map">&nbsp;</div>
+        <div class="padbtns"><button class="btn" id="learn-ck-rear" disabled>Associa pignoni</button><button class="btn" id="learn-ck-front" disabled>Associa corone</button></div>
+      </div>
+      <div class="padcard">
+        <div class="padhead"><b>Click 2</b><small id="pad-ck2-st">non collegato</small></div>
+        <div class="padmap" id="pad-ck2-map">&nbsp;</div>
+        <div class="padbtns"><button class="btn" id="learn-ck2-rear" disabled>Associa pignoni</button><button class="btn" id="learn-ck2-front" disabled>Associa corone</button></div>
+      </div>
+    </div>
+  </section>
+
 
   <section class="stage" aria-label="Percorso">
     <canvas id="scene"></canvas>
@@ -232,10 +262,7 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
         </label>
         <label class="check"><input type="checkbox" data-cfg="swap" id="swap"><span>Inverti + e −</span></label>
         <label class="check"><input type="checkbox" data-cfg="all" id="all"><span>Mostra tutti i dispositivi nella ricerca</span></label>
-        <button class="btn" id="learn-ck-rear">Click 1 · associa i pignoni</button>
-        <button class="btn" id="learn-ck-front">Click 1 · associa le corone</button>
-        <button class="btn" id="learn-ck2-rear">Click 2 · associa i pignoni</button>
-        <button class="btn" id="learn-ck2-front">Click 2 · associa le corone</button>
+
       </div>
       <pre class="log" id="log" aria-live="off"></pre>
     </details>
@@ -359,9 +386,17 @@ function log(m) { LOG.push(new Date().toTimeString().slice(0, 8) + ' ' + m); if 
 setInterval(() => { if (logDirty) { const el = $('#log'); el.textContent = LOG.join('\n'); el.scrollTop = el.scrollHeight; logDirty = false; } }, 500);
 const hex = u => Array.from(u).map(b => b.toString(16).padStart(2, '0')).join(' ');
 function note(msg) { const n = $('#note'); n.textContent = msg || ''; n.hidden = !msg; }
+const errText = e => {
+  if (e == null) return 'errore sconosciuto';
+  if (typeof e === 'string') return e;
+  const n = e.name || '', m = e.message || '';
+  if (n || m) return n && m ? n + ': ' + m : n || m;
+  try { return JSON.stringify(e); } catch (x) { return String(e); }
+};
 
 /* ---------- Bluetooth ---------- */
-const U = { ftms: 0x1826, bike: 0x2ad2, cp: 0x2ad9, cps: 0x1818, meas: 0x2a63,
+const B = n => '0000' + n + '-0000-1000-8000-00805f9b34fb';
+const U = { ftms: B('1826'), bike: B('2ad2'), cp: B('2ad9'), cps: B('1818'), meas: B('2a63'),
   z1: '00000001-19ca-4651-86e5-fa29dcdd09d1', zRide: '0000fc82-0000-1000-8000-00805f9b34fb',
   zAsync: '00000002-19ca-4651-86e5-fa29dcdd09d1', zRx: '00000003-19ca-4651-86e5-fa29dcdd09d1', zTx: '00000004-19ca-4651-86e5-fa29dcdd09d1' };
 const NAMES = { tr: 'Rullo Van Rysel D100', pm: 'Potenziometro 4iiii', ck: 'Zwift Click 1', ck2: 'Zwift Click 2' };
@@ -372,6 +407,7 @@ let CP = null, cpChain = Promise.resolve();
 function chip(k, state, text) {
   const el = $('#chip-' + k); el.className = 'chip ' + state;
   el.querySelector('small').textContent = text;
+  try { refreshPad(); } catch (e) {}
 }
 function resetChips() { for (const k of ['tr', 'pm', 'ck', 'ck2']) chip(k, '', 'Tocca per collegare'); }
 const roleOf = k => (k === 'ck2' ? cfg.role2 : cfg.role1) === 'front' ? 'front' : 'rear';
@@ -380,7 +416,7 @@ function cpWrite(bytes) {
   const run = async () => {
     if (!CP) return;
     try { if (CP.writeValueWithResponse) await CP.writeValueWithResponse(bytes); else await CP.writeValue(bytes); }
-    catch (e) { log('Scrittura al rullo non riuscita: ' + e.message); }
+    catch (e) { log('Scrittura al rullo non riuscita: ' + errText(e)); }
   };
   cpChain = cpChain.then(run, run);
   return cpChain;
@@ -436,21 +472,48 @@ function handleClick(m, k) {
    Ogni controller può comandare i pignoni, le corone o entrambi: i tasti si associano una volta sola. */
 const FN = { rear: { plus: 'la marcia più dura (pignone più piccolo)', minus: 'la marcia più agile (pignone più grande)' },
              front: { plus: 'la corona più grande', minus: 'la corona più piccola' } };
-function learnNote() {
-  const parts = [];
-  for (const k of ['ck', 'ck2']) { const l = S.ck[k].learn; if (l) parts.push(NAMES[k] + ': premi il tasto per ' + FN[l.fn][l.step]); }
-  note(parts.join(' · '));
-}
-function startLearn(k, fn) {
+function learnNote() { refreshPad(); }
+function roleLabels() { refreshPad(); }
+function startLearn(k, fn, chain) {
   if (!(D[k] && D[k].gatt && D[k].gatt.connected)) { note('Collega prima ' + NAMES[k] + ', poi associa i tasti.'); return; }
-  cfg.map[k][fn] = { plus: 0, minus: 0 }; S.ck[k].learn = { fn, step: 'plus' }; S.ck[k].prev = 0; learnNote();
+  const st = S.ck[k];
+  st.backup = { fn, map: Object.assign({}, cfg.map[k][fn]) };
+  cfg.map[k][fn] = { plus: 0, minus: 0 };
+  st.learn = { fn, step: 'plus' }; st.chain = !!chain; note(''); refreshPad();
 }
-function roleLabels() {
+function cancelLearnFor(k) {
+  const st = S.ck[k];
+  if (st.learn && st.backup) cfg.map[k][st.backup.fn] = st.backup.map;
+  st.learn = null; st.chain = false;
+}
+function cancelLearn() { for (const k of ['ck', 'ck2']) cancelLearnFor(k); note(''); refreshPad(); }
+function refreshPad() {
+  let learning = null; const conn = [];
   for (const k of ['ck', 'ck2']) {
-    const m = cfg.map[k], p = [];
-    if (m.rear.plus || m.rear.minus) p.push('pignoni');
-    if (m.front.plus || m.front.minus) p.push('corone');
+    const on = $('#chip-' + k).classList.contains('on'), m = cfg.map[k], l = S.ck[k].learn;
+    const r = !!(m.rear.plus && m.rear.minus), f = !!(m.front.plus && m.front.minus), p = [];
+    if (r) p.push('pignoni'); if (f) p.push('corone');
     $('#chip-' + k + ' .nm').textContent = NAMES[k] + (p.length ? ' · ' + p.join(' e ') : '');
+    $('#pad-' + k + '-st').textContent = on ? 'collegato' : 'non collegato';
+    $('#pad-' + k + '-map').textContent = 'Pignoni: ' + (r ? 'associati' : 'da associare') + ' · Corone: ' + (f ? 'associate' : 'da associare');
+    for (const fn of ['rear', 'front']) $('#learn-' + k + '-' + fn).disabled = !on || !!l;
+    if (on) conn.push({ k, r, f });
+    if (l && !learning) learning = { k, l, chain: S.ck[k].chain };
+  }
+  const g = $('#guide'), title = $('#guide-title'), text = $('#guide-text');
+  g.classList.toggle('learn', !!learning); $('#learn-cancel').hidden = !learning;
+  if (learning) {
+    const { k, l, chain } = learning, n = (chain && l.fn === 'front' ? 2 : 0) + (l.step === 'plus' ? 1 : 2), tot = chain ? 4 : 2;
+    title.textContent = NAMES[k] + ' · passo ' + n + ' di ' + tot;
+    text.textContent = 'Premi sul controller il tasto che vuoi usare per ' + FN[l.fn][l.step] + '.' + (chain && l.fn === 'front' ? ' Non ti servono le corone? Tocca Annulla.' : '');
+  } else if (!conn.length) {
+    title.textContent = 'Controller';
+    text.textContent = "Collega un Zwift Click con i pulsanti qui sopra. Al primo collegamento ti guido passo passo nell'associazione dei tasti, che poi resta salvata.";
+  } else {
+    const todo = [];
+    for (const c of conn) { if (!c.r) todo.push(NAMES[c.k] + ': per cambiare pignone tocca «Associa pignoni»'); if (!c.f) todo.push(NAMES[c.k] + ': per cambiare corona tocca «Associa corone»'); }
+    title.textContent = 'Pronto';
+    text.textContent = todo.length ? todo.join('. ') + '.' : 'Tasti associati. Premili per cambiare marcia.';
   }
 }
 function handleRide(u, k) {
@@ -472,7 +535,7 @@ function handleRide(u, k) {
     if ([mp.rear.plus, mp.rear.minus, mp.front.plus, mp.front.minus].includes(bit)) { note('Quel tasto è già assegnato a un altro comando. Premine un altro.'); return; }
     mp[L.fn][L.step] = bit;
     if (L.step === 'plus') L.step = 'minus';
-    else { st.learn = null; saveCfg(); roleLabels(); log(NAMES[k] + ': tasti associati per ' + (L.fn === 'rear' ? 'i pignoni' : 'le corone') + ' (+ 0x' + mp[L.fn].plus.toString(16) + ', − 0x' + mp[L.fn].minus.toString(16) + ')'); }
+    else { st.learn = null; saveCfg(); if (st.chain && L.fn === 'rear') setTimeout(() => startLearn(k, 'front', true), 0); else st.chain = false; log(NAMES[k] + ': tasti associati per ' + (L.fn === 'rear' ? 'i pignoni' : 'le corone') + ' (+ 0x' + mp[L.fn].plus.toString(16) + ', − 0x' + mp[L.fn].minus.toString(16) + ')'); }
     learnNote(); return;
   }
   for (const fn of ['rear', 'front']) {
@@ -498,7 +561,7 @@ async function setupTr(d) {
   bike.addEventListener('characteristicvaluechanged', e => onBike(e.target.value)); await bike.startNotifications();
   CP = await svc.getCharacteristic(U.cp);
   CP.addEventListener('characteristicvaluechanged', e => onCp(e.target.value));
-  try { await CP.startNotifications(); } catch (e) { log('Indicazioni del rullo non attivate: ' + e.message); }
+  try { await CP.startNotifications(); } catch (e) { log('Indicazioni del rullo non attivate: ' + errText(e)); }
   await cpWrite(new Uint8Array([0x00])); await sleep(400); await cpWrite(new Uint8Array([0x07]));
   lastSentG = null; if (S.mode === 'erg') sendErg();
 }
@@ -521,9 +584,9 @@ async function setupCk(d, k) {
   tx.addEventListener('characteristicvaluechanged', e => onClickSync(e.target.value, k));
   await as.startNotifications(); log(NAMES[k] + ': notifiche attive');
   try { await tx.startNotifications(); } catch (e) { log('Click: canale sync non attivato: ' + e.message); }
-  S.ck[k].base = false; S.ck[k].prev = 0; S.ck[k].learn = null;
-  const mm = cfg.map[k]; if (!(mm.rear.plus || mm.rear.minus || mm.front.plus || mm.front.minus)) startLearn(k, 'rear');
-  roleLabels();
+  cancelLearnFor(k); S.ck[k].base = false; S.ck[k].prev = 0;
+  const mm = cfg.map[k]; if (!(mm.rear.plus || mm.rear.minus || mm.front.plus || mm.front.minus)) startLearn(k, 'rear', true);
+  refreshPad();
   const hs = new Uint8Array([0x52, 0x69, 0x64, 0x65, 0x4f, 0x6e, 0x01, 0x02]);
   if (rx.writeValueWithoutResponse) await rx.writeValueWithoutResponse(hs); else await rx.writeValue(hs);
   log(NAMES[k] + ': handshake RideOn inviato, ora premi un tasto');
@@ -541,7 +604,7 @@ async function attach(k) {
   try {
     await Promise.race([SETUP[k](D[k], k),new Promise((_, rej) => setTimeout(() => rej(new Error('nessuna risposta dopo 20 s')), 20000))]);
     chip(k, 'on', 'Collegato · tocca per scollegare'); log(NAMES[k] + ' collegato'); wake(); return true; }
-  catch (e) { chip(k, 'err', 'Errore: ' + e.message); log(NAMES[k] + ': ' + e.message); return false; }
+  catch (e) { chip(k, 'err', 'Errore: ' + errText(e)); log(NAMES[k] + ': ' + errText(e)); return false; }
 }
 async function pick(k) {
   if (!navigator.bluetooth) { note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.'); return; }
@@ -558,11 +621,11 @@ async function pick(k) {
     log(NAMES[k] + ': scelto "' + (d.name || 'senza nome') + '"');
     await attach(k);
   } catch (e) {
-    log(NAMES[k] + ': ricerca terminata con ' + e.name + ' · ' + e.message);
-    if (e.name === 'NotFoundError') { chip(k, 'err', 'Nessun dispositivo scelto · riprova'); return; }
-    chip(k, 'err', e.name === 'SecurityError' ? 'Bluetooth bloccato' : 'Errore: ' + e.message);
-    log(NAMES[k] + ': ' + e.name + ' ' + e.message);
-    if (e.name === 'SecurityError' || /permission/i.test(e.message)) note('Il browser blocca il Bluetooth in questa cornice. Apri il link direttamente in Bluefy, in una scheda a pagina intera.');
+    const et = errText(e);
+    log(NAMES[k] + ': ricerca terminata, ' + et);
+    if (e && e.name === 'NotFoundError') { chip(k, 'err', 'Nessun dispositivo scelto · riprova'); return; }
+    chip(k, 'err', e && e.name === 'SecurityError' ? 'Bluetooth bloccato' : 'Errore: ' + et);
+    if ((e && e.name === 'SecurityError') || /permission/i.test(et)) note('Il browser blocca il Bluetooth in questa cornice. Apri il link direttamente in Bluefy, in una scheda a pagina intera.');
   }
 }
 async function onDisc(k, d) {
@@ -713,7 +776,7 @@ $('#demo-btn').addEventListener('click', () => { S.demo.on = !S.demo.on; $('#dem
 $('#demo-p').addEventListener('input', e => { S.demo.p = Number(e.target.value); setT('#demo-p-v', S.demo.p + ' W'); });
 $('#demo-c').addEventListener('input', e => { S.demo.c = Number(e.target.value); setT('#demo-c-v', S.demo.c + ' rpm'); });
 
-try { for (const k of ['ck', 'ck2']) for (const fn of ['rear', 'front']) $('#learn-' + k + '-' + fn).addEventListener('click', () => startLearn(k, fn)); } catch (e) { log('Associazione tasti non disponibile: ' + e.message); }
+try { for (const k of ['ck', 'ck2']) for (const fn of ['rear', 'front']) $('#learn-' + k + '-' + fn).addEventListener('click', () => startLearn(k, fn, false)); $('#learn-cancel').addEventListener('click', cancelLearn); } catch (e) { log('Associazione tasti non disponibile: ' + errText(e)); }
 for (const el of document.querySelectorAll('[data-cfg]')) {
   const k = el.dataset.cfg;
   if (el.type === 'checkbox') el.checked = !!cfg[k]; else el.value = cfg[k];
@@ -778,52 +841,4 @@ function drawScene() {
     g.fillRect(x - d, y - (big ? 18 : 7) * d - 4 * d, 2 * d, (big ? 18 : 7) * d);
   }
   const slope = (elev(S.pos + 4) - elev(S.pos - 4)) / 8;
-  g.save(); g.translate(rx, ry - 4 * d); g.rotate(-Math.atan(slope * vex * 0.8)); drawRider(g, d, H); g.restore();
-}
-function drawPwr() {
-  const c = CV.pwr, d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
-  const pl = 40 * d, pr = 8 * d, pt = 10 * d, pb = 22 * d, iw = W - pl - pr, ih = H - pt - pb;
-  const mx = Math.max(300, Math.ceil(Math.max(...S.hist, cfg.ftp * 1.2) / 100) * 100);
-  g.font = (11 * d) + 'px Barlow, system-ui, sans-serif'; g.fillStyle = COL.ink2; g.textBaseline = 'middle'; g.textAlign = 'right';
-  for (const f of [0, 0.5, 1]) { const y = pt + ih * (1 - f); g.strokeStyle = COL.line; g.lineWidth = d; g.beginPath(); g.moveTo(pl, y); g.lineTo(W - pr, y); g.stroke(); g.fillText(String(Math.round(mx * f)), pl - 6 * d, y); }
-  const fy = pt + ih * (1 - cfg.ftp / mx); g.setLineDash([6 * d, 5 * d]); g.strokeStyle = COL.ink2; g.beginPath(); g.moveTo(pl, fy); g.lineTo(W - pr, fy); g.stroke(); g.setLineDash([]);
-  g.textAlign = 'left'; g.fillText('FTP', pl + 4 * d, fy - 8 * d);
-  g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.fillText('−5 min', pl + 24 * d, H - 5 * d); g.fillText('ora', W - pr - 10 * d, H - 5 * d);
-  const n = S.hist.length; if (n < 2) return;
-  const px = i => pl + iw * (300 - n + i) / 299, py = v => pt + ih * (1 - Math.min(v, mx) / mx);
-  g.beginPath(); g.moveTo(px(0), pt + ih); S.hist.forEach((v, i) => g.lineTo(px(i), py(v))); g.lineTo(px(n - 1), pt + ih); g.closePath();
-  g.globalAlpha = 0.22; g.fillStyle = COL.accent; g.fill(); g.globalAlpha = 1;
-  g.beginPath(); S.hist.forEach((v, i) => i ? g.lineTo(px(i), py(v)) : g.moveTo(px(i), py(v))); g.lineWidth = 2 * d; g.strokeStyle = COL.accent; g.lineJoin = 'round'; g.stroke();
-}
-let PROF = null;
-function drawProf() {
-  const c = CV.prof, d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
-  if (!PROF) { PROF = []; let lo = 1e9, hi = -1e9; for (let i = 0; i <= 200; i++) { const e = elev(i * LOOP / 200); PROF.push(e); lo = Math.min(lo, e); hi = Math.max(hi, e); } PROF.lo = lo; PROF.hi = hi; }
-  const pl = 40 * d, pr = 8 * d, pt = 10 * d, pb = 22 * d, iw = W - pl - pr, ih = H - pt - pb, span = (PROF.hi - PROF.lo) || 1;
-  const X = i => pl + iw * i / 200, Y = e => pt + ih * (1 - (e - PROF.lo) / span);
-  g.beginPath(); g.moveTo(X(0), pt + ih); PROF.forEach((e, i) => g.lineTo(X(i), Y(e))); g.lineTo(X(200), pt + ih); g.closePath();
-  g.globalAlpha = 0.5; g.fillStyle = COL.ground; g.fill(); g.globalAlpha = 1;
-  g.beginPath(); PROF.forEach((e, i) => i ? g.lineTo(X(i), Y(e)) : g.moveTo(X(i), Y(e))); g.lineWidth = 2 * d; g.strokeStyle = COL.ink; g.stroke();
-  g.font = (11 * d) + 'px Barlow, system-ui, sans-serif'; g.fillStyle = COL.ink2; g.textAlign = 'right'; g.textBaseline = 'middle';
-  g.fillText(Math.round(PROF.hi) + ' m', pl - 6 * d, Y(PROF.hi)); g.fillText(Math.round(PROF.lo) + ' m', pl - 6 * d, Y(PROF.lo));
-  g.textBaseline = 'alphabetic'; g.textAlign = 'center';
-  for (const km of [0, 5, 10, 15, 20]) g.fillText(km + ' km', Math.min(W - 14 * d, Math.max(pl + 8 * d, pl + iw * km / 20)), H - 5 * d);
-  const f = (((S.pos % LOOP) + LOOP) % LOOP) / LOOP, mx = pl + iw * f;
-  g.strokeStyle = COL.accent; g.lineWidth = 2 * d; g.beginPath(); g.moveTo(mx, pt); g.lineTo(mx, pt + ih); g.stroke();
-  g.fillStyle = COL.accent; g.beginPath(); g.arc(mx, Y(elev(S.pos)), 5 * d, 0, 7); g.fill();
-}
-let lastCharts = 0;
-function frame(t) { drawScene(); if (t - lastCharts > 500) { lastCharts = t; drawPwr(); drawProf(); } requestAnimationFrame(frame); }
-requestAnimationFrame(frame);
-
-/* ---------- Avvio ---------- */
-(function () {
-  let gain = 0, prev = elev(0); for (let s = 20; s <= LOOP; s += 20) { const e = elev(s); if (e > prev) gain += e - prev; prev = e; }
-  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5% · v6';
-})();
-if (!navigator.bluetooth) note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.');
-try { roleLabels(); } catch (e) { log('Etichette Click: ' + e.message); }
-gearUI(); hud();
-log('Pronto. Collega rullo, potenziometro e Click con i pulsanti in alto.');
-})();
-</script>
+  g.save(); g.translate(rx, ry - 4 * d); g.r
