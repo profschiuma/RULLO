@@ -441,16 +441,24 @@ function onCp(dv) {
     if (res === 5 && performance.now() - lastReq > 3000) { lastReq = performance.now(); cpWrite(new Uint8Array([0x00])); }
   }
 }
+const CNT = { tr: 0, pm: 0 }, LASTV = { tr: '', pm: '' };
+function rawLog(k, dv) {
+  CNT[k]++;
+  if (CNT[k] <= 6 || CNT[k] % 40 === 0) log((k === 'tr' ? 'Rullo' : '4iiii') + ' dato #' + CNT[k] + ': ' + hex(new Uint8Array(dv.buffer, dv.byteOffset, Math.min(dv.byteLength, 24))));
+}
 function onBike(dv) {
   try {
+    rawLog('tr', dv);
     const d = parseIndoorBike(dv), L = S.live.tr; L.t = performance.now();
     if (d.power != null) L.p = Math.max(0, d.power);
     if (d.cad != null) { L.cad = d.cad; L.hasCad = true; }
     if (d.speed != null) L.v = d.speed;
-  } catch (e) {}
+    LASTV.tr = (d.power != null ? d.power + ' W ' : '') + (d.cad != null ? Math.round(d.cad) + ' rpm ' : '') + (d.speed != null ? d.speed.toFixed(1) + ' km/h' : '');
+  } catch (e) { log('Rullo: dato non leggibile: ' + errText(e)); }
 }
 function onPower(dv) {
   try {
+    rawLog('pm', dv);
     const d = parsePower(dv), L = S.live.pm, now = performance.now();
     L.t = now; L.p = Math.max(0, d.p);
     if (d.crank) {
@@ -461,8 +469,10 @@ function onPower(dv) {
       } else L.crankT = now;
       L.prev = d.crank;
     }
-  } catch (e) {}
+    LASTV.pm = d.p + ' W' + (d.crank ? ' · ' + Math.round(L.cad) + ' rpm' : '');
+  } catch (e) { log('4iiii: dato non leggibile: ' + errText(e)); }
 }
+setInterval(() => { for (const k of ['tr', 'pm']) { const el = $('#chip-' + k); if (el.classList.contains('on')) el.querySelector('small').textContent = CNT[k] ? 'Dati: ' + LASTV[k] + ' (#' + CNT[k] + ')' : 'Collegato · nessun dato ricevuto'; } }, 1000);
 /* kind: 'rear' = pignoni, 'front' = corone; dir: +1 più duro, -1 più agile */
 function shift(kind, dir) {
   if (S.mode === 'erg') { S.ergW = clamp(S.ergW + dir * (kind === 'front' ? 50 : 10), 50, 600); $('#erg-w').value = S.ergW; sendErg(); }
@@ -580,9 +590,11 @@ function onClickSync(dv, k) {
 }
 
 async function setupTr(d) {
+  CNT.tr = 0; LASTV.tr = '';
   const srv = await d.gatt.connect(); const svc = await srv.getPrimaryService(U.ftms);
   const bike = await svc.getCharacteristic(U.bike);
   bike.addEventListener('characteristicvaluechanged', e => onBike(e.target.value)); await bike.startNotifications();
+  log('Rullo: notifiche dei dati attive'); setTimeout(() => { if (!CNT.tr && D.tr) log('Rullo: nessun dato dopo 8 s. Pedala o gira la ruota: molti rulli trasmettono solo in movimento'); }, 8000);
   CP = await svc.getCharacteristic(U.cp);
   CP.addEventListener('characteristicvaluechanged', e => onCp(e.target.value));
   try { await CP.startNotifications(); } catch (e) { log('Indicazioni del rullo non attivate: ' + errText(e)); }
@@ -590,9 +602,11 @@ async function setupTr(d) {
   lastSentG = null; if (S.mode === 'erg') sendErg();
 }
 async function setupPm(d) {
+  CNT.pm = 0; LASTV.pm = '';
   const srv = await d.gatt.connect(); const svc = await srv.getPrimaryService(U.cps);
   const ch = await svc.getCharacteristic(U.meas);
   ch.addEventListener('characteristicvaluechanged', e => onPower(e.target.value)); await ch.startNotifications();
+  log('4iiii: notifiche della potenza attive'); setTimeout(() => { if (!CNT.pm && D.pm) log('4iiii: nessun dato dopo 8 s. Fai girare le pedivelle: il potenziometro si sveglia solo pedalando'); }, 8000);
   S.live.pm.prev = null;
 }
 async function setupCk(d, k) {
@@ -907,7 +921,7 @@ requestAnimationFrame(frame);
 /* ---------- Avvio ---------- */
 (function () {
   let gain = 0, prev = elev(0); for (let s = 20; s <= LOOP; s += 20) { const e = elev(s); if (e > prev) gain += e - prev; prev = e; }
-  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5% · v9';
+  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5% · v10';
 })();
 if (!navigator.bluetooth) note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.');
 try { roleLabels(); } catch (e) { log('Etichette Click: ' + errText(e)); }
