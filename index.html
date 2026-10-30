@@ -238,6 +238,8 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
         </label>
         <label class="check"><input type="checkbox" data-cfg="swap" id="swap"><span>Inverti + e −</span></label>
         <label class="check"><input type="checkbox" data-cfg="all" id="all"><span>Mostra tutti i dispositivi nella ricerca</span></label>
+        <button class="btn" id="learn-ck">Associa i tasti del Click 1</button>
+        <button class="btn" id="learn-ck2">Associa i tasti del Click 2</button>
       </div>
       <pre class="log" id="log" aria-live="off"></pre>
     </details>
@@ -326,6 +328,9 @@ const DEF = { mass: 75, bike: 9, cda: 0.32, crr: 0.004, rho: 1.2, eff: 0.975, ft
   powerSrc: 'auto', pressedVal: '0', swap: false, all: false };
 const cfg = Object.assign({}, DEF);
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('rv-cfg2') || '{}')); } catch (e) {}
+/* maschere dei tasti + e − di ogni Click, imparate al primo collegamento */
+cfg.map = (cfg.map && typeof cfg.map === 'object') ? cfg.map : {};
+for (const k of ['ck', 'ck2']) cfg.map[k] = Object.assign({ plus: 0, minus: 0 }, cfg.map[k]);
 function saveCfg() { try { localStorage.setItem('rv-cfg2', JSON.stringify(cfg)); } catch (e) {} }
 const teeth = s => String(s).split(/[,\s;\/-]+/).map(Number).filter(x => isFinite(x) && x >= 8 && x <= 80);
 /* pignoni dal più grande (marcia più agile) al più piccolo, corone dalla più piccola alla più grande */
@@ -422,9 +427,39 @@ function handleClick(m, k) {
   for (const f of [1, 2]) if (now[f] && !st.st[f]) { let dir = f === 1 ? 1 : -1; if (cfg.swap) dir = -dir; shift(roleOf(k), dir); }
   st.st = now;
 }
+/* Click di nuova generazione: messaggio 0x23, campo 1 = mappa dei tasti con logica invertita (bit a 0 = premuto) */
+function learnNote() {
+  const parts = [];
+  for (const k of ['ck', 'ck2']) { const l = S.ck[k].learn; if (l) parts.push(NAMES[k] + ': premi il tasto ' + (l === 'plus' ? '+ (marcia più dura)' : '− (marcia più agile)')); }
+  note(parts.join(' · '));
+}
+function startLearn(k) {
+  if (!(D[k] && D[k].gatt && D[k].gatt.connected)) { note('Collega prima ' + NAMES[k] + ', poi associa i tasti.'); return; }
+  cfg.map[k] = { plus: 0, minus: 0 }; S.ck[k].learn = 'plus'; S.ck[k].prev = 0; learnNote();
+}
+function handleRide(u, k) {
+  const pb = pbParse(u.subarray(1));
+  if (typeof pb[1] !== 'number') return;
+  const st = S.ck[k], pressed = (~(pb[1] >>> 0)) >>> 0, fresh = (pressed & ~(st.prev || 0)) >>> 0;
+  st.prev = pressed;
+  if (!st.base) { st.base = true; return; }
+  if (!fresh) return;
+  log(NAMES[k] + ': premuto 0x' + fresh.toString(16) + ' (' + hex(u) + ')');
+  const m = cfg.map[k];
+  if (st.learn) {
+    const bit = (fresh & -fresh) >>> 0;
+    if (st.learn === 'minus' && bit === m.plus) return;
+    m[st.learn] = bit; st.learn = st.learn === 'plus' ? 'minus' : null;
+    if (!st.learn) { saveCfg(); log(NAMES[k] + ': tasti associati (+ 0x' + m.plus.toString(16) + ', − 0x' + m.minus.toString(16) + ')'); }
+    learnNote(); return;
+  }
+  if (m.plus && (fresh & m.plus)) shift(roleOf(k), cfg.swap ? -1 : 1);
+  if (m.minus && (fresh & m.minus)) shift(roleOf(k), cfg.swap ? 1 : -1);
+}
 function onClick(dv, k) {
   const u = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
-  if (u[0] === 0x37) { log(NAMES[k] + ': ' + hex(u)); handleClick(pbParse(u.subarray(1)), k); }
+  if (u[0] === 0x23) handleRide(u, k);
+  else if (u[0] === 0x37) { log(NAMES[k] + ': ' + hex(u)); handleClick(pbParse(u.subarray(1)), k); }
   else if (u[0] !== 0x15 && u[0] !== 0x19) log(NAMES[k] + ', messaggio 0x' + u[0].toString(16) + ': ' + hex(u.subarray(0, 24)));
 }
 function onClickSync(dv, k) {
@@ -461,7 +496,8 @@ async function setupCk(d, k) {
   tx.addEventListener('characteristicvaluechanged', e => onClickSync(e.target.value, k));
   await as.startNotifications(); log(NAMES[k] + ': notifiche attive');
   try { await tx.startNotifications(); } catch (e) { log('Click: canale sync non attivato: ' + e.message); }
-  S.ck[k].base = false;
+  S.ck[k].base = false; S.ck[k].prev = 0; S.ck[k].learn = null;
+  if (!(cfg.map[k].plus && cfg.map[k].minus)) startLearn(k);
   const hs = new Uint8Array([0x52, 0x69, 0x64, 0x65, 0x4f, 0x6e, 0x01, 0x02]);
   if (rx.writeValueWithoutResponse) await rx.writeValueWithoutResponse(hs); else await rx.writeValue(hs);
   log(NAMES[k] + ': handshake RideOn inviato, ora premi un tasto');
@@ -651,6 +687,8 @@ $('#demo-btn').addEventListener('click', () => { S.demo.on = !S.demo.on; $('#dem
 $('#demo-p').addEventListener('input', e => { S.demo.p = Number(e.target.value); setT('#demo-p-v', S.demo.p + ' W'); });
 $('#demo-c').addEventListener('input', e => { S.demo.c = Number(e.target.value); setT('#demo-c-v', S.demo.c + ' rpm'); });
 
+$('#learn-ck').addEventListener('click', () => startLearn('ck'));
+$('#learn-ck2').addEventListener('click', () => startLearn('ck2'));
 for (const el of document.querySelectorAll('[data-cfg]')) {
   const k = el.dataset.cfg;
   if (el.type === 'checkbox') el.checked = !!cfg[k]; else el.value = cfg[k];
