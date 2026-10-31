@@ -354,6 +354,9 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
         <label class="field">Sorgente potenza
           <select data-cfg="powerSrc"><option value="auto">Automatica (4iiii se presente)</option><option value="pm">Solo 4iiii</option><option value="trainer">Solo rullo D100</option></select>
         </label>
+        <label class="field">Apertura del Click (prova)
+          <select data-cfg="hs"><option value="qz">Come QZ: tutte le notifiche + RideOn</option><option value="old">Precedente: RideOn 01 02</option></select>
+        </label>
       </div>
       <p class="hint">Corone e pignoni vanno scritti come numeri di denti separati da virgola, in qualsiasi ordine (per esempio 50,34). La corona fisica e il Cog sul rullo servono a calcolare quanto una marcia virtuale è più dura o più agile della marcia fisica del rullo. Il rullo usa una sua massa interna: se le salite sembrano troppo dolci o troppo dure, regola il peso.</p>
     </details>
@@ -365,7 +368,6 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
           <select data-cfg="pressedVal"><option value="0">0</option><option value="1">1</option></select>
         </label>
         <label class="check"><input type="checkbox" data-cfg="swap" id="swap"><span>Inverti + e −</span></label>
-        <label class="check"><input type="checkbox" data-cfg="keepAlive" id="keepalive"><span>Tieni sveglio il Click (sperimentale)</span></label>
         <label class="check"><input type="checkbox" data-cfg="all" id="all"><span>Mostra tutti i dispositivi nella ricerca</span></label>
 
       </div>
@@ -478,7 +480,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 /* ---------- Impostazioni ---------- */
 const DEF = { mass: 75, bike: 9, cda: 0.32, crr: 0.004, rho: 1.2, eff: 0.975, ftp: 200, rings: '50,34',
   cassette: '11,13,15,17,19,21,23,25,27,30,34', role1: 'rear', role2: 'front', circ: 2.105, maxGrade: 6, physChain: 50, physCog: 14,
-  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false };
+  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false, hs: 'qz' };
 const cfg = Object.assign({}, DEF);
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('rv-cfg2') || '{}')); } catch (e) {}
 /* maschere dei tasti + e − di ogni Click, imparate al primo collegamento */
@@ -702,6 +704,7 @@ function onClick(dv, k) {
 }
 function onClickSync(dv, k) {
   const u = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
+  if (!u.length) return;
   log(NAMES[k] + ', risposta sincrona: ' + hex(u.subarray(0, 24)));
 }
 
@@ -739,13 +742,25 @@ async function setupCk(d, k) {
   tx.addEventListener('characteristicvaluechanged', e => { if (g === GEN[k]) onClickSync(e.target.value, k); });
   await as.startNotifications(); log(NAMES[k] + ': notifiche attive');
   try { await tx.startNotifications(); } catch (e) { log('Click: canale sync non attivato: ' + e.message); }
+  if (cfg.hs === 'qz') {
+    /* come QZ: ci si abbona a ogni caratteristica con notifiche o indicazioni, anche a quelle sconosciute */
+    try {
+      const cnt = {};
+      for (const c of await svc.getCharacteristics()) {
+        if (c.uuid === as.uuid || c.uuid === tx.uuid || !(c.properties.notify || c.properties.indicate)) continue;
+        const nm = c.uuid.slice(0, 8);
+        c.addEventListener('characteristicvaluechanged', e => { if (g !== GEN[k]) return; const n = cnt[nm] = (cnt[nm] || 0) + 1; if (n <= 4 || n % 25 === 0) { const u = new Uint8Array(e.target.value.buffer, e.target.value.byteOffset, e.target.value.byteLength); log(NAMES[k] + ', canale ' + nm + ' (#' + n + '): ' + hex(u.subarray(0, 24))); } });
+        try { await c.startNotifications(); log(NAMES[k] + ': abbonato anche a ' + nm); } catch (e) { log(NAMES[k] + ': canale ' + nm + ' non attivato: ' + errText(e)); }
+      }
+    } catch (e) { log(NAMES[k] + ': altri canali non letti: ' + errText(e)); }
+  }
   S.ck[k].base = false; S.ck[k].prev = 0; S.mirror = false; S.dupHits = 0; S.lastPress = null; S.lastProc = null;
   const kk = cfg.keys; if (!S.learn && !(kk.rear.plus || kk.rear.minus || kk.front.plus || kk.front.minus)) startLearn('rear', true);
   refreshPad();
-  const hs = new Uint8Array([0x52, 0x69, 0x64, 0x65, 0x4f, 0x6e, 0x01, 0x02]);
+  const hs = new Uint8Array(cfg.hs === 'qz' ? [0x52, 0x69, 0x64, 0x65, 0x4f, 0x6e] : [0x52, 0x69, 0x64, 0x65, 0x4f, 0x6e, 0x01, 0x02]);
   S.ck[k].rx = rx; S.ck[k].hs = hs; S.ck[k].t0 = performance.now(); S.ck[k].lastMsg = S.ck[k].t0; S.ck[k].lastPress = 0;
   if (rx.writeValueWithoutResponse) await rx.writeValueWithoutResponse(hs); else await rx.writeValue(hs);
-  log(NAMES[k] + ': handshake RideOn inviato, ora premi un tasto');
+  log(NAMES[k] + ': handshake RideOn inviato (' + (cfg.hs === 'qz' ? 'come QZ' : 'con 01 02') + '), ora premi un tasto');
 }
 const SETUP = { tr: setupTr, pm: setupPm, ck: setupCk, ck2: setupCk, hr: setupHr };
 
@@ -759,7 +774,8 @@ function reqOpts(k) {
 async function attach(k, quiet) {
   if (!quiet) chip(k, 'busy', 'Connessione in corso');
   try {
-    await Promise.race([SETUP[k](D[k], k),new Promise((_, rej) => setTimeout(() => rej(new Error('nessuna risposta dopo 20 s')), 20000))]);
+    const waitWake = quiet && (k === 'ck' || k === 'ck2'); /* il Click a riposo: un solo tentativo che resta in attesa, si collega appena si sveglia */
+    await (waitWake ? SETUP[k](D[k], k) : Promise.race([SETUP[k](D[k], k), new Promise((_, rej) => setTimeout(() => rej(new Error('nessuna risposta dopo 20 s')), 20000))]));
     chip(k, 'on', 'Collegato · tocca per scollegare'); log(NAMES[k] + ' collegato'); wake(); return true; }
   catch (e) { if (!quiet) chip(k, 'err', 'Errore: ' + errText(e)); log(NAMES[k] + (quiet ? ': ricollegamento in attesa, ' : ': ') + errText(e)); return false; }
 }
@@ -797,7 +813,7 @@ async function onDisc(k, d) {
   log(NAMES[k] + ' scollegato' + (isCk ? " (il Click va a riposo da solo), lo riconnetto appena si sveglia" : ', provo a ricollegare'));
   for (let i = 1; !userOff[k] && D[k] === d; i++) {
     chip(k, 'busy', isCk ? 'A riposo · premi un tasto per riattivarlo' : 'Riconnessione ' + i);
-    await sleep(Math.min(2000 + 1000 * i, 8000));
+    await sleep(isCk ? 600 : Math.min(2000 + 1000 * i, 8000));
     if (D[k] !== d || userOff[k]) return;
     if (await attach(k, true)) return;
   }
@@ -1505,7 +1521,7 @@ function wkBindings() {
   sk.addEventListener('input', () => { const W = S.wk; if (!W) return; W.seek = true; W.t = Number(sk.value); });
   sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
   $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
-  const logText = () => 'Rullo virtuale v15 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  const logText = () => 'Rullo virtuale v18 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
   $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
   $('#log-share').addEventListener('click', async () => {
     const t = logText();
@@ -1516,16 +1532,17 @@ function wkBindings() {
   $('#rep-btn').addEventListener('click', () => { const ride = buildRide(); if (ride) openOvl('report', { ride, saved: false }); else note('Pedala ancora un po\': il report parte da 20 secondi di dati.'); });
 }
 
-/* ---------- Tieni sveglio il Click (sperimentale) ---------- */
-let kaN = 0;
-setInterval(async () => {
-  if (!cfg.keepAlive) return;
+/* ---------- Conto alla rovescia del sonno del Click ----------
+   Il Click si scollega da solo 60 s dopo l'ultimo tasto (i segnali inviati dall'app non contano: provato). */
+setInterval(() => {
   for (const k of ['ck', 'ck2']) {
-    const st = S.ck[k]; if (!clickOn(k) || !st.rx) continue;
-    try { if (st.rx.writeValueWithoutResponse) await st.rx.writeValueWithoutResponse(st.hs); else await st.rx.writeValue(st.hs); if (++kaN <= 3 || kaN % 15 === 0) log(NAMES[k] + ': segnale per tenerlo sveglio inviato (#' + kaN + ')'); }
-    catch (e) { log(NAMES[k] + ': segnale non inviato: ' + errText(e)); }
+    const st = S.ck[k]; if (!clickOn(k) || !st.lastMsg) continue;
+    const el = $('#chip-' + k + ' small'); if (!el) continue;
+    const rem = Math.ceil(60 - (performance.now() - st.lastMsg) / 1000);
+    if (rem <= 20 && rem > 0) el.textContent = 'Si addormenta tra ' + rem + ' s · premi un tasto';
+    else if (/^Si addormenta/.test(el.textContent)) el.textContent = 'Collegato · tocca per scollegare';
   }
-}, 20000);
+}, 1000);
 
 /* ---------- Altimetria nella scena ---------- */
 function drawInset() {
@@ -1572,7 +1589,7 @@ wkBindings(); loadWk();
 /* ---------- Avvio ---------- */
 (function () {
   let gain = 0, prev = elev(0); for (let s = 20; s <= LOOP; s += 20) { const e = elev(s); if (e > prev) gain += e - prev; prev = e; }
-  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5% · v15';
+  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5% · v18';
 })();
 if (!navigator.bluetooth) note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.');
 try { roleLabels(); } catch (e) { log('Etichette Click: ' + errText(e)); }
