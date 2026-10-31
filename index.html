@@ -119,6 +119,86 @@ summary{cursor:pointer;font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text
 details[open] summary{margin-bottom:12px}
 pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;background:var(--panel2);font:12px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all}
 .wide{grid-column:1/-1}
+
+#inset{position:absolute;left:12px;bottom:12px;width:clamp(150px,24%,260px);height:92px;border-radius:10px;border:1px solid var(--line);pointer-events:none}
+@media (max-width:620px){#inset{display:none}}
+.wk{padding:14px;display:grid;gap:12px}
+.wk-top{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;justify-content:space-between}
+.wk-top b{font:600 22px/1.2 var(--f-num);letter-spacing:.02em}
+.wk-top span{color:var(--ink2);font-size:14px;font-variant-numeric:tabular-nums}
+.wk-state{font:600 13px/1.3 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.wk-main{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.wk-box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel2);display:grid;gap:6px;align-content:start}
+.wk-box small{color:var(--ink2);font-size:13px}
+.wk-big{display:flex;align-items:baseline;gap:6px}
+.wk-big b{font:600 clamp(48px,7vw,84px)/1 var(--f-num);font-variant-numeric:tabular-nums}
+.wk-big u{text-decoration:none;color:var(--ink2);font-size:16px}
+.wk-cd{font:600 clamp(40px,6vw,64px)/1 var(--f-num);font-variant-numeric:tabular-nums}
+.wk-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.wk-bar i{display:block;height:100%;width:0}
+#wk-now{font:600 17px/1.3 var(--f-body)}
+#wk-now.ok{color:var(--ok)}#wk-now.warn{color:var(--warn)}#wk-now.bad{color:var(--bad)}
+#wk-next{font-size:15px}
+.wk-msg{padding:10px 14px;border-radius:10px;background:var(--accent);color:var(--accent-ink);font:600 17px/1.35 var(--f-body)}
+#wk-prof{display:block;width:100%;height:150px;border-radius:8px;background:var(--panel2)}
+.wk-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.wk-ctl .btn{flex:1;min-width:110px}
+.wk-int{display:flex;align-items:center;gap:6px;flex:2;min-width:220px}
+.wk-int b{flex:1;text-align:center;font:600 22px/1 var(--f-num)}
+.wk-int .gbtn{width:48px;height:48px;font-size:26px}
+.ovl{position:fixed;inset:0;z-index:60;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}
+.ovl-in{max-width:1180px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left,0px)) 60px;display:grid;gap:14px}
+.ovl-top{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.ovl-top h2,.ovl-h2{margin:0;font:600 24px/1.2 var(--f-num);letter-spacing:.02em;text-transform:none;color:var(--ink)}
+.ovl-h2{margin-top:6px}
+.ovl-btns{display:flex;flex-wrap:wrap;gap:8px}
+.wk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.wk-card{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:12px;display:grid;gap:8px;align-content:start;min-width:0}
+.wk-cardhead{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.wk-cardhead b{font:600 17px/1.25 var(--f-body)}
+.heart{border:0;background:transparent;color:var(--ink2);font-size:26px;line-height:1;min-width:44px;min-height:44px;cursor:pointer}
+.heart.on{color:var(--z6)}
+.wk-thumb{display:block;width:100%;height:72px;border-radius:6px;background:var(--panel2)}
+.wk-meta{display:flex;gap:14px;color:var(--ink2);font-size:14px;font-variant-numeric:tabular-nums}
+.wk-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.wk-actions .btn{padding:8px 4px;min-height:44px;font-size:14px}
+.hist{display:grid;gap:6px}
+.hist-row{display:grid;grid-template-columns:2fr 1.4fr .8fr .8fr .8fr;gap:8px;align-items:center;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font:400 14px/1.3 var(--f-body);cursor:pointer;min-height:44px}
+.hist-row b{font-weight:600}
+@media (max-width:620px){.hist-row{grid-template-columns:1fr 1fr}}
+.ed-stats{color:var(--ink2);font-size:15px}
+.ed-prev,.rep-chart{display:block;width:100%;height:150px;border-radius:8px;background:var(--panel)}
+.rep-chart{height:190px}
+.pal{display:flex;flex-wrap:wrap;gap:8px}
+.zbtn{min-width:56px;min-height:48px;border:0;border-radius:10px;color:#fff;font:700 17px/1 var(--f-num);cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.brows{display:grid;gap:8px}
+.brow{border:1px solid var(--line);border-left:6px solid var(--zc,var(--line));border-radius:10px;background:var(--panel);padding:8px 12px 12px}
+.brow.sel{outline:2px solid var(--accent);outline-offset:1px}
+.bhead{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px;cursor:pointer}
+.bbtn{display:flex;gap:6px}
+.ibtn{width:44px;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--ink);font-size:18px;cursor:pointer}
+.bfields{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.ef{display:grid;gap:3px;font-size:12px;color:var(--ink2)}
+.ef.wide{grid-column:1/-1}
+.ef .two{display:flex;align-items:center;gap:4px}
+.ef .two input{text-align:center;padding:8px 4px}
+.ef .two i{font-style:normal;color:var(--ink2)}
+textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font:400 15px/1.4 var(--f-body);resize:vertical}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.rs{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:10px 12px;display:grid;gap:2px}
+.rs small{color:var(--ink2);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.rs b{font:600 28px/1.1 var(--f-num);font-variant-numeric:tabular-nums}
+.rs u{text-decoration:none;color:var(--ink2);font-size:13px}
+.est{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--accent);border-radius:10px;background:var(--panel2)}
+.est b{font:600 20px/1.2 var(--f-num)}
+.zones{display:grid;gap:6px}
+.zr{display:grid;grid-template-columns:130px 1fr 110px;gap:10px;align-items:center;font-size:14px}
+.zr i{display:block;height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.zr em{display:block;height:100%}
+.seg-table{display:grid;gap:2px;font-variant-numeric:tabular-nums}
+.sr{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:8px;padding:8px 10px;border-left:6px solid var(--zc,transparent);background:var(--panel);border-radius:6px;font-size:14px}
+.sr.sh{border-left-color:transparent;background:transparent;color:var(--ink2);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.sr .ok{color:var(--ok)}.sr .warn{color:var(--warn)}.sr .bad{color:var(--bad)}
 </style>
 
 <div class="app">
@@ -132,6 +212,7 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
       <button class="chip" id="chip-pm" data-k="pm"><i class="dot"></i><span><span class="nm">Potenziometro 4iiii</span><small>Tocca per collegare</small></span></button>
       <button class="chip" id="chip-ck" data-k="ck"><i class="dot"></i><span><span class="nm">Zwift Click 1</span><small>Tocca per collegare</small></span></button>
       <button class="chip" id="chip-ck2" data-k="ck2"><i class="dot"></i><span><span class="nm">Zwift Click 2</span><small>Tocca per collegare</small></span></button>
+      <button class="chip" id="chip-hr" data-k="hr"><i class="dot"></i><span><span class="nm">Cardio</span><small>Tocca per collegare</small></span></button>
     </div>
   </header>
   <p class="note" id="note" hidden></p>
@@ -153,9 +234,29 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
   </section>
 
 
-  <section class="stage" aria-label="Percorso">
+  <section class="stage" id="stage" aria-label="Percorso">
     <canvas id="scene"></canvas>
+    <canvas id="inset" aria-label="Altimetria dei prossimi chilometri"></canvas>
     <div class="hud"><span id="h-km">0.00 km</span><span id="h-time">00:00:00</span><span id="h-gain">D+ 0 m</span></div>
+  </section>
+
+  <section class="stage wk" id="wkstage" aria-label="Allenamento" hidden>
+    <div class="wk-top"><b id="wk-name">Allenamento</b><span id="wk-time">0:00 / 0:00</span></div>
+    <div class="wk-state" id="wk-state">&nbsp;</div>
+    <div class="wk-main">
+      <div class="wk-box"><small>Potenza obiettivo</small><div class="wk-big"><b id="wk-tw">0</b><u>W</u></div><small id="wk-tp">&nbsp;</small><div id="wk-now">&nbsp;</div></div>
+      <div class="wk-box"><small>Fine segmento tra</small><div class="wk-cd" id="wk-cd">0:00</div><div class="wk-bar"><i id="wk-fill"></i></div><div id="wk-next">&nbsp;</div></div>
+    </div>
+    <div class="wk-msg" id="wk-msg" hidden></div>
+    <canvas id="wk-prof" aria-label="Profilo dell'allenamento"></canvas>
+    <input type="range" id="wk-seek" min="0" max="100" step="1" value="0" aria-label="Posizione nell'allenamento">
+    <div class="wk-ctl">
+      <button class="btn" id="wk-back">⏮ Indietro</button>
+      <button class="btn" id="wk-pause">Pausa</button>
+      <button class="btn" id="wk-skip">Salta ⏭</button>
+      <div class="wk-int"><button class="gbtn" id="wk-minus" aria-label="Intensità meno 5%">−</button><b>Intensità <span id="wk-adj">100%</span></b><button class="gbtn" id="wk-plus" aria-label="Intensità più 5%">+</button></div>
+      <button class="btn" id="wk-end">Termina</button>
+    </div>
   </section>
 
   <section class="metrics" aria-label="Metriche">
@@ -166,6 +267,7 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
       <small id="p-sub">0.0 W/kg</small>
     </div>
     <div class="m"><label>Cadenza</label><div class="val"><b id="v-c">0</b><u>rpm</u></div><small id="c-sub">&nbsp;</small></div>
+    <div class="m" id="m-hr" hidden><label>Cuore</label><div class="val"><b id="v-hr">0</b><u>bpm</u></div><small id="hr-sub">&nbsp;</small></div>
     <div class="m"><label>Velocità</label><div class="val"><b id="v-s">0.0</b><u>km/h</u></div><small id="s-sub">&nbsp;</small></div>
     <div class="m"><label>Pendenza</label><div class="val"><b id="v-g">0.0</b><u>%</u></div><small id="g-sub">Rullo: n.d.</small></div>
     <div class="m m-gear" id="m-gear">
@@ -206,16 +308,17 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
   <section class="dock">
     <div class="card">
       <h2>Modalità</h2>
-      <div class="seg" role="group" aria-label="Modalità di allenamento">
+      <div class="seg" role="group" aria-label="Modalità di allenamento" style="grid-template-columns:repeat(3,1fr)">
         <button class="btn on" id="mode-route">Percorso</button>
         <button class="btn" id="mode-erg">ERG</button>
+        <button class="btn" id="mode-wk">Allenamenti</button>
       </div>
       <div class="row" id="erg-box" hidden>
         <label class="field" style="flex:1;min-width:140px">Potenza target (W)<input type="number" id="erg-w" min="50" max="600" step="5" value="150"></label>
         <p class="hint" style="flex:2;min-width:180px">In ERG il rullo tiene la potenza fissa. I tasti dei pignoni cambiano il target di 10 W, quelli delle corone di 50 W.</p>
       </div>
       <p class="hint" id="mode-hint">In Percorso il rullo simula la pendenza e la marcia virtuale. Sul Click, + è più duro e − più agile. Tastiera: ↑ e ↓ per i pignoni, → e ← per le corone.</p>
-      <button class="btn" id="reset">Azzera giro</button>
+      <div class="row"><button class="btn" id="reset" style="flex:1">Azzera giro</button><button class="btn" id="rep-btn" style="flex:1">Report del giro</button></div>
     </div>
 
     <div class="card">
@@ -239,6 +342,7 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
         <label class="field">Peso ciclista (kg)<input type="number" data-cfg="mass" step="0.5"></label>
         <label class="field">Peso bici (kg)<input type="number" data-cfg="bike" step="0.5"></label>
         <label class="field">FTP (W)<input type="number" data-cfg="ftp" step="5"></label>
+        <label class="field">Frequenza cardiaca massima (bpm)<input type="number" data-cfg="hrMax" step="1"></label>
         <label class="field">CdA (m²)<input type="number" data-cfg="cda" step="0.01"></label>
         <label class="field">Crr<input type="number" data-cfg="crr" step="0.0005"></label>
         <label class="field">Circonferenza ruota (m)<input type="number" data-cfg="circ" step="0.005"></label>
@@ -261,22 +365,30 @@ pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;b
           <select data-cfg="pressedVal"><option value="0">0</option><option value="1">1</option></select>
         </label>
         <label class="check"><input type="checkbox" data-cfg="swap" id="swap"><span>Inverti + e −</span></label>
+        <label class="check"><input type="checkbox" data-cfg="keepAlive" id="keepalive"><span>Tieni sveglio il Click (sperimentale)</span></label>
         <label class="check"><input type="checkbox" data-cfg="all" id="all"><span>Mostra tutti i dispositivi nella ricerca</span></label>
 
       </div>
       <pre class="log" id="log" aria-live="off"></pre>
+      <div class="row" style="margin-top:8px"><button class="btn" id="log-share" style="flex:1">Condividi registro</button><button class="btn" id="log-copy" style="flex:1">Copia registro</button></div>
     </details>
   </section>
 </div>
 
+<div class="ovl" id="ovl" hidden><div class="ovl-in" id="ovl-in"></div></div>
 <noscript><div style="position:fixed;left:0;right:0;top:0;z-index:99;padding:12px 16px;background:#c4362a;color:#fff;font:600 15px system-ui">JavaScript disattivato in questo browser: l'app non può funzionare.</div></noscript>
 <div id="errbar" hidden style="position:fixed;left:0;right:0;top:0;z-index:99;padding:12px 16px;background:#c4362a;color:#fff;font:600 14px/1.35 system-ui;white-space:pre-wrap"></div>
 <script>
 (function () {
   function show(t) { var b = document.getElementById('errbar'); if (!b) return; b.hidden = false; b.textContent = t; }
   window.__rvErr = [];
-  window.addEventListener('error', function (e) { var m = 'Errore nella pagina: ' + (e.message || 'sconosciuto') + (e.lineno ? ' (riga ' + e.lineno + ')' : ''); window.__rvErr.push(m); show(m); });
-  window.addEventListener('unhandledrejection', function (e) { var r = e.reason; show('Errore asincrono: ' + (r && (r.message || r.name) || String(r))); });
+  window.__rvQ = [];
+  window.addEventListener('error', function (e) {
+    var m = 'Errore nella pagina: ' + (e.message || 'sconosciuto') + (e.lineno ? ' (riga ' + e.lineno + ')' : '');
+    window.__rvErr.push(m);
+    if (e.lineno) show(m); else window.__rvQ.push('Errore esterno ignorato (' + (e.message || 'sconosciuto') + '), probabilmente del browser');
+  });
+  window.addEventListener('unhandledrejection', function (e) { var r = e.reason; window.__rvQ.push('Errore asincrono: ' + (r && (r.message || r.name) || String(r))); });
   setTimeout(function () {
     if (window.__rvOk) return;
     var why = !window.__rvEnd ? 'FILE INCOMPLETO: la pagina è stata troncata (ricarica index.html su GitHub e controlla la dimensione, deve essere circa 57 KB).'
@@ -366,7 +478,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 /* ---------- Impostazioni ---------- */
 const DEF = { mass: 75, bike: 9, cda: 0.32, crr: 0.004, rho: 1.2, eff: 0.975, ftp: 200, rings: '50,34',
   cassette: '11,13,15,17,19,21,23,25,27,30,34', role1: 'rear', role2: 'front', circ: 2.105, maxGrade: 6, physChain: 50, physCog: 14,
-  powerSrc: 'auto', pressedVal: '0', swap: false, all: false };
+  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false };
 const cfg = Object.assign({}, DEF);
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('rv-cfg2') || '{}')); } catch (e) {}
 /* maschere dei tasti + e − di ogni Click, imparate al primo collegamento */
@@ -386,16 +498,16 @@ const S = {
   t: performance.now(), pos: 0, v: 0, dist: 0, time: 0, gain: 0, gear: 6, ring: 1, mode: 'route', ergW: 150,
   pAvg: 0, hist: [], gCmd: 0, free: false, limited: false, crank: 0, wheel: 0, lastElev: elev(0),
   demo: { on: false, p: 150, c: 85 }, src: { p: 0, cad: 0, cadOk: false, vt: null, pSrc: '—' },
-  live: { pm: { t: 0, p: 0, cad: 0, hasCrank: false, crankT: 0, prev: null }, tr: { t: 0, p: 0, cad: 0, hasCad: false, v: null } },
+  live: { hr: { t: 0, bpm: 0 }, pm: { t: 0, p: 0, cad: 0, hasCrank: false, crankT: 0, prev: null }, tr: { t: 0, p: 0, cad: 0, hasCad: false, v: null } },
   ck: { ck: { base: false, st: { 1: false, 2: false } }, ck2: { base: false, st: { 1: false, 2: false } } },
-  learn: null, backup: null, mirror: false, dupHits: 0, lastPress: null, lastProc: null
+  learn: null, backup: null, mirror: false, dupHits: 0, wk: null, wkFree: false, rec: [], recAcc: 0, recMeta: null, lastPress: null, lastProc: null
 };
 S.gear = Math.round((cogs().length - 1) * 0.55); S.ring = rings().length - 1;
 
 /* ---------- Log ---------- */
 const LOG = []; let logDirty = false;
 function log(m) { LOG.push(new Date().toTimeString().slice(0, 8) + ' ' + m); if (LOG.length > 150) LOG.shift(); logDirty = true; }
-setInterval(() => { if (logDirty) { const el = $('#log'); el.textContent = LOG.join('\n'); el.scrollTop = el.scrollHeight; logDirty = false; } }, 500);
+setInterval(() => { while (window.__rvQ && window.__rvQ.length) log(window.__rvQ.shift()); if (logDirty) { const el = $('#log'); el.textContent = LOG.join('\n'); el.scrollTop = el.scrollHeight; logDirty = false; } }, 500);
 const hex = u => Array.from(u).map(b => b.toString(16).padStart(2, '0')).join(' ');
 function note(msg) { const n = $('#note'); n.textContent = msg || ''; n.hidden = !msg; }
 const errText = e => {
@@ -408,12 +520,13 @@ const errText = e => {
 
 /* ---------- Bluetooth ---------- */
 const B = n => '0000' + n + '-0000-1000-8000-00805f9b34fb';
-const U = { ftms: B('1826'), bike: B('2ad2'), cp: B('2ad9'), cps: B('1818'), meas: B('2a63'),
+const U = { ftms: B('1826'), bike: B('2ad2'), cp: B('2ad9'), cps: B('1818'), meas: B('2a63'), hrs: B('180d'), hrm: B('2a37'),
   z1: '00000001-19ca-4651-86e5-fa29dcdd09d1', zRide: '0000fc82-0000-1000-8000-00805f9b34fb',
   zAsync: '00000002-19ca-4651-86e5-fa29dcdd09d1', zRx: '00000003-19ca-4651-86e5-fa29dcdd09d1', zTx: '00000004-19ca-4651-86e5-fa29dcdd09d1' };
-const NAMES = { tr: 'Rullo Van Rysel D100', pm: 'Potenziometro 4iiii', ck: 'Zwift Click 1', ck2: 'Zwift Click 2' };
-const D = { tr: null, pm: null, ck: null, ck2: null };
-const userOff = { tr: false, pm: false, ck: false, ck2: false };
+const NAMES = { tr: 'Rullo Van Rysel D100', pm: 'Potenziometro 4iiii', ck: 'Zwift Click 1', ck2: 'Zwift Click 2', hr: 'Cardiofrequenzimetro' };
+const D = { tr: null, pm: null, ck: null, ck2: null, hr: null };
+const userOff = { tr: false, pm: false, ck: false, ck2: false, hr: false };
+const GEN = { tr: 0, pm: 0, ck: 0, ck2: 0, hr: 0 }, RECON = { tr: false, pm: false, ck: false, ck2: false, hr: false };
 let CP = null, cpChain = Promise.resolve();
 
 function chip(k, state, text) {
@@ -421,7 +534,7 @@ function chip(k, state, text) {
   el.querySelector('small').textContent = text;
   try { refreshPad(); } catch (e) {}
 }
-function resetChips() { for (const k of ['tr', 'pm', 'ck', 'ck2']) chip(k, '', 'Tocca per collegare'); }
+function resetChips() { for (const k of ['tr', 'pm', 'ck', 'ck2', 'hr']) chip(k, '', 'Tocca per collegare'); }
 const roleOf = k => (k === 'ck2' ? cfg.role2 : cfg.role1) === 'front' ? 'front' : 'rear';
 
 function cpWrite(bytes) {
@@ -441,7 +554,7 @@ function onCp(dv) {
     if (res === 5 && performance.now() - lastReq > 3000) { lastReq = performance.now(); cpWrite(new Uint8Array([0x00])); }
   }
 }
-const CNT = { tr: 0, pm: 0 }, LASTV = { tr: '', pm: '' };
+const CNT = { tr: 0, pm: 0, hr: 0 }, LASTV = { tr: '', pm: '', hr: '' };
 function rawLog(k, dv) {
   CNT[k]++;
   if (CNT[k] <= 6 || CNT[k] % 40 === 0) log((k === 'tr' ? 'Rullo' : '4iiii') + ' dato #' + CNT[k] + ': ' + hex(new Uint8Array(dv.buffer, dv.byteOffset, Math.min(dv.byteLength, 24))));
@@ -472,10 +585,11 @@ function onPower(dv) {
     LASTV.pm = d.p + ' W' + (d.crank ? ' · ' + Math.round(L.cad) + ' rpm' : '');
   } catch (e) { log('4iiii: dato non leggibile: ' + errText(e)); }
 }
-setInterval(() => { for (const k of ['tr', 'pm']) { const el = $('#chip-' + k); if (el.classList.contains('on')) el.querySelector('small').textContent = CNT[k] ? 'Dati: ' + LASTV[k] + ' (#' + CNT[k] + ')' : 'Collegato · nessun dato ricevuto'; } }, 1000);
+setInterval(() => { for (const k of ['tr', 'pm', 'hr']) { const el = $('#chip-' + k); if (el.classList.contains('on')) el.querySelector('small').textContent = CNT[k] ? 'Dati: ' + LASTV[k] + ' (#' + CNT[k] + ')' : 'Collegato · nessun dato ricevuto'; } }, 1000);
 /* kind: 'rear' = pignoni, 'front' = corone; dir: +1 più duro, -1 più agile */
 function shift(kind, dir) {
-  if (S.mode === 'erg') { S.ergW = clamp(S.ergW + dir * (kind === 'front' ? 50 : 10), 50, 600); $('#erg-w').value = S.ergW; sendErg(); }
+  if (S.wk && !S.wkFree) { S.wk.adj = clamp(Math.round((S.wk.adj + dir * (kind === 'front' ? 0.10 : 0.05)) * 100) / 100, 0.5, 1.5); wkTarget(true); wkUI(); return; }
+  if (S.mode === 'erg' && !S.wkFree) { S.ergW = clamp(S.ergW + dir * (kind === 'front' ? 50 : 10), 50, 600); $('#erg-w').value = S.ergW; sendErg(); }
   else {
     if (kind === 'front') S.ring = clamp(S.ring + dir, 0, rings().length - 1);
     else S.gear = clamp(S.gear + dir, 0, cogs().length - 1);
@@ -540,11 +654,12 @@ function handleRide(u, k) {
   if (typeof pb[1] !== 'number') return;
   const st = S.ck[k], pressed = (~(pb[1] >>> 0)) >>> 0, fresh = (pressed & ~(st.prev || 0)) >>> 0;
   st.prev = pressed;
-  if (!st.base) { st.base = true; return; }
+  if (!st.base) { st.base = true; if (!pressed) return; }
   if (!fresh) return;
   log(NAMES[k] + ': premuto 0x' + fresh.toString(16) + ' (' + hex(u) + ')');
   $('#chip-' + k + ' small').textContent = 'Collegato · ultimo tasto 0x' + fresh.toString(16);
   const now = performance.now(), lp = S.lastPress, from = k;
+  S.ck[k].lastPress = now;
   S.lastPress = { k: from, mask: fresh, t: now };
   /* se Bluefy recapita lo stesso tasto a entrambi i Click, li tratto come un controller solo */
   if (S.mirror) {
@@ -579,6 +694,7 @@ function handleRide(u, k) {
   }
 }
 function onClick(dv, k) {
+  S.ck[k].lastMsg = performance.now();
   const u = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
   if (u[0] === 0x23) handleRide(u, k);
   else if (u[0] === 0x37) { log(NAMES[k] + ': ' + hex(u)); handleClick(pbParse(u.subarray(1)), k); }
@@ -589,27 +705,28 @@ function onClickSync(dv, k) {
   log(NAMES[k] + ', risposta sincrona: ' + hex(u.subarray(0, 24)));
 }
 
-async function setupTr(d) {
-  CNT.tr = 0; LASTV.tr = '';
+async function setupTr(d, k) {
+  const g = ++GEN[k]; CNT.tr = 0; LASTV.tr = '';
   const srv = await d.gatt.connect(); const svc = await srv.getPrimaryService(U.ftms);
   const bike = await svc.getCharacteristic(U.bike);
-  bike.addEventListener('characteristicvaluechanged', e => onBike(e.target.value)); await bike.startNotifications();
+  bike.addEventListener('characteristicvaluechanged', e => { if (g === GEN[k]) onBike(e.target.value); }); await bike.startNotifications();
   log('Rullo: notifiche dei dati attive'); setTimeout(() => { if (!CNT.tr && D.tr) log('Rullo: nessun dato dopo 8 s. Pedala o gira la ruota: molti rulli trasmettono solo in movimento'); }, 8000);
   CP = await svc.getCharacteristic(U.cp);
-  CP.addEventListener('characteristicvaluechanged', e => onCp(e.target.value));
+  CP.addEventListener('characteristicvaluechanged', e => { if (g === GEN[k]) onCp(e.target.value); });
   try { await CP.startNotifications(); } catch (e) { log('Indicazioni del rullo non attivate: ' + errText(e)); }
   await cpWrite(new Uint8Array([0x00])); await sleep(400); await cpWrite(new Uint8Array([0x07]));
   lastSentG = null; if (S.mode === 'erg') sendErg();
 }
-async function setupPm(d) {
-  CNT.pm = 0; LASTV.pm = '';
+async function setupPm(d, k) {
+  const g = ++GEN[k]; CNT.pm = 0; LASTV.pm = '';
   const srv = await d.gatt.connect(); const svc = await srv.getPrimaryService(U.cps);
   const ch = await svc.getCharacteristic(U.meas);
-  ch.addEventListener('characteristicvaluechanged', e => onPower(e.target.value)); await ch.startNotifications();
+  ch.addEventListener('characteristicvaluechanged', e => { if (g === GEN[k]) onPower(e.target.value); }); await ch.startNotifications();
   log('4iiii: notifiche della potenza attive'); setTimeout(() => { if (!CNT.pm && D.pm) log('4iiii: nessun dato dopo 8 s. Fai girare le pedivelle: il potenziometro si sveglia solo pedalando'); }, 8000);
   S.live.pm.prev = null;
 }
 async function setupCk(d, k) {
+  const g = ++GEN[k];
   const srv = await d.gatt.connect(); log(NAMES[k] + ': collegato al Bluetooth, cerco il servizio'); let svc = null;
   for (const id of [U.z1, U.zRide]) { try { svc = await srv.getPrimaryService(id); log(NAMES[k] + ': servizio ' + id.slice(0, 8) + ' trovato'); break; } catch (e) { log(NAMES[k] + ': servizio ' + id.slice(0, 8) + ' assente (' + e.name + ')'); } }
   if (!svc) {
@@ -618,31 +735,33 @@ async function setupCk(d, k) {
   }
   try { const cs = await svc.getCharacteristics(); log(NAMES[k] + ': caratteristiche: ' + cs.map(c => c.uuid.slice(0, 8) + ':' + ['notify', 'indicate', 'write', 'writeWithoutResponse', 'read'].filter(p => c.properties[p]).join('+')).join(' | ')); } catch (e) { log(NAMES[k] + ': elenco caratteristiche non riuscito: ' + e.message); }
   const as = await svc.getCharacteristic(U.zAsync), rx = await svc.getCharacteristic(U.zRx), tx = await svc.getCharacteristic(U.zTx);
-  as.addEventListener('characteristicvaluechanged', e => onClick(e.target.value, k));
-  tx.addEventListener('characteristicvaluechanged', e => onClickSync(e.target.value, k));
+  as.addEventListener('characteristicvaluechanged', e => { if (g === GEN[k]) onClick(e.target.value, k); });
+  tx.addEventListener('characteristicvaluechanged', e => { if (g === GEN[k]) onClickSync(e.target.value, k); });
   await as.startNotifications(); log(NAMES[k] + ': notifiche attive');
   try { await tx.startNotifications(); } catch (e) { log('Click: canale sync non attivato: ' + e.message); }
   S.ck[k].base = false; S.ck[k].prev = 0; S.mirror = false; S.dupHits = 0; S.lastPress = null; S.lastProc = null;
   const kk = cfg.keys; if (!S.learn && !(kk.rear.plus || kk.rear.minus || kk.front.plus || kk.front.minus)) startLearn('rear', true);
   refreshPad();
   const hs = new Uint8Array([0x52, 0x69, 0x64, 0x65, 0x4f, 0x6e, 0x01, 0x02]);
+  S.ck[k].rx = rx; S.ck[k].hs = hs; S.ck[k].t0 = performance.now(); S.ck[k].lastMsg = S.ck[k].t0; S.ck[k].lastPress = 0;
   if (rx.writeValueWithoutResponse) await rx.writeValueWithoutResponse(hs); else await rx.writeValue(hs);
   log(NAMES[k] + ': handshake RideOn inviato, ora premi un tasto');
 }
-const SETUP = { tr: setupTr, pm: setupPm, ck: setupCk, ck2: setupCk };
+const SETUP = { tr: setupTr, pm: setupPm, ck: setupCk, ck2: setupCk, hr: setupHr };
 
 function reqOpts(k) {
-  if (cfg.all) return { acceptAllDevices: true, optionalServices: [U.ftms, U.cps, U.z1, U.zRide] };
+  if (cfg.all) return { acceptAllDevices: true, optionalServices: [U.ftms, U.cps, U.hrs, U.z1, U.zRide] };
   if (k === 'tr') return { filters: [{ services: [U.ftms] }], optionalServices: [U.ftms] };
   if (k === 'pm') return { filters: [{ services: [U.cps] }], optionalServices: [U.cps] };
+  if (k === 'hr') return { filters: [{ services: [U.hrs] }], optionalServices: [U.hrs] };
   return { filters: [{ namePrefix: 'Zwift' }, { namePrefix: 'ZWIFT' }, { services: [U.zRide] }, { services: [U.z1] }], optionalServices: [U.z1, U.zRide] };
 }
-async function attach(k) {
-  chip(k, 'busy', 'Connessione in corso');
+async function attach(k, quiet) {
+  if (!quiet) chip(k, 'busy', 'Connessione in corso');
   try {
     await Promise.race([SETUP[k](D[k], k),new Promise((_, rej) => setTimeout(() => rej(new Error('nessuna risposta dopo 20 s')), 20000))]);
     chip(k, 'on', 'Collegato · tocca per scollegare'); log(NAMES[k] + ' collegato'); wake(); return true; }
-  catch (e) { chip(k, 'err', 'Errore: ' + errText(e)); log(NAMES[k] + ': ' + errText(e)); return false; }
+  catch (e) { if (!quiet) chip(k, 'err', 'Errore: ' + errText(e)); log(NAMES[k] + (quiet ? ': ricollegamento in attesa, ' : ': ') + errText(e)); return false; }
 }
 async function pick(k) {
   if (!navigator.bluetooth) { note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.'); return; }
@@ -670,21 +789,26 @@ async function onDisc(k, d) {
   if (D[k] !== d) return;
   if (k === 'tr') CP = null;
   if (userOff[k]) { chip(k, '', 'Tocca per collegare'); return; }
-  log(NAMES[k] + ' scollegato, provo a ricollegare');
-  for (let i = 1; i <= 5 && !userOff[k]; i++) {
-    chip(k, 'busy', 'Riconnessione ' + i + '/5');
-    await sleep(1500 * i);
+  if (RECON[k]) return;
+  RECON[k] = true;
+  try {
+  const isCk = k === 'ck' || k === 'ck2';
+  if (isCk && S.ck[k].t0) { const n = performance.now(), sec = x => Math.round((n - x) / 1000); log(NAMES[k] + ': scollegato dopo ' + sec(S.ck[k].t0) + ' s dal collegamento, ' + (S.ck[k].lastPress ? sec(S.ck[k].lastPress) + ' s dall\'ultimo tasto' : 'nessun tasto premuto') + ', ' + sec(S.ck[k].lastMsg) + ' s dall\'ultimo messaggio' + (cfg.keepAlive ? ' (tieni sveglio attivo)' : '')); }
+  log(NAMES[k] + ' scollegato' + (isCk ? " (il Click va a riposo da solo), lo riconnetto appena si sveglia" : ', provo a ricollegare'));
+  for (let i = 1; !userOff[k] && D[k] === d; i++) {
+    chip(k, 'busy', isCk ? 'A riposo · premi un tasto per riattivarlo' : 'Riconnessione ' + i);
+    await sleep(Math.min(2000 + 1000 * i, 8000));
     if (D[k] !== d || userOff[k]) return;
-    if (await attach(k)) return;
+    if (await attach(k, true)) return;
   }
-  chip(k, 'err', 'Scollegato · tocca per riprovare');
+  } finally { RECON[k] = false; }
 }
 function toggle(k) {
   const el = $('#chip-' + k);
   if (el.classList.contains('on') || el.classList.contains('busy')) { userOff[k] = true; try { D[k] && D[k].gatt.disconnect(); } catch (e) {} chip(k, '', 'Tocca per collegare'); if (k === 'tr') CP = null; }
   else pick(k);
 }
-for (const k of ['tr', 'pm', 'ck', 'ck2']) $('#chip-' + k).addEventListener('click', () => toggle(k));
+for (const k of ['tr', 'pm', 'ck', 'ck2', 'hr']) $('#chip-' + k).addEventListener('click', () => toggle(k));
 
 let wl = null;
 async function wake() { try { if (navigator.wakeLock && !wl) { wl = await navigator.wakeLock.request('screen'); wl.addEventListener('release', () => { wl = null; }); } } catch (e) {} }
@@ -694,14 +818,14 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 let lastSentG = null, lastSentT = 0, lastErgT = 0;
 const connected = () => D.tr && D.tr.gatt && D.tr.gatt.connected && CP && !S.demo.on;
 function sendResistance(force) {
-  if (!connected() || S.mode !== 'route') return;
+  if (!connected() || (S.mode !== 'route' && !S.wkFree)) return;
   const t = performance.now(), g = S.gCmd;
   if (!force && lastSentG !== null && Math.abs(g - lastSentG) < 0.0003 && t - lastSentT < 5000) return;
   lastSentG = g; lastSentT = t;
   cpWrite(buildSim(g, cfg.crr, 0.5 * cfg.cda * cfg.rho));
 }
-function sendErg() { if (!connected()) return; lastErgT = performance.now(); cpWrite(buildErg(S.ergW)); }
-setInterval(() => { sendResistance(false); if (S.mode === 'erg' && performance.now() - lastErgT > 5000) sendErg(); }, 1000);
+function sendErg() { if (!connected() || S.wkFree) return; lastErgT = performance.now(); cpWrite(buildErg(S.ergW)); }
+setInterval(() => { sendResistance(false); if (S.mode === 'erg' && !S.wkFree && performance.now() - lastErgT > 5000) sendErg(); }, 1000);
 
 /* ---------- Fisica ---------- */
 function sources(now) {
@@ -722,10 +846,14 @@ function sources(now) {
 function tick() {
   const now = performance.now(); let dt = (now - S.t) / 1000; S.t = now; dt = clamp(dt, 0, 0.5); if (dt <= 0) return;
   const src = sources(now); S.src = src;
+  const moving = src.cad > 0.5 || src.p > 10;
+  let recOn = moving;
+  if (S.wk) recOn = wkAdvance(dt, moving, src);
+  if (recOn) { S.recAcc += dt; while (S.recAcc >= 1) { S.recAcc -= 1; recSample(src); } }
   const cg = cogs(), rg = rings(); S.gear = clamp(S.gear, 0, cg.length - 1); S.ring = clamp(S.ring, 0, rg.length - 1);
   const R = rg[S.ring] / cg[S.gear], Rp = cfg.physChain / cfg.physCog;
   const m = cfg.mass + cfg.bike, mEff = m + 2, Cw = 0.5 * cfg.cda * cfg.rho;
-  const grade = gradeAt(S.pos), th = Math.atan(grade);
+  const grade = S.wkFree ? 0 : gradeAt(S.pos), th = Math.atan(grade);
   const base = m * G * (cfg.crr * Math.cos(th) + Math.sin(th));
   const Fres = v => base + Cw * v * v;
 
@@ -773,9 +901,10 @@ function hud() {
   setT('#h-km', (S.dist / 1000).toFixed(2) + ' km');
   setT('#h-time', pad(Math.floor(S.time / 3600)) + ':' + pad(Math.floor(S.time / 60) % 60) + ':' + pad(Math.floor(S.time) % 60));
   setT('#h-gain', 'D+ ' + Math.round(S.gain) + ' m');
+  try { hrUI(); if (S.wk) wkUI(); } catch (e) {}
 }
 function gearUI() {
-  const erg = S.mode === 'erg';
+  const erg = S.mode === 'erg' && !S.wkFree;
   $('#m-gear').hidden = erg; $('#m-erg').hidden = !erg;
   if (erg) { setT('#v-erg', S.ergW + ' W'); return; }
   const cg = cogs(), rg = rings(); S.gear = clamp(S.gear, 0, cg.length - 1); S.ring = clamp(S.ring, 0, rg.length - 1);
@@ -800,16 +929,17 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowLeft') { e.preventDefault(); shift('front', -1); }
 });
 function setMode(m) {
+  if (S.wk) wkEnd(false);
   S.mode = m; $('#mode-route').classList.toggle('on', m === 'route'); $('#mode-erg').classList.toggle('on', m === 'erg');
   $('#erg-box').hidden = m !== 'erg';
   $('#mode-hint').hidden = m === 'erg';
   if (m === 'erg') sendErg(); else { lastSentG = null; sendResistance(true); }
   gearUI(); wake();
 }
-$('#mode-route').addEventListener('click', () => setMode('route'));
-$('#mode-erg').addEventListener('click', () => setMode('erg'));
+$('#mode-route').addEventListener('click', () => { if (S.wk) wkEnd(true); else setMode('route'); });
+$('#mode-erg').addEventListener('click', () => { if (S.wk) wkEnd(true); setMode('erg'); });
 $('#erg-w').addEventListener('change', e => { S.ergW = clamp(Number(e.target.value) || 150, 50, 600); gearUI(); sendErg(); });
-$('#reset').addEventListener('click', () => { S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; });
+$('#reset').addEventListener('click', () => { S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.rec = []; S.recAcc = 0; S.recMeta = null; });
 $('#demo-btn').addEventListener('click', () => { S.demo.on = !S.demo.on; $('#demo-btn').classList.toggle('on', S.demo.on); $('#demo-btn').textContent = S.demo.on ? 'Demo attiva' : 'Attiva demo'; wake(); });
 $('#demo-p').addEventListener('input', e => { S.demo.p = Number(e.target.value); setT('#demo-p-v', S.demo.p + ' W'); });
 $('#demo-c').addEventListener('input', e => { S.demo.c = Number(e.target.value); setT('#demo-c-v', S.demo.c + ' rpm'); });
@@ -829,7 +959,7 @@ for (const el of document.querySelectorAll('[data-cfg]')) {
 /* ---------- Grafica ---------- */
 const CV = { scene: $('#scene'), pwr: $('#pwr'), prof: $('#prof') };
 const COL = {};
-function readColors() { const cs = getComputedStyle(document.documentElement); for (const k of ['ink', 'ink2', 'line', 'accent', 'sky1', 'sky2', 'hill1', 'hill2', 'ground', 'road', 'mark', 'panel']) COL[k] = cs.getPropertyValue('--' + k).trim(); }
+function readColors() { const cs = getComputedStyle(document.documentElement); for (const k of ['bg', 'ok', 'warn', 'bad', 'ink', 'ink2', 'line', 'accent', 'sky1', 'sky2', 'hill1', 'hill2', 'ground', 'road', 'mark', 'panel']) COL[k] = cs.getPropertyValue('--' + k).trim(); }
 readColors(); setInterval(readColors, 2000);
 function fit(c) { const r = c.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1); const w = Math.max(1, Math.round(r.width * d)), h = Math.max(1, Math.round(r.height * d)); if (c.width !== w || c.height !== h) { c.width = w; c.height = h; } return d; }
 function hills(g, W, H, off, color, base, amp, f) {
@@ -915,13 +1045,534 @@ function drawProf() {
 }
 let lastCharts = 0;
 let frameErr = false;
-function frame(t) { try { drawScene(); if (t - lastCharts > 500) { lastCharts = t; drawPwr(); drawProf(); } } catch (e) { if (!frameErr) { frameErr = true; log('Errore di disegno: ' + errText(e)); } } requestAnimationFrame(frame); }
+function frame(t) { try { if (!S.wk) { drawScene(); drawInset(); } else wkDraw(); if (t - lastCharts > 500) { lastCharts = t; drawPwr(); drawProf(); } } catch (e) { if (!frameErr) { frameErr = true; log('Errore di disegno: ' + errText(e)); } } requestAnimationFrame(frame); }
 requestAnimationFrame(frame);
+
+/* ======================= Allenamenti, registrazione, report, cardio ======================= */
+const ZC = ['#98a3b3', '#1fa9e1', '#2fbf7a', '#f6b210', '#ff6a3d', '#d4151c'];
+const ZP = [50, 65, 82, 97, 112, 130];
+const zoneOf = p => p < 55 ? 0 : p < 75 ? 1 : p < 90 ? 2 : p < 105 ? 3 : p < 120 ? 4 : 5;
+const mmss = s => { s = Math.max(0, Math.round(s)); const hh = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, c = s % 60; return (hh ? hh + ':' + pad(m) : String(m)) + ':' + pad(c); };
+function h(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  for (const k in (props || {})) {
+    const v = props[k];
+    if (k === 'class') e.className = v; else if (k === 'text') e.textContent = v;
+    else if (k.slice(0, 2) === 'on') e.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat(2)) if (c != null && c !== false) e.append(c.nodeType ? c : String(c));
+  return e;
+}
+const uid = p => p + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
+const clone = o => JSON.parse(JSON.stringify(o));
+
+/* ---------- Modello ---------- */
+function flat(w) {
+  const out = []; let t = 0;
+  const add = (dur, p0, p1, cad, o) => { if (dur > 0) { out.push(Object.assign({ t0: t, t1: t + dur, p0, p1, cad: cad || 0 }, o)); t += dur; } };
+  (w.blocks || []).forEach((b, bi) => {
+    if (b.type === 'rep') for (let i = 0; i < (b.n || 1); i++) {
+      add(b.dur, b.p, b.p, b.cad, { bi, label: 'Serie ' + (i + 1) + ' di ' + b.n, msg: i === 0 ? b.msg : '' });
+      add(b.offDur, b.offP, b.offP, b.offCad, { bi, label: 'Recupero ' + (i + 1) + ' di ' + b.n });
+    } else if (b.type === 'ramp') add(b.dur, b.p, b.p2, b.cad, { bi, label: b.p2 >= b.p ? 'Rampa in salita' : 'Rampa in discesa', msg: b.msg });
+    else if (b.type === 'free') add(b.dur, 0, 0, 0, { bi, label: 'Libero', free: true, msg: b.msg });
+    else add(b.dur, b.p, b.p, b.cad, { bi, label: 'Z' + (zoneOf(b.p) + 1), msg: b.msg });
+  });
+  return out;
+}
+function wkStats(w) {
+  const segs = flat(w); let sq = 0;
+  for (const g of segs) {
+    const d = g.t1 - g.t0;
+    sq += g.free ? d * 70 * 70 : d * (g.p0 * g.p0 + g.p0 * g.p1 + g.p1 * g.p1) / 3;
+  }
+  return { segs, total: segs.length ? segs[segs.length - 1].t1 : 0, tss: Math.round(sq / 360000) };
+}
+const segIndex = (segs, t) => { for (let i = 0; i < segs.length; i++) if (t < segs[i].t1) return i; return segs.length - 1; };
+const pAt = (g, t) => g.p0 + (g.p1 - g.p0) * clamp((t - g.t0) / Math.max(1, g.t1 - g.t0), 0, 1);
+
+/* ---------- Archivio ---------- */
+const WK = { list: [], rides: [] };
+function loadWk() {
+  try { const o = JSON.parse(localStorage.getItem('rv-wk') || 'null'); if (o && Array.isArray(o.list)) WK.list = o.list; else WK.list = seedWorkouts(); } catch (e) { WK.list = seedWorkouts(); }
+  try { const r = JSON.parse(localStorage.getItem('rv-rides') || '[]'); if (Array.isArray(r)) WK.rides = r; } catch (e) {}
+}
+function saveWk() { try { localStorage.setItem('rv-wk', JSON.stringify({ list: WK.list })); } catch (e) { log('Archivio allenamenti non salvato: ' + errText(e)); } }
+function saveRides() {
+  for (;;) { try { localStorage.setItem('rv-rides', JSON.stringify(WK.rides)); return; } catch (e) { if (WK.rides.length <= 1) { log('Storico non salvato: ' + errText(e)); return; } WK.rides.pop(); } }
+}
+function seedWorkouts() {
+  const ramp = [{ type: 'steady', dur: 300, p: 50, msg: 'Ogni minuto la potenza sale. Quando non ce la fai più premi Termina.' }];
+  for (let p = 40; p <= 160; p += 8) ramp.push({ type: 'steady', dur: 60, p });
+  ramp.push({ type: 'steady', dur: 300, p: 45 });
+  return [
+    { id: 's-ss', name: 'Sweet Spot 3×10', desc: 'Tre blocchi da 10 minuti al 90% dell\'FTP con 5 minuti di recupero.', blocks: [
+      { type: 'ramp', dur: 600, p: 45, p2: 70 }, { type: 'steady', dur: 180, p: 55 },
+      { type: 'rep', n: 3, dur: 600, p: 90, offDur: 300, offP: 55, msg: 'Resta regolare e respira con calma.' },
+      { type: 'ramp', dur: 480, p: 60, p2: 40 }] },
+    { id: 's-th', name: 'Soglia 2×20', desc: 'Due blocchi da 20 minuti appena sotto la soglia.', blocks: [
+      { type: 'ramp', dur: 600, p: 45, p2: 70 }, { type: 'steady', dur: 120, p: 55 },
+      { type: 'rep', n: 2, dur: 1200, p: 97, offDur: 300, offP: 55 },
+      { type: 'ramp', dur: 420, p: 60, p2: 40 }] },
+    { id: 's-vo', name: 'Brevi salite 5×3', desc: 'Cinque ripetute da 3 minuti al 115%, per i tratti vallonati.', blocks: [
+      { type: 'ramp', dur: 600, p: 45, p2: 70 }, { type: 'steady', dur: 180, p: 55 },
+      { type: 'rep', n: 5, dur: 180, p: 115, cad: 80, offDur: 180, offP: 50, msg: 'Mangia e bevi prima della serie.' },
+      { type: 'ramp', dur: 420, p: 60, p2: 40 }] },
+    { id: 's-sfr', name: 'Forza a bassa cadenza (SFR)', desc: 'Sei serie di forza a 58 rpm, recupero a 90 rpm.', blocks: [
+      { type: 'ramp', dur: 600, p: 45, p2: 70 }, { type: 'steady', dur: 120, p: 55, cad: 90 },
+      { type: 'rep', n: 6, dur: 270, p: 88, cad: 58, offDur: 150, offP: 55, offCad: 90 },
+      { type: 'ramp', dur: 420, p: 60, p2: 40 }] },
+    { id: 's-z2', name: 'Resistenza Z2 60\'', desc: 'Un\'ora regolare in zona 2.', blocks: [
+      { type: 'ramp', dur: 300, p: 45, p2: 65 }, { type: 'steady', dur: 3000, p: 65 }, { type: 'ramp', dur: 300, p: 65, p2: 40 }] },
+    { id: 's-ramp', name: 'Test a rampa', test: 'ramp', desc: 'Stima l\'FTP dal miglior minuto (75%).', blocks: ramp },
+    { id: 's-ftp', name: 'Test FTP 20\'', test: 'ftp20', desc: 'Stima l\'FTP dai migliori 20 minuti (95%). Nei blocchi liberi guidi tu con le marce.', blocks: [
+      { type: 'ramp', dur: 600, p: 45, p2: 75 }, { type: 'steady', dur: 300, p: 55 },
+      { type: 'free', dur: 300, msg: '5 minuti forti per scaricare le gambe.' }, { type: 'steady', dur: 600, p: 50, msg: 'Recupera.' },
+      { type: 'free', dur: 1200, msg: '20 minuti: parti piano e tieni un ritmo costante.' }, { type: 'steady', dur: 300, p: 45 }] }
+  ].map(w => Object.assign({ fav: false, done: 0 }, w));
+}
+
+/* ---------- Disegno del profilo ---------- */
+function drawWk(cv, segs, total, o) {
+  o = o || {};
+  const r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1);
+  const W = Math.max(1, Math.round(r.width * d)), H = Math.max(1, Math.round(r.height * d));
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  const g = cv.getContext('2d'); g.clearRect(0, 0, W, H);
+  if (!total) return;
+  let mp = 130;
+  for (const s of segs) mp = Math.max(mp, s.p0, s.p1);
+  if (o.rec && o.ftp) for (const s of o.rec) mp = Math.max(mp, s[0] / o.ftp * 100);
+  mp *= 1.06;
+  const X = t => t / total * W, Y = p => H - p / mp * H;
+  if (!o.small) {
+    g.setLineDash([5 * d, 5 * d]); g.strokeStyle = COL.ink2; g.lineWidth = d; g.globalAlpha = .6;
+    g.beginPath(); g.moveTo(0, Y(100)); g.lineTo(W, Y(100)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+    g.fillStyle = COL.ink2; g.font = (11 * d) + 'px Barlow, system-ui, sans-serif'; g.textBaseline = 'bottom'; g.fillText('FTP', 4 * d, Y(100) - 2 * d);
+  }
+  for (const s of segs) {
+    const x0 = X(s.t0), x1 = Math.max(x0 + 1, X(s.t1) - (o.small ? 0.5 : 1) * d);
+    const a = s.free ? 70 : s.p0, b = s.free ? 70 : s.p1;
+    g.globalAlpha = o.cursor != null && s.t1 <= o.cursor ? 0.42 : 1;
+    g.fillStyle = s.free ? '#8a8aa0' : ZC[zoneOf((a + b) / 2)];
+    g.beginPath(); g.moveTo(x0, H); g.lineTo(x0, Y(a)); g.lineTo(x1, Y(b)); g.lineTo(x1, H); g.closePath(); g.fill();
+    if (s.free) { g.globalAlpha = 0.5; g.strokeStyle = COL.bg || '#000'; g.lineWidth = d; for (let x = x0; x < x1; x += 7 * d) { g.beginPath(); g.moveTo(x, H); g.lineTo(Math.min(x1, x + 14 * d), Y(70)); g.stroke(); } }
+    g.globalAlpha = 1;
+    if (o.hi && o.hi.has(s.bi)) { g.strokeStyle = COL.ink; g.lineWidth = 2 * d; g.beginPath(); g.moveTo(x0, H); g.lineTo(x0, Y(a)); g.lineTo(x1, Y(b)); g.lineTo(x1, H); g.stroke(); }
+  }
+  if (o.rec && o.rec.length > 1 && o.ftp) {
+    g.beginPath(); g.lineJoin = 'round'; g.lineWidth = 1.6 * d; g.strokeStyle = COL.accent; let acc = 0;
+    o.rec.forEach((s, i) => { acc += s[0]; if (i >= 5) acc -= o.rec[i - 5][0]; const v = acc / Math.min(5, i + 1); const x = X(s[6] != null ? s[6] : i), y = Y(v / o.ftp * 100); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+    g.stroke();
+  }
+  if (o.cursor != null) { g.fillStyle = COL.ink; g.fillRect(X(o.cursor) - d, 0, 2 * d, H); }
+}
+
+/* ---------- Registrazione ---------- */
+function recSample(src) {
+  if (!S.rec.length && !S.recMeta) S.recMeta = { start: Date.now(), name: 'Giro libero', ftp: cfg.ftp, w: null, test: null };
+  const W = S.wk, hr = hrFresh() ? S.live.hr.bpm : 0;
+  let tp = 0, si = -1;
+  if (W) { const sg = W.segs[W.idx]; si = W.idx; tp = sg.free ? 0 : Math.round(pAt(sg, W.t) * W.adj * cfg.ftp / 100); }
+  S.rec.push([Math.round(src.p), Math.round(src.cad), hr, Math.round(S.v * 36), tp, si, W ? Math.round(W.t) : S.rec.length]);
+}
+function buildRide() {
+  const M = S.recMeta;
+  if (!M || S.rec.length < 20) return null;
+  return { id: uid('r'), date: M.start, name: M.name, ftp: M.ftp, test: M.test, w: M.w ? clone(M.w) : null, rec: S.rec.slice() };
+}
+function bestAvg(a, win) {
+  if (a.length < win) return null;
+  let s = 0, best = 0;
+  for (let i = 0; i < a.length; i++) { s += a[i]; if (i >= win) s -= a[i - win]; if (i >= win - 1) best = Math.max(best, s / win); }
+  return best;
+}
+function rideStats(r) {
+  const p = r.rec.map(s => s[0]), n = p.length, ftp = r.ftp || cfg.ftp;
+  const avg = n ? p.reduce((a, b) => a + b, 0) / n : 0;
+  let np = avg;
+  if (n >= 30) { let acc = 0, q = 0, c = 0; for (let i = 0; i < n; i++) { acc += p[i]; if (i >= 30) acc -= p[i - 30]; if (i >= 29) { const m = acc / 30; q += m * m * m * m; c++; } } np = Math.pow(q / c, 0.25); }
+  const IF = np / ftp, tss = n * np * IF / (ftp * 36);
+  const cads = r.rec.filter(s => s[1] > 0).map(s => s[1]), hrs = r.rec.filter(s => s[2] > 0).map(s => s[2]);
+  const zt = [0, 0, 0, 0, 0, 0]; for (const x of p) zt[zoneOf(x / ftp * 100)]++;
+  let dist = 0; for (const s of r.rec) dist += s[3] / 36;
+  const est = r.test === 'ramp' ? (bestAvg(p, 60) || 0) * 0.75 : r.test === 'ftp20' ? (bestAvg(p, 1200) || 0) * 0.95 : 0;
+  return { n, avg, np, IF, tss, max: Math.max(0, ...p), kj: p.reduce((a, b) => a + b, 0) / 1000, cad: cads.length ? cads.reduce((a, b) => a + b, 0) / cads.length : 0,
+    hr: hrs.length ? hrs.reduce((a, b) => a + b, 0) / hrs.length : 0, hrMax: hrs.length ? Math.max(...hrs) : 0, zt, dist, est: est > 40 ? Math.round(est) : 0 };
+}
+function toTcx(r) {
+  const iso = t => new Date(t).toISOString(); let dist = 0;
+  const pts = r.rec.map((s, i) => { dist += s[3] / 36; return '<Trackpoint><Time>' + iso(r.date + i * 1000) + '</Time><DistanceMeters>' + dist.toFixed(1) + '</DistanceMeters>' + (s[2] ? '<HeartRateBpm><Value>' + s[2] + '</Value></HeartRateBpm>' : '') + '<Cadence>' + s[1] + '</Cadence><Extensions><ns3:TPX><ns3:Watts>' + s[0] + '</ns3:Watts></ns3:TPX></Extensions></Trackpoint>'; }).join('');
+  const st = rideStats(r);
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2" xmlns:ns3="http://www.garmin.com/xmlschemas/ActivityExtension/v2"><Activities><Activity Sport="Biking"><Id>' + iso(r.date) + '</Id><Lap StartTime="' + iso(r.date) + '"><TotalTimeSeconds>' + r.rec.length + '</TotalTimeSeconds><DistanceMeters>' + dist.toFixed(1) + '</DistanceMeters><Calories>' + Math.round(st.kj) + '</Calories><Intensity>Active</Intensity><TriggerMethod>Manual</TriggerMethod><Track>' + pts + '</Track></Lap></Activity></Activities></TrainingCenterDatabase>';
+}
+function saveFile(name, text, type) {
+  try { const u = URL.createObjectURL(new Blob([text], { type })); const a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 5000); return true; } catch (e) { return false; }
+}
+
+/* ---------- Importazione ---------- */
+function parseZwo(txt) {
+  const doc = new DOMParser().parseFromString(txt, 'text/xml');
+  if (doc.querySelector('parsererror')) throw new Error('file non valido');
+  const node = doc.querySelector('workout'); if (!node) throw new Error('nessun allenamento nel file');
+  const tx = sel => { const e = doc.querySelector(sel); return e ? e.textContent.trim() : ''; };
+  const num = (e, a, d) => { const v = parseFloat(e.getAttribute(a)); return isFinite(v) ? v : d; };
+  const blocks = [];
+  for (const e of Array.from(node.children)) {
+    const tag = e.tagName, dur = Math.round(num(e, 'Duration', 0)), cad = Math.round(num(e, 'Cadence', 0)) || 0;
+    const te = e.querySelector('textevent'), msg = te ? (te.getAttribute('message') || '') : '';
+    if (tag === 'Warmup' || tag === 'Ramp') blocks.push({ type: 'ramp', dur, p: Math.round(num(e, 'PowerLow', 0.5) * 100), p2: Math.round(num(e, 'PowerHigh', 0.75) * 100), cad, msg });
+    else if (tag === 'Cooldown') { const a = num(e, 'PowerLow', 0.6) * 100, b = num(e, 'PowerHigh', 0.4) * 100; blocks.push({ type: 'ramp', dur, p: Math.round(Math.max(a, b)), p2: Math.round(Math.min(a, b)), cad, msg }); }
+    else if (tag === 'SteadyState') blocks.push({ type: 'steady', dur, p: Math.round(num(e, 'Power', 0.6) * 100), cad, msg });
+    else if (tag === 'IntervalsT') blocks.push({ type: 'rep', n: Math.round(num(e, 'Repeat', 1)), dur: Math.round(num(e, 'OnDuration', 60)), p: Math.round(num(e, 'OnPower', 1) * 100), cad, offDur: Math.round(num(e, 'OffDuration', 60)), offP: Math.round(num(e, 'OffPower', 0.5) * 100), offCad: Math.round(num(e, 'CadenceResting', 0)) || 0, msg });
+    else if (tag === 'FreeRide' || tag === 'MaxEffort') blocks.push({ type: 'free', dur, msg });
+  }
+  const good = blocks.filter(b => (b.type === 'rep' ? b.n > 0 : b.dur > 0));
+  if (!good.length) throw new Error('nessun blocco riconosciuto');
+  return { id: uid('w'), name: tx('name') || 'Importato', desc: tx('description'), blocks: good, fav: false, done: 0 };
+}
+function importText(txt) {
+  txt = txt.trim(); let added = 0;
+  if (txt[0] === '<') { WK.list.push(parseZwo(txt)); added = 1; }
+  else {
+    const o = JSON.parse(txt), arr = Array.isArray(o) ? o : Array.isArray(o.list) ? o.list : [o];
+    for (const w of arr) { if (!w || !Array.isArray(w.blocks) || !w.blocks.length) continue; w.id = uid('w'); w.name = String(w.name || 'Importato'); w.fav = !!w.fav; w.done = w.done | 0; WK.list.push(w); added++; }
+    if (o && Array.isArray(o.rides)) for (const r of o.rides) if (r && Array.isArray(r.rec)) { WK.rides.unshift(r); }
+    saveRides();
+  }
+  if (!added) throw new Error('nessun allenamento trovato');
+  saveWk(); return added;
+}
+
+/* ---------- Schermate a tutta pagina ---------- */
+let VIEW = null, THUMBS = [];
+function openOvl(view, arg) { VIEW = { view, arg }; $('#ovl').hidden = false; renderOvl(); $('#ovl').scrollTop = 0; }
+function closeOvl() { VIEW = null; $('#ovl').hidden = true; $('#ovl-in').textContent = ''; THUMBS = []; }
+function renderOvl() {
+  if (!VIEW) return;
+  const box = $('#ovl-in'); box.textContent = ''; THUMBS = [];
+  ({ lib: renderLib, edit: renderEditor, report: renderReport, io: renderIo })[VIEW.view](box, VIEW.arg);
+  requestAnimationFrame(() => { for (const f of THUMBS) f(); });
+}
+const fmtDate = t => new Date(t).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) + ' ' + new Date(t).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+let sortBy = 'name', armed = null;
+
+function renderLib(box) {
+  const lst = WK.list.slice();
+  const st = new Map(lst.map(w => [w.id, wkStats(w)]));
+  lst.sort((a, b) => sortBy === 'dur' ? st.get(a.id).total - st.get(b.id).total : sortBy === 'tss' ? st.get(a.id).tss - st.get(b.id).tss : sortBy === 'fav' ? (b.fav - a.fav) || a.name.localeCompare(b.name) : a.name.localeCompare(b.name));
+  const sel = h('select', { 'aria-label': 'Ordina per', onchange: e => { sortBy = e.target.value; renderOvl(); } },
+    [['name', 'Nome'], ['dur', 'Durata'], ['tss', 'TSS'], ['fav', 'Preferiti']].map(([v, t]) => h('option', { value: v, selected: v === sortBy, text: t })));
+  box.append(h('div', { class: 'ovl-top' }, h('h2', { text: 'Allenamenti' }), h('div', { class: 'ovl-btns' },
+    h('button', { class: 'btn on', text: 'Nuovo', onclick: () => openOvl('edit', { w: { id: uid('w'), name: 'Nuovo allenamento', desc: '', blocks: [{ type: 'ramp', dur: 600, p: 45, p2: 70 }], fav: false, done: 0 }, isNew: true }) }),
+    h('button', { class: 'btn', text: 'Importa', onclick: () => openOvl('io', { mode: 'import' }) }),
+    h('button', { class: 'btn', text: 'Esporta', onclick: () => openOvl('io', { mode: 'export', title: 'Esporta allenamenti e storico', file: 'rullo-allenamenti.json', type: 'application/json', text: JSON.stringify({ format: 'rullo-virtuale', list: WK.list, rides: WK.rides }) }) }),
+    h('button', { class: 'btn', text: 'Chiudi', onclick: closeOvl }))));
+  box.append(h('div', { class: 'row' }, h('label', { class: 'field', style: 'max-width:220px' }, 'Ordina per', sel)));
+  const grid = h('div', { class: 'wk-grid' });
+  for (const w of lst) {
+    const s = st.get(w.id), cv = h('canvas', { class: 'wk-thumb' });
+    THUMBS.push(() => drawWk(cv, s.segs, s.total, { small: true }));
+    const del = h('button', { class: 'btn', text: armed === w.id ? 'Conferma' : 'Elimina', onclick: () => { if (armed === w.id) { WK.list = WK.list.filter(x => x.id !== w.id); armed = null; saveWk(); } else armed = w.id; renderOvl(); } });
+    grid.append(h('div', { class: 'wk-card' },
+      h('div', { class: 'wk-cardhead' }, h('b', { text: w.name }),
+        h('button', { class: 'heart' + (w.fav ? ' on' : ''), 'aria-label': 'Preferito', text: w.fav ? '♥' : '♡', onclick: () => { w.fav = !w.fav; saveWk(); renderOvl(); } })),
+      cv,
+      h('div', { class: 'wk-meta' }, h('span', { text: '⏱ ' + mmss(s.total) }), h('span', { text: s.tss + ' TSS' }), h('span', { text: '✓ ' + (w.done | 0) })),
+      w.desc ? h('p', { class: 'hint', text: w.desc }) : null,
+      h('div', { class: 'wk-actions' },
+        h('button', { class: 'btn on', text: 'Avvia', onclick: () => { closeOvl(); wkStart(w); } }),
+        h('button', { class: 'btn', text: 'Modifica', onclick: () => openOvl('edit', { w: clone(w) }) }),
+        h('button', { class: 'btn', text: 'Duplica', onclick: () => { const c = clone(w); c.id = uid('w'); c.name += ' (copia)'; c.done = 0; WK.list.push(c); saveWk(); renderOvl(); } }),
+        del)));
+  }
+  box.append(grid);
+  box.append(h('h2', { class: 'ovl-h2', text: 'Storico' }));
+  if (!WK.rides.length) box.append(h('p', { class: 'hint', text: 'Gli allenamenti completati compaiono qui con il loro report.' }));
+  else {
+    const list = h('div', { class: 'hist' });
+    for (const r of WK.rides) { const s = rideStats(r); list.append(h('button', { class: 'hist-row', onclick: () => openOvl('report', { ride: r, saved: true }) },
+      h('b', { text: r.name }), h('span', { text: fmtDate(r.date) }), h('span', { text: mmss(s.n) }), h('span', { text: Math.round(s.avg) + ' W' }), h('span', { text: Math.round(s.tss) + ' TSS' }))); }
+    box.append(list);
+  }
+}
+
+function renderIo(box, o) {
+  const imp = o.mode === 'import';
+  const ta = h('textarea', { rows: 12, spellcheck: 'false', placeholder: imp ? 'Incolla qui il contenuto di un file .zwo oppure il JSON esportato' : '' });
+  ta.value = imp ? '' : o.text;
+  const msg = h('p', { class: 'hint', text: imp ? 'Puoi scegliere un file oppure incollare il testo.' : 'Se il download non parte, copia il testo e salvalo dove vuoi.' });
+  const bar = h('div', { class: 'ovl-btns' });
+  if (imp) {
+    const f = h('input', { type: 'file', accept: '.zwo,.xml,.json,text/xml,application/json,text/plain' });
+    f.addEventListener('change', () => { const file = f.files && f.files[0]; if (!file) return; const rd = new FileReader(); rd.onload = () => { ta.value = String(rd.result); msg.textContent = 'File letto: ' + file.name + '. Tocca Importa.'; }; rd.onerror = () => { msg.textContent = 'Lettura del file non riuscita.'; }; rd.readAsText(file); });
+    box.append(h('div', { class: 'ovl-top' }, h('h2', { text: 'Importa allenamenti' })), f, ta, msg);
+    bar.append(h('button', { class: 'btn on', text: 'Importa', onclick: () => { try { const n = importText(ta.value); openOvl('lib'); log('Importati ' + n + ' allenamenti'); } catch (e) { msg.textContent = 'Importazione non riuscita: ' + errText(e); } } }));
+  } else {
+    box.append(h('div', { class: 'ovl-top' }, h('h2', { text: o.title })), ta, msg);
+    bar.append(h('button', { class: 'btn on', text: 'Scarica', onclick: () => { msg.textContent = saveFile(o.file, o.text, o.type) ? 'Download avviato.' : 'Download non riuscito: usa Copia.'; } }),
+      h('button', { class: 'btn', text: 'Copia', onclick: async () => { try { await navigator.clipboard.writeText(o.text); msg.textContent = 'Copiato negli appunti.'; } catch (e) { ta.focus(); ta.select(); msg.textContent = 'Testo selezionato: usa Copia dal menu.'; } } }));
+  }
+  bar.append(h('button', { class: 'btn', text: 'Indietro', onclick: () => openOvl(o.back || 'lib', o.backArg) }));
+  box.append(bar);
+}
+
+/* ---------- Editor ---------- */
+let E = null;
+function renderEditor(box, arg) {
+  if (!E || E.w.id !== arg.w.id || arg.fresh) E = { w: arg.w, isNew: !!arg.isNew, undo: [], sel: -1 };
+  const w = E.w;
+  const snap = () => { E.undo.push(JSON.stringify(w.blocks)); if (E.undo.length > 40) E.undo.shift(); };
+  const stats = h('div', { class: 'ed-stats' }), cv = h('canvas', { class: 'ed-prev' });
+  const refresh = () => {
+    const s = wkStats(w); stats.textContent = 'Durata ' + mmss(s.total) + ' · TSS ' + s.tss + ' · ' + s.segs.length + ' segmenti';
+    drawWk(cv, s.segs, s.total, { hi: E.sel >= 0 ? new Set([E.sel]) : null });
+  };
+  THUMBS.push(refresh);
+  const rebuild = () => { renderOvl(); };
+  const nameIn = h('input', { type: 'text', value: w.name, 'aria-label': 'Nome', onchange: e => { w.name = e.target.value.trim() || 'Allenamento'; } });
+  const descIn = h('textarea', { rows: 2, 'aria-label': 'Descrizione', onchange: e => { w.desc = e.target.value; } }); descIn.value = w.desc || '';
+  const add = b => { snap(); w.blocks.splice(E.sel >= 0 ? E.sel + 1 : w.blocks.length, 0, b); E.sel = w.blocks.indexOf(b); rebuild(); };
+  const pal = h('div', { class: 'pal' }, ZC.map((c, z) => h('button', { class: 'zbtn', style: 'background:' + c, text: 'Z' + (z + 1), 'aria-label': 'Aggiungi blocco Z' + (z + 1), onclick: () => add({ type: 'steady', dur: 300, p: ZP[z], cad: 0, msg: '' }) })),
+    h('button', { class: 'btn', text: 'Rampa', onclick: () => add({ type: 'ramp', dur: 600, p: 45, p2: 70, cad: 0, msg: '' }) }),
+    h('button', { class: 'btn', text: 'Serie', onclick: () => add({ type: 'rep', n: 3, dur: 180, p: 115, cad: 0, offDur: 180, offP: 50, offCad: 0, msg: '' }) }),
+    h('button', { class: 'btn', text: 'Libero', onclick: () => add({ type: 'free', dur: 600, msg: '' }) }));
+  const rows = h('div', { class: 'brows' });
+  w.blocks.forEach((b, i) => rows.append(blockRow(b, i, { snap, refresh, rebuild, w })));
+  box.append(h('div', { class: 'ovl-top' }, h('h2', { text: E.isNew ? 'Nuovo allenamento' : 'Modifica allenamento' }), h('div', { class: 'ovl-btns' },
+    h('button', { class: 'btn', text: 'Annulla modifica', disabled: !E.undo.length, onclick: () => { if (!E.undo.length) return; w.blocks = JSON.parse(E.undo.pop()); E.sel = -1; rebuild(); } }),
+    h('button', { class: 'btn', text: 'Scarta', onclick: () => { E = null; openOvl('lib'); } }),
+    h('button', { class: 'btn on', text: 'Fatto', onclick: () => { w.name = nameIn.value.trim() || 'Allenamento'; w.desc = descIn.value; const k = WK.list.findIndex(x => x.id === w.id); if (k >= 0) WK.list[k] = w; else WK.list.push(w); saveWk(); E = null; openOvl('lib'); } }))));
+  box.append(h('div', { class: 'fields' }, h('label', { class: 'field' }, 'Nome', nameIn), h('label', { class: 'field', style: 'grid-column:1/-1' }, 'Descrizione', descIn)));
+  box.append(stats, cv, h('p', { class: 'hint', text: 'Tocca un colore per aggiungere un blocco dopo quello selezionato. Le potenze sono in % dell\'FTP (' + cfg.ftp + ' W).' }), pal, rows);
+}
+function blockRow(b, i, C) {
+  const { snap, refresh, rebuild, w } = C;
+  const sel = E.sel === i, z = b.type === 'free' ? 'free' : zoneOf(b.type === 'ramp' ? (b.p + b.p2) / 2 : b.p);
+  const num = (label, key, min, max, step) => { const i2 = h('input', { type: 'number', inputmode: 'numeric', min, max, step: step || 1, value: b[key] || 0 });
+    i2.addEventListener('change', () => { let v = Number(i2.value); if (!isFinite(v)) v = b[key] || 0; v = clamp(Math.round(v), min, max); i2.value = v; snap(); b[key] = v; refresh(); }); return h('label', { class: 'ef' }, h('span', { text: label }), i2); };
+  const dur = (label, key) => { const sec = b[key] || 0, m = h('input', { type: 'number', inputmode: 'numeric', min: 0, max: 600, value: Math.floor(sec / 60) }), s = h('input', { type: 'number', inputmode: 'numeric', min: 0, max: 59, value: sec % 60 });
+    const ch = () => { snap(); b[key] = clamp(Math.floor(Number(m.value) || 0) * 60 + clamp(Math.floor(Number(s.value) || 0), 0, 59), 5, 36000); m.value = Math.floor(b[key] / 60); s.value = b[key] % 60; refresh(); };
+    m.addEventListener('change', ch); s.addEventListener('change', ch); return h('label', { class: 'ef' }, h('span', { text: label }), h('span', { class: 'two' }, m, h('i', { text: ':' }), s)); };
+  const msg = h('label', { class: 'ef wide' }, h('span', { text: 'Messaggio' }), h('input', { type: 'text', value: b.msg || '', onchange: e => { snap(); b.msg = e.target.value; } }));
+  const f = [];
+  if (b.type === 'rep') f.push(num('Ripetizioni', 'n', 1, 50), dur('Durata sforzo', 'dur'), num('Potenza %', 'p', 20, 250), num('Cadenza rpm', 'cad', 0, 140), dur('Durata recupero', 'offDur'), num('Recupero %', 'offP', 20, 250), num('Cad. recupero', 'offCad', 0, 140), msg);
+  else if (b.type === 'ramp') f.push(dur('Durata', 'dur'), num('Da %', 'p', 20, 250), num('A %', 'p2', 20, 250), num('Cadenza rpm', 'cad', 0, 140), msg);
+  else if (b.type === 'free') f.push(dur('Durata', 'dur'), msg);
+  else f.push(dur('Durata', 'dur'), num('Potenza %', 'p', 20, 250), num('Cadenza rpm', 'cad', 0, 140), msg);
+  const name = { steady: 'Fisso', ramp: 'Rampa', rep: 'Serie', free: 'Libero' }[b.type];
+  const mv = d => () => { const j = i + d; if (j < 0 || j >= w.blocks.length) return; snap(); const t = w.blocks[i]; w.blocks[i] = w.blocks[j]; w.blocks[j] = t; E.sel = j; rebuild(); };
+  return h('div', { class: 'brow' + (sel ? ' sel' : ''), style: '--zc:' + (z === 'free' ? '#8a8aa0' : ZC[z]) },
+    h('div', { class: 'bhead', onclick: () => { E.sel = E.sel === i ? -1 : i; rebuild(); } }, h('b', { text: (i + 1) + '. ' + name }),
+      h('span', { class: 'bbtn' },
+        h('button', { class: 'ibtn', text: '↑', 'aria-label': 'Sposta su', onclick: e => { e.stopPropagation(); mv(-1)(); } }),
+        h('button', { class: 'ibtn', text: '↓', 'aria-label': 'Sposta giù', onclick: e => { e.stopPropagation(); mv(1)(); } }),
+        h('button', { class: 'ibtn', text: '⧉', 'aria-label': 'Duplica', onclick: e => { e.stopPropagation(); snap(); w.blocks.splice(i + 1, 0, clone(b)); E.sel = i + 1; rebuild(); } }),
+        h('button', { class: 'ibtn', text: '✕', 'aria-label': 'Elimina', onclick: e => { e.stopPropagation(); if (w.blocks.length < 2) return; snap(); w.blocks.splice(i, 1); E.sel = -1; rebuild(); } }))),
+    h('div', { class: 'bfields' }, f));
+}
+
+/* ---------- Report ---------- */
+function renderReport(box, arg) {
+  let ride = arg.ride, saved = !!arg.saved || WK.rides.some(r => r.id === ride.id);
+  const st = rideStats(ride), ftp = ride.ftp || cfg.ftp, W = ride.w ? wkStats(ride.w) : null;
+  const cv = h('canvas', { class: 'rep-chart' });
+  THUMBS.push(() => drawWk(cv, W ? W.segs : [], W ? Math.max(W.total, st.n) : st.n, { rec: ride.rec, ftp }));
+  const stat = (l, v, u) => h('div', { class: 'rs' }, h('small', { text: l }), h('b', { text: v }), u ? h('u', { text: u }) : null);
+  const bar = h('div', { class: 'ovl-btns' });
+  if (!saved) bar.append(h('button', { class: 'btn on', text: 'Salva nello storico', onclick: () => { WK.rides.unshift(ride); WK.rides = WK.rides.slice(0, 12); saveRides(); openOvl('report', { ride, saved: true }); } }));
+  bar.append(h('button', { class: 'btn', text: 'Esporta TCX', onclick: () => openOvl('io', { mode: 'export', title: 'Esporta TCX', file: 'rullo-' + new Date(ride.date).toISOString().slice(0, 10) + '.tcx', type: 'application/xml', text: toTcx(ride), back: 'report', backArg: { ride, saved } }) }));
+  if (saved) bar.append(h('button', { class: 'btn', text: armed === ride.id ? 'Conferma' : 'Elimina', onclick: () => { if (armed === ride.id) { WK.rides = WK.rides.filter(r => r.id !== ride.id); armed = null; saveRides(); openOvl('lib'); } else { armed = ride.id; renderOvl(); } } }));
+  bar.append(h('button', { class: 'btn', text: 'Allenamenti', onclick: () => openOvl('lib') }), h('button', { class: 'btn', text: 'Chiudi', onclick: closeOvl }));
+  box.append(h('div', { class: 'ovl-top' }, h('div', {}, h('h2', { text: ride.name }), h('small', { class: 'hint', text: fmtDate(ride.date) })), bar));
+  const grid = h('div', { class: 'rgrid' }, stat('Durata', mmss(st.n)), stat('Potenza media', Math.round(st.avg), 'W'), stat('Potenza normalizzata', Math.round(st.np), 'W'), stat('Massima', Math.round(st.max), 'W'),
+    stat('IF', st.IF.toFixed(2)), stat('TSS', Math.round(st.tss)), stat('Lavoro', Math.round(st.kj), 'kJ'), stat('Cadenza media', Math.round(st.cad), 'rpm'),
+    stat('W/kg medi', (st.avg / cfg.mass).toFixed(2)), stat('Distanza', (st.dist / 1000).toFixed(1), 'km'));
+  if (st.hr) grid.append(stat('Cuore medio', Math.round(st.hr), 'bpm'), stat('Cuore massimo', st.hrMax, 'bpm'));
+  box.append(grid);
+  if (st.est) box.append(h('div', { class: 'est' }, h('div', {}, h('b', { text: 'FTP stimato: ' + st.est + ' W' }), h('small', { class: 'hint', text: ride.test === 'ramp' ? ' · 75% del miglior minuto' : ' · 95% dei migliori 20 minuti' + ' · attuale ' + cfg.ftp + ' W' })),
+    h('button', { class: 'btn on', text: 'Imposta come FTP', onclick: e => { cfg.ftp = st.est; saveCfg(); const inp = document.querySelector('[data-cfg="ftp"]'); if (inp) inp.value = st.est; e.target.textContent = 'FTP aggiornato'; e.target.disabled = true; } })));
+  else if (ride.test) box.append(h('p', { class: 'hint', text: 'Per stimare l\'FTP serve completare di più del test (rampa: almeno 1 minuto; test 20\': 20 minuti).' }));
+  box.append(h('h2', { class: 'ovl-h2', text: 'Potenza' }), cv);
+  box.append(h('h2', { class: 'ovl-h2', text: 'Tempo nelle zone' }));
+  const zl = h('div', { class: 'zones' });
+  const tot = Math.max(1, st.n), names = ['Z1 Recupero', 'Z2 Resistenza', 'Z3 Tempo', 'Z4 Soglia', 'Z5 VO2max', 'Z6 Anaerobica'];
+  st.zt.forEach((s, z) => zl.append(h('div', { class: 'zr' }, h('span', { text: names[z] }), h('i', {}, h('em', { style: 'width:' + (s / tot * 100).toFixed(1) + '%;background:' + ZC[z] })), h('span', { text: mmss(s) + ' · ' + Math.round(s / tot * 100) + '%' }))));
+  box.append(zl);
+  if (W && W.segs.length) {
+    box.append(h('h2', { class: 'ovl-h2', text: 'Obiettivo e risultato' }));
+    const tb = h('div', { class: 'seg-table' }, h('div', { class: 'sr sh' }, h('span', { text: 'Segmento' }), h('span', { text: 'Durata' }), h('span', { text: 'Obiettivo' }), h('span', { text: 'Fatto' }), h('span', { text: 'Scarto' })));
+    W.segs.forEach((sg, k) => {
+      const sm = ride.rec.filter(x => x[5] === k); if (sm.length < 10) return;
+      const act = sm.reduce((x, s) => x + s[0], 0) / sm.length, tg = sm.reduce((x, s) => x + s[4], 0) / sm.length;
+      const dv = tg > 0 ? (act - tg) / tg * 100 : null, cls = dv == null ? '' : Math.abs(dv) <= 5 ? 'ok' : Math.abs(dv) <= 10 ? 'warn' : 'bad';
+      tb.append(h('div', { class: 'sr', style: '--zc:' + (sg.free ? '#8a8aa0' : ZC[zoneOf((sg.p0 + sg.p1) / 2)]) }, h('span', { text: sg.label }), h('span', { text: mmss(sg.t1 - sg.t0) }),
+        h('span', { text: tg > 0 ? Math.round(tg) + ' W' : 'libero' }), h('span', { text: Math.round(act) + ' W' }), h('span', { class: cls, text: dv == null ? '—' : (dv >= 0 ? '+' : '') + dv.toFixed(0) + '%' })));
+    });
+    box.append(tb);
+  }
+}
+
+/* ---------- Esecuzione ---------- */
+let AC = null;
+function beep(f, d) {
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume();
+    const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = f; g.gain.value = 0.16; o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d); } catch (e) {}
+}
+function wkStart(w) {
+  const st = wkStats(w);
+  if (!st.total) return;
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); AC.resume(); } catch (e) {}
+  S.wk = { w: clone(w), id: w.id, segs: st.segs, total: st.total, t: 0, idx: 0, paused: false, auto: false, started: false, still: 0, adj: 1, lastIdx: 0, lastRem: -1, endConfirm: false, seek: false };
+  S.rec = []; S.recAcc = 0; S.recMeta = { start: Date.now(), name: w.name, ftp: cfg.ftp, w: clone(w), test: w.test || null };
+  S.mode = 'erg'; $('#mode-route').classList.remove('on'); $('#mode-erg').classList.add('on'); $('#erg-box').hidden = true; $('#mode-hint').hidden = true;
+  S.wkFree = !!st.segs[0].free; $('#stage').hidden = true; $('#wkstage').hidden = false; $('#wk-seek').max = st.total; $('#wk-seek').value = 0;
+  lastSentG = null; lastErgT = 0; gearUI(); wkTarget(true); wkUI(); wake(); log('Allenamento avviato: ' + w.name);
+}
+function wkTarget(force) {
+  const W = S.wk; if (!W) return;
+  const sg = W.segs[W.idx]; const free = !!sg.free;
+  if (free !== S.wkFree) { S.wkFree = free; gearUI(); if (free) { lastSentG = null; sendResistance(true); } else force = true; }
+  if (!free) {
+    const w = clamp(Math.round(pAt(sg, W.t) * W.adj * cfg.ftp / 100), 30, 600);
+    if (w !== S.ergW) { S.ergW = w; gearUI(); }
+    if (force || (w !== W.sentW && performance.now() - lastErgT > 900)) { W.sentW = w; sendErg(); }
+  }
+}
+function wkAdvance(dt, moving, src) {
+  const W = S.wk;
+  if (moving) W.still = 0; else W.still += dt;
+  W.auto = W.started && W.still > 5;
+  if (!W.started && moving) { W.started = true; beep(1320, 0.2); }
+  const running = W.started && !W.paused && !W.auto;
+  if (running && !W.seek) W.t += dt;
+  const i = segIndex(W.segs, Math.min(W.t, W.total - 0.001));
+  if (i !== W.idx) { W.idx = i; W.lastRem = -1; if (running) beep(1320, 0.22); wkTarget(true); }
+  const sg = W.segs[W.idx], rem = Math.ceil(sg.t1 - W.t);
+  if (running && rem <= 3 && rem >= 1 && rem !== W.lastRem && W.idx < W.segs.length) { W.lastRem = rem; beep(880, 0.1); }
+  wkTarget(false);
+  if (W.t >= W.total - 0.001) { wkEnd(true); return false; }
+  return running;
+}
+function wkEnd(report) {
+  const W = S.wk; if (!W) return;
+  const ride = buildRide();
+  S.wk = null; S.wkFree = false; $('#stage').hidden = false; $('#wkstage').hidden = true;
+  beep(660, 0.4);
+  if (ride && ride.rec.length >= 60) {
+    const w = WK.list.find(x => x.id === W.id); if (w) { w.done = (w.done | 0) + 1; saveWk(); }
+    WK.rides.unshift(ride); WK.rides = WK.rides.slice(0, 12); saveRides();
+  }
+  setMode('route');
+  if (report && ride && ride.rec.length >= 20) openOvl('report', { ride, saved: WK.rides.some(r => r.id === ride.id) });
+  log('Allenamento concluso');
+}
+function wkUI() {
+  const W = S.wk; if (!W) return;
+  const sg = W.segs[W.idx], nx = W.segs[W.idx + 1], tp = pAt(sg, W.t) * W.adj;
+  setT('#wk-name', W.w.name);
+  setT('#wk-time', mmss(W.t) + ' / ' + mmss(W.total) + ' · restano ' + mmss(W.total - W.t));
+  setT('#wk-state', !W.started ? 'Inizia a pedalare per partire' : W.paused ? 'In pausa' : W.auto ? 'Pausa automatica: pedala per riprendere' : sg.label);
+  setT('#wk-tw', sg.free ? '—' : String(Math.round(tp * cfg.ftp / 100)));
+  setT('#wk-tp', sg.free ? 'Libero: scegli tu con le marce' : Math.round(tp) + '% FTP' + (sg.cad ? ' · cadenza ' + sg.cad + ' rpm' : ''));
+  setT('#wk-cd', mmss(Math.ceil(sg.t1 - W.t)));
+  $('#wk-fill').style.width = clamp((W.t - sg.t0) / (sg.t1 - sg.t0) * 100, 0, 100) + '%';
+  $('#wk-fill').style.background = sg.free ? '#8a8aa0' : ZC[zoneOf(tp)];
+  const act = Math.round(S.pAvg), tg = sg.free ? 0 : Math.round(tp * cfg.ftp / 100), dv = tg ? Math.abs(act - tg) / tg : 0;
+  const nowEl = $('#wk-now'); nowEl.className = !tg ? '' : dv <= 0.05 ? 'ok' : dv <= 0.1 ? 'warn' : 'bad';
+  setT('#wk-now', 'Tu: ' + act + ' W · ' + Math.round(S.src.cad) + ' rpm' + (hrFresh() ? ' · ' + S.live.hr.bpm + ' bpm' : ''));
+  setT('#wk-next', nx ? 'Tra ' + mmss(Math.ceil(sg.t1 - W.t)) + ': ' + nx.label + ' · ' + mmss(nx.t1 - nx.t0) + (nx.free ? ' · libero' : ' · ' + Math.round(nx.p0 * W.adj * cfg.ftp / 100) + (nx.p1 !== nx.p0 ? '→' + Math.round(nx.p1 * W.adj * cfg.ftp / 100) : '') + ' W') : 'Ultimo segmento');
+  setT('#wk-adj', Math.round(W.adj * 100) + '%');
+  setT('#wk-pause', W.paused ? 'Riprendi' : 'Pausa');
+  const m = $('#wk-msg'), txt = sg.msg && (W.t - sg.t0 < 25 || sg.t1 - sg.t0 < 40) ? sg.msg : '';
+  m.hidden = !txt; if (txt && m.textContent !== txt) m.textContent = txt;
+  const sk = $('#wk-seek'); if (!W.seek && document.activeElement !== sk) sk.value = Math.floor(W.t);
+  const e = $('#wk-end'); setT('#wk-end', W.endConfirm ? 'Conferma fine' : 'Termina');
+}
+function wkDraw() {
+  const W = S.wk; if (!W) return;
+  drawWk($('#wk-prof'), W.segs, W.total, { cursor: W.t, rec: S.rec, ftp: cfg.ftp });
+}
+function wkBindings() {
+  $('#wk-pause').addEventListener('click', () => { const W = S.wk; if (!W) return; W.paused = !W.paused; if (!W.started) W.started = true; wkUI(); });
+  $('#wk-skip').addEventListener('click', () => { const W = S.wk; if (!W) return; const n = W.segs[W.idx + 1]; if (n) { W.t = n.t0 + 0.01; } else wkEnd(true); });
+  $('#wk-back').addEventListener('click', () => { const W = S.wk; if (!W) return; const g = W.segs[W.idx]; W.t = (W.t - g.t0 > 5 || !W.segs[W.idx - 1]) ? g.t0 : W.segs[W.idx - 1].t0; });
+  $('#wk-minus').addEventListener('click', () => shift('rear', -1));
+  $('#wk-plus').addEventListener('click', () => shift('rear', 1));
+  $('#wk-end').addEventListener('click', () => { const W = S.wk; if (!W) return; if (!W.endConfirm) { W.endConfirm = true; wkUI(); setTimeout(() => { if (S.wk) { S.wk.endConfirm = false; wkUI(); } }, 4000); } else wkEnd(true); });
+  const sk = $('#wk-seek');
+  sk.addEventListener('input', () => { const W = S.wk; if (!W) return; W.seek = true; W.t = Number(sk.value); });
+  sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
+  $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
+  const logText = () => 'Rullo virtuale v15 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
+  $('#log-share').addEventListener('click', async () => {
+    const t = logText();
+    try { if (navigator.share) { await navigator.share({ title: 'Registro rullo virtuale', text: t }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+    try { const u = URL.createObjectURL(new Blob([t], { type: 'text/plain' })); const a = document.createElement('a'); a.href = u; a.download = 'registro-rullo.txt'; document.body.appendChild(a); a.click(); a.remove(); note('Registro salvato come file registro-rullo.txt.'); return; } catch (e) {}
+    try { await navigator.clipboard.writeText(t); note('Registro copiato negli appunti.'); } catch (e) { note('Non riesco a condividere: fai uno screenshot del registro.'); }
+  });
+  $('#rep-btn').addEventListener('click', () => { const ride = buildRide(); if (ride) openOvl('report', { ride, saved: false }); else note('Pedala ancora un po\': il report parte da 20 secondi di dati.'); });
+}
+
+/* ---------- Tieni sveglio il Click (sperimentale) ---------- */
+let kaN = 0;
+setInterval(async () => {
+  if (!cfg.keepAlive) return;
+  for (const k of ['ck', 'ck2']) {
+    const st = S.ck[k]; if (!clickOn(k) || !st.rx) continue;
+    try { if (st.rx.writeValueWithoutResponse) await st.rx.writeValueWithoutResponse(st.hs); else await st.rx.writeValue(st.hs); if (++kaN <= 3 || kaN % 15 === 0) log(NAMES[k] + ': segnale per tenerlo sveglio inviato (#' + kaN + ')'); }
+    catch (e) { log(NAMES[k] + ': segnale non inviato: ' + errText(e)); }
+  }
+}, 20000);
+
+/* ---------- Altimetria nella scena ---------- */
+function drawInset() {
+  const c = $('#inset'); if (!c || c.offsetParent === null) return;
+  const d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
+  g.globalAlpha = 0.86; g.fillStyle = COL.panel; g.fillRect(0, 0, W, H); g.globalAlpha = 1;
+  const a = S.pos - 1000, b = S.pos + 3000, N = 64, es = [];
+  let lo = 1e9, hi = -1e9;
+  for (let i = 0; i <= N; i++) { const e = elev(a + (b - a) * i / N); es.push(e); lo = Math.min(lo, e); hi = Math.max(hi, e); }
+  const span = Math.max(hi - lo, 25), top = 24 * d, bot = H - 3 * d, X = i => W * i / N, Y = e => bot - (e - lo) / span * (bot - top - 6 * d);
+  const px = W * 0.25;
+  g.beginPath(); g.moveTo(0, H); es.forEach((e, i) => g.lineTo(X(i), Y(e))); g.lineTo(W, H); g.closePath(); g.fillStyle = COL.ground; g.globalAlpha = 0.9; g.fill(); g.globalAlpha = 1;
+  g.save(); g.beginPath(); g.rect(0, 0, px, H); g.clip(); g.beginPath(); g.moveTo(0, H); es.forEach((e, i) => g.lineTo(X(i), Y(e))); g.lineTo(W, H); g.closePath(); g.fillStyle = COL.hill2; g.fill(); g.restore();
+  g.beginPath(); es.forEach((e, i) => i ? g.lineTo(X(i), Y(e)) : g.moveTo(X(i), Y(e))); g.lineWidth = 2 * d; g.lineJoin = 'round'; g.strokeStyle = COL.ink; g.stroke();
+  g.beginPath(); g.arc(px, Y(elev(S.pos)), 4.5 * d, 0, 7); g.fillStyle = COL.accent; g.fill();
+  const gr = (elev(S.pos + 500) - elev(S.pos)) / 5;
+  g.font = '600 ' + (12 * d) + 'px Barlow, system-ui, sans-serif'; g.textBaseline = 'top'; g.textAlign = 'left';
+  g.fillStyle = COL.ink2; g.fillText('Prossimi 500 m', 8 * d, 5 * d);
+  g.textAlign = 'right'; g.fillStyle = gr >= 6 ? COL.bad : gr >= 3 ? COL.warn : gr <= -2 ? COL.ok : COL.ink;
+  g.fillText((gr >= 0 ? '+' : '') + gr.toFixed(1) + '%', W - 8 * d, 5 * d);
+}
+
+/* ---------- Cardio ---------- */
+const hrFresh = () => S.live.hr && performance.now() - S.live.hr.t < 6000 && S.live.hr.bpm > 0;
+function onHr(dv) {
+  try { const f = dv.getUint8(0); const v = (f & 1) ? dv.getUint16(1, true) : dv.getUint8(1); S.live.hr.t = performance.now(); S.live.hr.bpm = v; LASTV.hr = v + ' bpm'; CNT.hr++; if (CNT.hr <= 3) log('Cuore dato #' + CNT.hr + ': ' + v + ' bpm'); } catch (e) { log('Cuore: dato non leggibile ' + errText(e)); }
+}
+async function setupHr(d, k) {
+  const g = ++GEN[k]; CNT.hr = 0;
+  const srv = await d.gatt.connect(); const svc = await srv.getPrimaryService(U.hrs); const ch = await svc.getCharacteristic(U.hrm);
+  ch.addEventListener('characteristicvaluechanged', e => { if (g === GEN[k]) onHr(e.target.value); });
+  await ch.startNotifications(); log('Cuore: notifiche attive (funzione non ancora provata su un cardiofrequenzimetro vero)');
+}
+function hrUI() {
+  const el = $('#m-hr'), on = hrFresh();
+  if (el.hidden === on) el.hidden = !on;
+  if (!on) return;
+  const b = S.live.hr.bpm, pc = b / cfg.hrMax * 100;
+  setT('#v-hr', String(b)); setT('#hr-sub', Math.round(pc) + '% del massimo · Z' + (pc < 60 ? 1 : pc < 70 ? 2 : pc < 80 ? 3 : pc < 90 ? 4 : 5));
+}
+
+wkBindings(); loadWk();
 
 /* ---------- Avvio ---------- */
 (function () {
   let gain = 0, prev = elev(0); for (let s = 20; s <= LOOP; s += 20) { const e = elev(s); if (e > prev) gain += e - prev; prev = e; }
-  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5% · v10';
+  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5% · v15';
 })();
 if (!navigator.bluetooth) note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.');
 try { roleLabels(); } catch (e) { log('Etichette Click: ' + errText(e)); }
