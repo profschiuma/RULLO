@@ -218,6 +218,7 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
 .profbox{margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px 6px}
 .profhead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px;align-items:center;margin-bottom:6px}
 .profhead h2{font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);margin:0}
+.gl #ring-sub,.gl #cog-sub{text-transform:none;letter-spacing:0}
 .leg{display:flex;flex-wrap:wrap;gap:4px 12px;font:600 12px/1.2 var(--f-body);color:var(--ink2)}
 .leg i{display:inline-block;width:14px;height:6px;border-radius:3px;margin-right:5px;vertical-align:middle}
 .ghostbox{position:absolute;right:12px;top:10px;max-width:46%;padding:6px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);text-align:right}
@@ -919,10 +920,16 @@ function handleRide(u, k) {
     }
     refreshPad(); return;
   }
+  let hit = false;
   for (const fn of ['rear', 'front']) for (const sp of ['plus', 'minus']) {
     const m = cfg.keys[fn][sp];
-    if (m && m.k === k && (fresh & m.bit)) shift(fn, (sp === 'plus' ? 1 : -1) * (cfg.swap ? -1 : 1));
+    if (m && m.k === k && (fresh & m.bit)) {
+      hit = true;
+      try { shift(fn, (sp === 'plus' ? 1 : -1) * (cfg.swap ? -1 : 1)); log('  -> ' + (fn === 'rear' ? 'pignone' : 'corona') + (sp === 'plus' ? ' +' : ' −') + ': ora ' + rings()[S.ring] + '×' + cogs()[S.gear] + (S.wk ? ' (allenamento: cambia intensità ' + Math.round(S.wk.adj * 100) + '%)' : S.mode === 'erg' ? ' (ERG ' + S.ergW + ' W)' : '')); }
+      catch (e) { log('  -> ERRORE nel cambio marcia: ' + errText(e) + (e && e.stack ? ' @ ' + String(e.stack).split('\n')[0] : '')); }
+    }
   }
+  if (!hit) log('  -> tasto 0x' + fresh.toString(16) + ' di ' + NAMES[k] + ' non associato a nessun comando (pignoni: + ' + keyTxt(cfg.keys.rear.plus) + ', − ' + keyTxt(cfg.keys.rear.minus) + ')');
 }
 function dispatchClick(u, k) {
   if (zpDecode(u, k)) return;
