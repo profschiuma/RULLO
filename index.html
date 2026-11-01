@@ -37,7 +37,7 @@
 body{
   background:var(--bg); color:var(--ink); font:400 16px/1.45 var(--f-body);
   padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
-  padding-block:16px; -webkit-text-size-adjust:100%;
+  padding-block:10px; -webkit-text-size-adjust:100%;
 }
 .app{max-width:1280px;margin:0 auto}
 .top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
@@ -45,7 +45,7 @@ h1{font:600 30px/1 var(--f-num);letter-spacing:.02em;margin:0}
 .sub{color:var(--ink2);font-size:14px}
 .brand{display:grid;gap:4px;min-width:0}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{display:flex;align-items:center;gap:10px;min-height:48px;padding:8px 16px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink);font:600 14px/1.2 var(--f-body);text-align:left;cursor:pointer}
+.chip{display:flex;align-items:center;gap:10px;min-height:44px;padding:6px 16px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink);font:600 14px/1.2 var(--f-body);text-align:left;cursor:pointer}
 .chip small{display:block;font-weight:400;color:var(--ink2);font-size:12px}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--ink2);flex:none}
 .chip.on .dot{background:var(--ok)}
@@ -54,12 +54,12 @@ h1{font:600 30px/1 var(--f-num);letter-spacing:.02em;margin:0}
 @keyframes pulse{50%{opacity:.25}}
 @media (prefers-reduced-motion:reduce){.chip.busy .dot{animation:none}}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.note{margin:12px 0 0;padding:10px 14px;border:1px solid var(--warn);border-radius:10px;background:var(--panel);font-size:14px}
+.note{cursor:pointer;margin:12px 0 0;padding:10px 14px;border:1px solid var(--warn);border-radius:10px;background:var(--panel);font-size:14px}
 .stage{position:relative;margin-top:14px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
-#scene{display:block;width:100%;height:clamp(220px,36vh,400px)}
+#scene{display:block;width:100%;height:clamp(180px,27vh,340px)}
 .hud{position:absolute;left:12px;top:10px;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 24px)}
 .hud span{padding:4px 10px;border-radius:8px;background:var(--panel);color:var(--ink);font:600 15px/1.3 var(--f-num);letter-spacing:.03em;font-variant-numeric:tabular-nums;border:1px solid var(--line)}
-.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;margin-top:12px}
 .m{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:4px;align-content:start;min-width:0}
 .m label,.card h2{font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);margin:0}
 .val{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;min-width:0}
@@ -78,7 +78,7 @@ h1{font:600 30px/1 var(--f-num);letter-spacing:.02em;margin:0}
 .gear-row .val b{font-size:clamp(30px,4vw,40px)}
 .m-gear{grid-column:span 2}
 @media (max-width:340px){.m-gear{grid-column:span 1}}
-.gsplit{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.gsplit{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px}
 .gblock{display:grid;gap:4px;min-width:0}
 .gblock .gl{font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2)}
 .gblock .gear-row{gap:6px}
@@ -114,7 +114,7 @@ input[type=checkbox]{width:22px;min-height:22px;height:22px;accent-color:var(--a
 .check{display:flex;gap:10px;align-items:center;font-size:15px;color:var(--ink)}
 .hint{margin:0;color:var(--ink2);font-size:13px}
 canvas.chart{display:block;width:100%}
-#pwr{height:150px}#prof{height:110px}
+#pwr{height:150px}#prof{height:112px}
 summary{cursor:pointer;font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);min-height:24px}
 details[open] summary{margin-bottom:12px}
 pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;background:var(--panel2);font:12px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all}
@@ -213,9 +213,47 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
 .field.chk{grid-auto-flow:column;justify-content:start;align-items:center;gap:10px}
 .gwarn{position:absolute;right:12px;bottom:12px;max-width:calc(100% - 24px);padding:6px 10px;border-radius:8px;background:var(--panel);border:1px solid var(--bad);color:var(--bad);font:600 14px/1.3 var(--f-body)}
 .gwarn[hidden]{display:none}
-.rt-plan{display:block;width:100%;height:190px;border-radius:8px;background:var(--panel2)}
-.rt-plan.sm{height:96px}
 .sumtxt p{margin:0 0 6px;font-size:15px}
+.padet{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:8px 14px}
+.profbox{margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px 6px}
+.profhead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px;align-items:center;margin-bottom:6px}
+.profhead h2{font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);margin:0}
+.leg{display:flex;flex-wrap:wrap;gap:4px 12px;font:600 12px/1.2 var(--f-body);color:var(--ink2)}
+.leg i{display:inline-block;width:14px;height:6px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.ghostbox{position:absolute;right:12px;top:10px;max-width:46%;padding:6px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);text-align:right}
+.ghostbox b{display:block;font:600 28px/1.05 var(--f-num);font-variant-numeric:tabular-nums}
+.ghostbox small{display:block;color:var(--ink2);font-size:12px;line-height:1.3}
+/* allenamento: schermata unica */
+.wk-main{grid-template-columns:1fr 1.7fr .9fr}
+@media (max-width:820px){.wk-main{grid-template-columns:1fr}}
+.wk-hd{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wk-pw{font:600 clamp(56px,9vw,112px)/1 var(--f-num);font-variant-numeric:tabular-nums}
+.wk-gauge{position:relative;height:26px;margin:10px 0 2px;border-radius:8px;background:var(--panel)}
+.wk-gauge i{position:absolute;display:block}
+.wk-gauge .band{left:37.5%;width:25%;top:0;bottom:0;border-radius:8px;background:color-mix(in srgb,var(--ok) 28%,transparent);border:1.5px solid var(--ok)}
+.wk-gauge .tgt{left:50%;top:-5px;bottom:-5px;width:3px;margin-left:-1px;background:var(--ink);border-radius:2px}
+.wk-gauge .lim{top:-5px;bottom:-5px;width:0;border-left:3px dashed var(--bad)}
+.wk-gauge .act{top:-10px;left:50%;border-left:9px solid transparent;border-right:9px solid transparent;border-top:13px solid var(--accent);margin-left:-9px}
+.wk-gl{display:flex;justify-content:space-between;font:600 12px/1.2 var(--f-body);color:var(--ink2);min-height:15px}
+.wk-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.wk-t{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--panel2);display:grid;gap:3px;align-content:start;min-width:0}
+.wk-t>small{color:var(--ink2);font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase}
+.wk-t .val b{font-size:clamp(30px,3.6vw,44px)}
+.wk-t>small:last-child{font:400 13px/1.3 var(--f-body);letter-spacing:0;text-transform:none}
+.cadi{font:700 clamp(24px,3vw,34px)/1 var(--f-body);margin-left:4px}
+.cadi.ok{color:var(--ok)}.cadi.warn{color:var(--warn)}.cadi.bad{color:var(--bad)}
+.wk-profbox{position:relative}
+.wk-nextpill{position:absolute;right:8px;top:8px;max-width:70%;padding:5px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);font:600 13px/1.3 var(--f-body)}
+.wk-nxt{border:1px solid var(--z2);border-radius:12px;padding:10px 14px;background:var(--panel2);display:grid;gap:2px}
+.wk-nxt>small{color:var(--ink2);font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase}
+.wk-nxrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px}
+.wk-nxrow .wk-big b{font-size:clamp(40px,6vw,60px)}
+.wk-nxrow small{display:block}
+.wk-nxrow b#wk-nx-t{font:700 19px/1.3 var(--f-body)}
+#wkstage.rest{background:var(--panel);background:color-mix(in srgb,var(--z2) 7%,var(--panel))}
+#wkstage.rest .wk-cd{color:var(--z2)}
+#wkstage.rest .wk-state{color:var(--z2)}
+#wk-prof{height:160px}
 </style>
 
 <div class="app">
@@ -236,18 +274,6 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
 
   <section class="pad" aria-label="Tasti dei controller">
     <div class="guide" id="guide" aria-live="polite"><b id="guide-title">Controller</b><span id="guide-text">Collega un Zwift Click con i pulsanti qui sopra.</span><button class="btn" id="learn-cancel" hidden>Annulla</button></div>
-    <div class="padrow">
-      <div class="padcard">
-        <div class="padhead"><b>Pignoni</b><small id="pad-rear-st">&nbsp;</small></div>
-        <div class="padmap" id="pad-rear-map">&nbsp;</div>
-        <div class="padbtns"><button class="btn" id="learn-rear" disabled>Associa pignoni</button></div>
-      </div>
-      <div class="padcard">
-        <div class="padhead"><b>Corone</b><small id="pad-front-st">&nbsp;</small></div>
-        <div class="padmap" id="pad-front-map">&nbsp;</div>
-        <div class="padbtns"><button class="btn" id="learn-front" disabled>Associa corone</button></div>
-      </div>
-    </div>
   </section>
 
 
@@ -255,6 +281,7 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
     <canvas id="scene"></canvas>
     <canvas id="inset" aria-label="Altimetria dei prossimi chilometri"></canvas>
     <div class="gwarn" id="gwarn" hidden></div>
+    <div class="ghostbox" id="ghostbox" hidden><b id="gh-v">—</b><small id="gh-s">&nbsp;</small></div>
     <div class="hud"><span id="h-km">0.00 km</span><span id="h-time">00:00:00</span><span id="h-gain">D+ 0 m</span></div>
   </section>
 
@@ -262,11 +289,23 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
     <div class="wk-top"><b id="wk-name">Allenamento</b><span id="wk-time">0:00 / 0:00</span></div>
     <div class="wk-state" id="wk-state">&nbsp;</div>
     <div class="wk-main">
-      <div class="wk-box"><small>Potenza obiettivo</small><div class="wk-big"><b id="wk-tw">0</b><u>W</u></div><small id="wk-tp">&nbsp;</small><div id="wk-now">&nbsp;</div></div>
-      <div class="wk-box"><small>Fine segmento tra</small><div class="wk-cd" id="wk-cd">0:00</div><div class="wk-bar"><i id="wk-fill"></i></div><div id="wk-next">&nbsp;</div></div>
+      <div class="wk-box"><small id="wk-cdl">Fine segmento tra</small><div class="wk-cd" id="wk-cd">0:00</div><div class="wk-bar"><i id="wk-fill"></i></div><small id="wk-seginfo">&nbsp;</small></div>
+      <div class="wk-box" id="wk-pbox"><div class="wk-hd"><small>Potenza</small><span class="zone" id="wk-zone">Z1</span></div><div class="wk-big"><b class="wk-pw" id="wk-pw">0</b><u>W</u></div>
+        <div class="wk-gauge" id="wk-gauge"><i class="band"></i><i class="lim" id="wk-lim" hidden></i><i class="tgt"></i><i class="act" id="wk-act"></i></div>
+        <div class="wk-gl"><span id="wk-gl-l">&nbsp;</span><span id="wk-gl-r">&nbsp;</span></div></div>
+      <div class="wk-box"><small>Obiettivo</small><div class="wk-big"><b id="wk-tw">0</b><u>W</u></div><small id="wk-tp">&nbsp;</small><div id="wk-now">&nbsp;</div></div>
+    </div>
+    <div class="wk-nxt" id="wk-nxt" hidden><small>Il prossimo</small><div class="wk-nxrow"><div class="wk-big"><b id="wk-nx-w">0</b><u>W</u></div><div><b id="wk-nx-t">&nbsp;</b><small id="wk-nx-d">&nbsp;</small></div></div></div>
+    <div class="wk-tiles">
+      <div class="wk-t"><small>Cadenza</small><div class="val"><b id="wk-cad">0</b><u>rpm</u><span class="cadi" id="wk-cadi"></span></div><small id="wk-cadt">&nbsp;</small></div>
+      <div class="wk-t"><small>Cuore</small><div class="val"><b id="wk-hr">—</b><u>bpm</u></div><small id="wk-hrs">&nbsp;</small></div>
+      <div class="wk-t"><small id="wk-avgl">Media segmento</small><div class="val"><b id="wk-avg">—</b><u>W</u></div><small id="wk-avgs">&nbsp;</small></div>
+      <div class="wk-t"><small>Tempo totale</small><div class="val"><b id="wk-tot">0:00</b><u id="wk-totu"></u></div></div>
+      <div class="wk-t"><small>W/kg</small><div class="val"><b id="wk-wkg">0.0</b></div></div>
+      <div class="wk-t" id="wk-gearbox" hidden><small>Marcia</small><div class="val"><b id="wk-gear">50×19</b></div></div>
     </div>
     <div class="wk-msg" id="wk-msg" hidden></div>
-    <canvas id="wk-prof" aria-label="Profilo dell'allenamento"></canvas>
+    <div class="wk-profbox"><canvas id="wk-prof" aria-label="Profilo dell'allenamento"></canvas><div class="wk-nextpill" id="wk-next">&nbsp;</div></div>
     <input type="range" id="wk-seek" min="0" max="100" step="1" value="0" aria-label="Posizione nell'allenamento">
     <div class="wk-ctl">
       <button class="btn" id="wk-back">⏮ Indietro</button>
@@ -285,7 +324,6 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
       <small id="p-sub">0.0 W/kg</small>
     </div>
     <div class="m"><label>Cadenza</label><div class="val"><b id="v-c">0</b><u>rpm</u></div><small id="c-sub">&nbsp;</small></div>
-    <div class="m" id="m-hr" hidden><label>Cuore</label><div class="val"><b id="v-hr">0</b><u>bpm</u></div><small id="hr-sub">&nbsp;</small></div>
     <div class="m"><label>Velocità</label><div class="val"><b id="v-s">0.0</b><u>km/h</u></div><small id="s-sub">&nbsp;</small></div>
     <div class="m"><label>Pendenza</label><div class="val"><b id="v-g">0.0</b><u>%</u></div><small id="g-sub">Rullo: n.d.</small></div>
     <div class="m m-gear" id="m-gear">
@@ -293,22 +331,20 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
       <div class="val"><b id="v-gear">50×19</b></div>
       <div class="gsplit">
         <div class="gblock">
-          <span class="gl">Corona</span>
+          <span class="gl">Corona · <span id="ring-sub">&nbsp;</span></span>
           <div class="gear-row">
             <button class="gbtn" id="r-minus" aria-label="Corona più piccola">−</button>
             <b id="v-ring">50</b>
             <button class="gbtn" id="r-plus" aria-label="Corona più grande">+</button>
           </div>
-          <small id="ring-sub">&nbsp;</small>
         </div>
         <div class="gblock">
-          <span class="gl">Pignone</span>
+          <span class="gl">Pignone · <span id="cog-sub">&nbsp;</span></span>
           <div class="gear-row">
             <button class="gbtn" id="c-minus" aria-label="Pignone più grande, marcia più agile">−</button>
             <b id="v-cog">19</b>
             <button class="gbtn" id="c-plus" aria-label="Pignone più piccolo, marcia più dura">+</button>
           </div>
-          <small id="cog-sub">&nbsp;</small>
         </div>
       </div>
     </div>
@@ -321,7 +357,28 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
       </div>
       <small>ERG · pignoni ± 10 W, corone ± 50 W</small>
     </div>
+    <div class="m" id="m-hr"><label>Cuore</label><div class="val"><b id="v-hr">—</b><u>bpm</u></div><small id="hr-sub">non collegato</small></div>
   </section>
+
+  <section class="profbox" id="profbox" aria-label="Altimetria del giro">
+    <div class="profhead"><h2>Altimetria del giro</h2><div class="leg"><span><i style="background:var(--z2)"></i>discesa</span><span><i style="background:var(--z3)"></i>0–3%</span><span><i style="background:var(--z4)"></i>3% fino al limite del rullo</span><span><i style="background:var(--z6)"></i>oltre il limite</span></div></div>
+    <canvas class="chart" id="prof"></canvas>
+  </section>
+
+  <details class="padet" id="pad-det"><summary>Associazione dei tasti (pignoni e corone)</summary>
+    <div class="padrow">
+      <div class="padcard">
+        <div class="padhead"><b>Pignoni</b><small id="pad-rear-st">&nbsp;</small></div>
+        <div class="padmap" id="pad-rear-map">&nbsp;</div>
+        <div class="padbtns"><button class="btn" id="learn-rear" disabled>Associa pignoni</button></div>
+      </div>
+      <div class="padcard">
+        <div class="padhead"><b>Corone</b><small id="pad-front-st">&nbsp;</small></div>
+        <div class="padmap" id="pad-front-map">&nbsp;</div>
+        <div class="padbtns"><button class="btn" id="learn-front" disabled>Associa corone</button></div>
+      </div>
+    </div>
+  </details>
 
   <section class="dock">
     <div class="card">
@@ -337,6 +394,7 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
       </div>
       <p class="hint" id="mode-hint">In Percorso il rullo simula la pendenza e la marcia virtuale. Sul Click, + è più duro e − più agile. Tastiera: ↑ e ↓ per i pignoni, → e ← per le corone.</p>
       <div class="row"><button class="btn" id="routes-btn" style="flex:1">Percorsi…</button><button class="btn" id="reset" style="flex:1">Azzera giro</button><button class="btn" id="rep-btn" style="flex:1">Report del giro</button></div>
+      <div class="row"><button class="btn" id="ghost-btn" style="flex:1">Fantasma: no</button><p class="hint" style="flex:2;min-width:180px">Mostra un secondo ciclista con il tuo miglior giro su questo percorso (almeno 2 km in 5 minuti) e di quanto sei avanti o indietro.</p></div>
     </div>
 
     <div class="card">
@@ -350,11 +408,6 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
     <div class="card wide">
       <h2>Potenza, ultimi 5 minuti</h2>
       <canvas class="chart" id="pwr"></canvas>
-      <h2 id="plan-h">Mappa del giro</h2>
-      <canvas class="chart" id="plan" style="height:210px"></canvas>
-      <p class="hint" id="plan-note"></p>
-      <h2>Altimetria del giro</h2>
-      <canvas class="chart" id="prof"></canvas>
     </div>
 
     <details class="card wide">
@@ -435,7 +488,7 @@ function zRaw(s) { let z = 0; for (const [k, a, p] of COMP) z += a * Math.sin(2 
 const SC = (() => { let mx = 0; for (let s = 0; s < DEMO_LEN; s += 5) mx = Math.max(mx, Math.abs((zRaw(s + 5) - zRaw(s)) / 5)); return 0.05 / mx; })();
 function demoZ() { const z = []; for (let i = 0; i <= DEMO_LEN / RSTEP; i++) z.push(210 + SC * zRaw(i * RSTEP)); return z; }
 let RT = { id: 'demo', name: 'Anello collinare', kind: 'demo', loop: true, z: Float32Array.from(demoZ()), len: DEMO_LEN };
-function setRT(r) { const z = Float32Array.from(r.z); RT = { id: r.id, name: r.name, kind: r.kind, loop: !!r.loop, z, len: (z.length - 1) * RSTEP, xy: planFor(r) }; }
+function setRT(r) { const z = Float32Array.from(r.z); RT = { id: r.id, name: r.name, kind: r.kind, loop: !!r.loop, z, len: (z.length - 1) * RSTEP }; }
 function elev(s) {
   const L = RT.len, z = RT.z; s = RT.loop ? ((s % L) + L) % L : clamp(s, 0, L);
   const f = s / RSTEP, i = Math.min(Math.floor(f), z.length - 2);
@@ -524,8 +577,8 @@ function hav(a, b) {
 }
 function pointsToRoute(pts, name) {
   if (pts.length < 2) throw new Error('servono almeno due punti');
-  const out = [{ s: 0, e: pts[0].ele, lat: pts[0].lat, lon: pts[0].lon }]; let s = 0, last = pts[0];
-  for (let i = 1; i < pts.length; i++) { const dd = hav(last, pts[i]); if (dd < 0.5) continue; s += dd; out.push({ s, e: pts[i].ele, lat: pts[i].lat, lon: pts[i].lon }); last = pts[i]; }
+  const out = [{ s: 0, e: pts[0].ele }]; let s = 0, last = pts[0];
+  for (let i = 1; i < pts.length; i++) { const dd = hav(last, pts[i]); if (dd < 0.5) continue; s += dd; out.push({ s, e: pts[i].ele }); last = pts[i]; }
   if (s < 200) throw new Error('percorso troppo corto (meno di 200 m)');
   if (s > 600000) throw new Error('percorso troppo lungo (oltre 600 km)');
   const have = out.filter(o => isFinite(o.e)).length, noEle = have < 2;
@@ -551,7 +604,7 @@ function pointsToRoute(pts, name) {
   const gap = hav(pts[0], pts[pts.length - 1]);
   const loop = gap < 200 && Math.abs(z[n] - z[0]) < 10 && n * RSTEP > 1000;
   if (loop) closeLoop(z);
-  return { name: name || 'Percorso importato', z: z.map(v => Math.round(v * 10) / 10), loop, noEle, len: n * RSTEP, xy: planFromPoints(out, s) };
+  return { name: name || 'Percorso importato', z: z.map(v => Math.round(v * 10) / 10), loop, noEle, len: n * RSTEP };
 }
 function parseGpx(txt, fallbackName) {
   const doc = new DOMParser().parseFromString(txt, 'application/xml');
@@ -620,44 +673,6 @@ function resistanceGrade(p) {
   const Ft = (base + Cw * v * v) * (R / Rp);
   return clamp((Ft - Cw * vt * vt) / (m * G) - crr, -0.10, maxG);
 }
-/* Piantina: tracciato in metri locali (x verso est, y verso nord), campionato in modo uniforme lungo il percorso */
-function hashStr(t) { let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
-function planFromPoints(out, s) {
-  const n = clamp(Math.ceil(s / 50) + 1, 20, 1200), lat0 = out.reduce((a, o) => a + o.lat, 0) / out.length, lon0 = out[0].lon;
-  const kx = Math.cos(lat0 * Math.PI / 180) * 111320, ky = 110574, xy = []; let j = 0;
-  for (let k = 0; k < n; k++) {
-    const pos = s * k / (n - 1);
-    while (j < out.length - 2 && out[j + 1].s < pos) j++;
-    const a = out[j], b = out[j + 1], f = (b.s - a.s) > 0 ? clamp((pos - a.s) / (b.s - a.s), 0, 1) : 0;
-    xy.push(Math.round((a.lon + (b.lon - a.lon) * f - lon0) * kx), Math.round((a.lat + (b.lat - a.lat) * f - lat0) * ky));
-  }
-  return xy;
-}
-/* Tracciato di fantasia per i percorsi senza coordinate (anello: curva chiusa; tratta: strada con curve dolci) */
-function synthPlan(len, loop, seed) {
-  const R = rng(seed), M = 800, p = [];
-  if (loop) {
-    const k = [[2, 0.26], [3, 0.16], [5, 0.07]].map(([m, a]) => [m, a * (0.6 + 0.8 * R()), R() * 6.283]);
-    for (let i = 0; i <= M; i++) { const th = 2 * Math.PI * i / M; let r = 1; for (const [m, a, ph] of k) r += a * Math.sin(m * th + ph); p.push([r * Math.cos(th), r * Math.sin(th) * 0.8]); }
-  } else {
-    const w = [[1, 1.3], [2.3, 0.7], [4.7, 0.3]].map(([f, a]) => [f, a * (0.5 + R()) * (R() < 0.5 ? -1 : 1), R() * 6.283]), th0 = R() * 6.283;
-    let x = 0, y = 0;
-    for (let i = 0; i <= M; i++) { const t = i / M; let th = th0; for (const [f, a, ph] of w) th += a * Math.sin(f * 2 * Math.PI * t + ph); p.push([x, y]); x += Math.cos(th) / M; y += Math.sin(th) / M; }
-  }
-  const cum = [0]; for (let i = 1; i < p.length; i++) cum.push(cum[i - 1] + Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]));
-  const tot = cum[cum.length - 1] || 1, sc = len / tot, n = clamp(Math.ceil(len / 50) + 1, 20, 1200), xy = []; let j = 0;
-  for (let k = 0; k < n; k++) {
-    const d = tot * k / (n - 1); while (j < p.length - 2 && cum[j + 1] < d) j++;
-    const f = (cum[j + 1] - cum[j]) > 0 ? clamp((d - cum[j]) / (cum[j + 1] - cum[j]), 0, 1) : 0;
-    xy.push(Math.round((p[j][0] + (p[j + 1][0] - p[j][0]) * f) * sc), Math.round((p[j][1] + (p[j + 1][1] - p[j][1]) * f) * sc));
-  }
-  return xy;
-}
-function planFor(r) {
-  if (r.xy && r.xy.length >= 6) return r.xy;
-  if (r.kind === 'gpx') return null;
-  return synthPlan((r.z.length - 1) * RSTEP, !!r.loop, hashStr(String(r.id)));
-}
 /* Migliori sforzi, FTP stimato, aderenza al programma, disaccoppiamento potenza/cuore */
 const BEST_WIN = [[5, '5 s'], [30, '30 s'], [60, '1 min'], [300, '5 min'], [600, '10 min'], [720, '12 min'], [1200, '20 min'], [3600, '60 min']];
 function bestAvgP(a, win) { if (a.length < win) return null; let t = 0, best = 0; for (let i = 0; i < a.length; i++) { t += a[i]; if (i >= win) t -= a[i - win]; if (i >= win - 1 && t / win > best) best = t / win; } return best; }
@@ -691,7 +706,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 /* ---------- Impostazioni ---------- */
 const DEF = { mass: 75, bike: 9, cda: 0.32, crr: 0.004, rho: 1.2, eff: 0.975, ftp: 200, rings: '50,34',
   cassette: '11,13,15,17,19,21,23,25,27,30,34', role1: 'rear', role2: 'front', circ: 2.105, maxGrade: 6, physChain: 50, physCog: 14,
-  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false, hs: 'qz' };
+  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false, hs: 'qz', ghost: false };
 const cfg = Object.assign({}, DEF);
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('rv-cfg2') || '{}')); } catch (e) {}
 cfg.keepAlive = false; if (cfg.hs !== 'old') cfg.hs = 'qz';
@@ -714,7 +729,7 @@ const S = {
   demo: { on: false, p: 150, c: 85 }, src: { p: 0, cad: 0, cadOk: false, vt: null, pSrc: '—' },
   live: { hr: { t: 0, bpm: 0 }, pm: { t: 0, p: 0, cad: 0, hasCrank: false, crankT: 0, prev: null }, tr: { t: 0, p: 0, cad: 0, hasCad: false, v: null } },
   ck: { ck: { base: false, st: { 1: false, 2: false } }, ck2: { base: false, st: { 1: false, 2: false } } },
-  learn: null, backup: null, mirror: false, dupHits: 0, wk: null, wkFree: false, rec: [], recAcc: 0, recMeta: null, lastPress: null, lastProc: null
+  gh: [0], ghAcc: 0, learn: null, backup: null, mirror: false, dupHits: 0, wk: null, wkFree: false, rec: [], recAcc: 0, recMeta: null, lastPress: null, lastProc: null
 };
 S.gear = Math.round((cogs().length - 1) * 0.55); S.ring = rings().length - 1;
 
@@ -723,6 +738,7 @@ const LOG = []; let logDirty = false;
 function log(m) { LOG.push(new Date().toTimeString().slice(0, 8) + ' ' + m); if (LOG.length > 150) LOG.shift(); logDirty = true; }
 setInterval(() => { while (window.__rvQ && window.__rvQ.length) log(window.__rvQ.shift()); if (logDirty) { const el = $('#log'); el.textContent = LOG.join('\n'); el.scrollTop = el.scrollHeight; logDirty = false; } }, 500);
 const hex = u => Array.from(u).map(b => b.toString(16).padStart(2, '0')).join(' ');
+$('#note').addEventListener('click', () => { const n = $('#note'); n.textContent = ''; n.hidden = true; });
 function note(msg) { const n = $('#note'); n.textContent = msg || ''; n.hidden = !msg; }
 const errText = e => {
   if (e == null) return 'errore sconosciuto';
@@ -827,6 +843,7 @@ function roleLabels() { refreshPad(); }
 const keyTxt = m => m ? NAMES[m.k].replace('Zwift ', '') + ' · tasto 0x' + m.bit.toString(16) : '—';
 const clickOn = k => !!(D[k] && D[k].gatt && D[k].gatt.connected);
 function startLearn(fn, chain) {
+  try { $('#pad-det').open = true; } catch (e) {}
   if (!clickOn('ck') && !clickOn('ck2')) { note('Collega prima un Click, poi associa i tasti.'); return; }
   cancelLearn(true);
   S.backup = { fn, keys: Object.assign({}, cfg.keys[fn]) };
@@ -1101,7 +1118,8 @@ function tick() {
   S.v = v; S.free = free;
 
   S.pos += v * dt; S.dist += v * dt; if (v > 0.5) S.time += dt;
-  if (!RT.loop && S.pos >= RT.len && !S.routeEnd && !S.wk) { S.routeEnd = true; note('Arrivo! Percorso completato: ' + (S.dist / 1000).toFixed(1) + ' km. Puoi continuare su strada piatta o azzerare il giro.'); try { beep(880, 0.4); } catch (e) {} }
+  if (v > 0.5 && !S.wk) { S.ghAcc += dt; while (S.ghAcc >= 5) { S.ghAcc -= 5; S.gh.push(Math.round(S.pos)); } }
+  if (!RT.loop && S.pos >= RT.len && !S.routeEnd && !S.wk) { S.routeEnd = true; note('Arrivo! Percorso completato: ' + (S.dist / 1000).toFixed(1) + ' km. Puoi continuare su strada piatta o azzerare il giro.'); try { beep(880, 0.4); } catch (e) {} try { ghostSave(); } catch (e) {} }
   const e = elev(S.pos); if (e > S.lastElev) S.gain += e - S.lastElev; S.lastElev = e;
   S.crank += src.cad * 2 * Math.PI / 60 * dt; S.wheel += v / 0.33 * dt;
   S.pAvg += (src.p - S.pAvg) * (1 - Math.exp(-dt / 1.5));
@@ -1136,7 +1154,7 @@ function hud() {
   setT('#h-time', pad(Math.floor(S.time / 3600)) + ':' + pad(Math.floor(S.time / 60) % 60) + ':' + pad(Math.floor(S.time) % 60));
   setT('#h-gain', 'D+ ' + Math.round(S.gain) + ' m');
   gwarnUI();
-  try { hrUI(); if (S.wk) wkUI(); } catch (e) {}
+  try { hrUI(); ghostUI(); if (S.wk) wkUI(); } catch (e) {}
 }
 function gearUI() {
   const erg = S.mode === 'erg' && !S.wkFree;
@@ -1175,6 +1193,7 @@ $('#mode-route').addEventListener('click', () => { if (S.wk) wkEnd(true); else s
 $('#mode-erg').addEventListener('click', () => { if (S.wk) wkEnd(true); setMode('erg'); });
 $('#erg-w').addEventListener('change', e => { S.ergW = clamp(Number(e.target.value) || 150, 50, 600); gearUI(); sendErg(); });
 $('#reset').addEventListener('click', () => {
+  try { ghostSave(); } catch (e) {}
   const ride = !S.wk && S.rec.length >= 120 ? buildRide() : null; resetRide();
   if (!ride) return;
   if (ride.rec.length >= 300 && !WK.rides.some(r => r.id === ride.id)) { WK.rides.unshift(ride); WK.rides = WK.rides.slice(0, 12); saveRides(); }
@@ -1200,7 +1219,7 @@ for (const el of document.querySelectorAll('[data-cfg]')) {
 /* ---------- Grafica ---------- */
 const CV = { scene: $('#scene'), pwr: $('#pwr'), prof: $('#prof') };
 const COL = {};
-function readColors() { const cs = getComputedStyle(document.documentElement); for (const k of ['bg', 'ok', 'warn', 'bad', 'ink', 'ink2', 'line', 'accent', 'sky1', 'sky2', 'hill1', 'hill2', 'ground', 'road', 'mark', 'panel']) COL[k] = cs.getPropertyValue('--' + k).trim(); }
+function readColors() { const cs = getComputedStyle(document.documentElement); for (const k of ['z2', 'z3', 'z4', 'z6', 'bg', 'ok', 'warn', 'bad', 'ink', 'ink2', 'line', 'accent', 'sky1', 'sky2', 'hill1', 'hill2', 'ground', 'road', 'mark', 'panel']) COL[k] = cs.getPropertyValue('--' + k).trim(); }
 readColors(); setInterval(readColors, 2000);
 function fit(c) { const r = c.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1); const w = Math.max(1, Math.round(r.width * d)), h = Math.max(1, Math.round(r.height * d)); if (c.width !== w || c.height !== h) { c.width = w; c.height = h; } return d; }
 function hills(g, W, H, off, color, base, amp, f) {
@@ -1212,21 +1231,22 @@ function knee(hx, hy, fx, fy, l) {
   const dx = fx - hx, dy = fy - hy; const dd = Math.min(Math.hypot(dx, dy), 2 * l - 0.01);
   const a = Math.atan2(dy, dx), b = Math.acos(dd / (2 * l)); return [hx + l * Math.cos(a - b), hy + l * Math.sin(a - b)];
 }
-function drawRider(g, d, H) {
+function drawRider(g, d, H, o) {
+  o = o || {}; const crank = o.crank != null ? o.crank : S.crank, wheel = o.wheel != null ? o.wheel : S.wheel;
   const k = H / 300 * 1.15;
   const line = (x1, y1, x2, y2, w, c) => { g.beginPath(); g.moveTo(x1 * k, y1 * k); g.lineTo(x2 * k, y2 * k); g.lineWidth = w * d; g.strokeStyle = c; g.lineCap = 'round'; g.stroke(); };
   for (const wx of [-26, 26]) {
     g.beginPath(); g.arc(wx * k, -14 * k, 14 * k, 0, 7); g.lineWidth = 2.4 * d; g.strokeStyle = COL.ink; g.stroke();
-    for (let i = 0; i < 3; i++) { const a = S.wheel + i * Math.PI / 3; line(wx + 14 * Math.cos(a), -14 + 14 * Math.sin(a), wx - 14 * Math.cos(a), -14 - 14 * Math.sin(a), 0.8, COL.ink2); }
+    for (let i = 0; i < 3; i++) { const a = wheel + i * Math.PI / 3; line(wx + 14 * Math.cos(a), -14 + 14 * Math.sin(a), wx - 14 * Math.cos(a), -14 - 14 * Math.sin(a), 0.8, COL.ink2); }
   }
-  const acc = COL.accent;
+  const acc = o.accent || COL.accent;
   line(-26, -14, 0, -14, 2.6, acc); line(0, -14, -8, -34, 2.6, acc); line(-8, -34, 18, -34, 2.6, acc);
   line(18, -34, 26, -14, 2.6, acc); line(0, -14, 18, -34, 2.6, acc); line(-26, -14, -8, -34, 2.6, acc);
   const hx = -8, hy = -38, sx = 12, sy = -54;
   line(hx, hy, sx, sy, 5, COL.ink); g.beginPath(); g.arc(17 * k, -60 * k, 5 * k, 0, 7); g.fillStyle = COL.ink; g.fill();
   line(sx, sy, 20, -36, 3, COL.ink);
   for (const ph of [0, Math.PI]) {
-    const a = S.crank + ph, fx = 0 + 7 * Math.cos(a), fy = -14 + 7 * Math.sin(a), [kx, ky] = knee(hx, hy, fx, fy, 19);
+    const a = crank + ph, fx = 0 + 7 * Math.cos(a), fy = -14 + 7 * Math.sin(a), [kx, ky] = knee(hx, hy, fx, fy, 19);
     line(hx, hy, kx, ky, 4, COL.ink); line(kx, ky, fx, fy, 3.4, COL.ink);
   }
 }
@@ -1249,6 +1269,20 @@ function drawScene() {
     const x = rx + (s - S.pos) * pxm, y = ry - (elev(s) - z0) * pxm * vex, big = Math.round(s) % 100 === 0;
     g.fillRect(x - d, y - (big ? 18 : 7) * d - 4 * d, 2 * d, (big ? 18 : 7) * d);
   }
+  const gr = ghostRec();
+  if (gr) {
+    const gp = ghostPos(gr, S.time);
+    if (gp != null) {
+      const gx = rx + (gp - S.pos) * pxm;
+      if (gx > -90 * d && gx < W + 90 * d) {
+        const gy = ry - (elev(gp) - z0) * pxm * vex, gs = (elev(gp + 4) - elev(gp - 4)) / 8;
+        g.save(); g.globalAlpha = 0.42; g.translate(gx, gy - 4 * d); g.rotate(-Math.atan(gs * vex * 0.8)); drawRider(g, d, H, { accent: COL.z2, crank: S.crank * 0.97 + 2, wheel: gp / 0.33 }); g.restore();
+        g.save(); g.font = '700 ' + (12 * d) + 'px Barlow, system-ui, sans-serif'; g.textAlign = 'center'; const tw = g.measureText('Record').width + 14 * d, ty = gy - H * 0.3;
+        g.globalAlpha = 0.92; g.fillStyle = COL.panel; g.strokeStyle = COL.line; g.lineWidth = d; g.beginPath(); g.rect(gx - tw / 2, ty - 15 * d, tw, 20 * d); g.fill(); g.stroke();
+        g.globalAlpha = 1; g.fillStyle = COL.z2; g.fillText('Record', gx, ty); g.restore();
+      }
+    }
+  }
   const slope = (elev(S.pos + 4) - elev(S.pos - 4)) / 8;
   g.save(); g.translate(rx, ry - 4 * d); g.rotate(-Math.atan(slope * vex * 0.8)); drawRider(g, d, H); g.restore();
 }
@@ -1267,41 +1301,19 @@ function drawPwr() {
   g.globalAlpha = 0.22; g.fillStyle = COL.accent; g.fill(); g.globalAlpha = 1;
   g.beginPath(); S.hist.forEach((v, i) => i ? g.lineTo(px(i), py(v)) : g.moveTo(px(i), py(v))); g.lineWidth = 2 * d; g.strokeStyle = COL.accent; g.lineJoin = 'round'; g.stroke();
 }
-function drawPlan(cv, xy, loop, over, len, f) {
-  const d = fit(cv), g = cv.getContext('2d'), W = cv.width, H = cv.height; g.clearRect(0, 0, W, H);
-  if (!xy || xy.length < 6) return;
-  const n = xy.length / 2; let x0 = 1e18, x1 = -1e18, y0 = 1e18, y1 = -1e18;
-  for (let i = 0; i < n; i++) { const x = xy[2 * i], y = xy[2 * i + 1]; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
-  const pad = 16 * d, sc = Math.min((W - 2 * pad) / Math.max(1, x1 - x0), (H - 2 * pad) / Math.max(1, y1 - y0)), ox = (W - sc * (x1 - x0)) / 2, oy = (H - sc * (y1 - y0)) / 2;
-  const X = i => ox + (xy[2 * i] - x0) * sc, Y = i => H - (oy + (xy[2 * i + 1] - y0) * sc);
-  const path = (a, b) => { g.beginPath(); for (let i = a; i <= b; i++) i === a ? g.moveTo(X(i), Y(i)) : g.lineTo(X(i), Y(i)); };
-  path(0, n - 1); if (loop) g.closePath(); g.lineWidth = 3.4 * d; g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = COL.ink2; g.globalAlpha = 0.75; g.stroke(); g.globalAlpha = 1;
-  for (const o of over || []) { const a = clamp(Math.floor(o.from / len * (n - 1)), 0, n - 1), b = clamp(Math.ceil(o.to / len * (n - 1)), 0, n - 1); if (b > a) { path(a, b); g.lineWidth = 4.6 * d; g.strokeStyle = COL.bad; g.stroke(); } }
-  g.beginPath(); g.arc(X(0), Y(0), 5.5 * d, 0, 7); g.fillStyle = COL.ok; g.fill(); g.lineWidth = 1.5 * d; g.strokeStyle = COL.panel; g.stroke();
-  if (!loop) { g.beginPath(); g.rect(X(n - 1) - 5 * d, Y(n - 1) - 5 * d, 10 * d, 10 * d); g.fillStyle = COL.ink; g.fill(); g.stroke(); }
-  if (f != null) {
-    const q = clamp(f, 0, 1) * (n - 1), i = Math.min(n - 2, Math.floor(q)), t = q - i, px = X(i) + (X(i + 1) - X(i)) * t, py = Y(i) + (Y(i + 1) - Y(i)) * t;
-    g.beginPath(); g.arc(px, py, 6.5 * d, 0, 7); g.fillStyle = COL.accent; g.fill(); g.lineWidth = 2 * d; g.strokeStyle = COL.panel; g.stroke();
-  }
-}
-function drawPlanMain() {
-  const c = $('#plan'); if (!c) return;
-  const xy = RT.xy, show = !!xy; c.hidden = !show; $('#plan-h').hidden = !show; $('#plan-note').hidden = !show;
-  if (!show) return;
-  $('#plan-note').textContent = RT.kind === 'gpx' ? 'Tracciato del file GPX (nord in alto). In rosso i tratti oltre il limite del rullo.' : 'Tracciato indicativo: la forma è di fantasia, la salita è quella vera. In rosso i tratti oltre il limite del rullo.';
-  drawPlan(c, xy, RT.loop, routeInfo().over, RT.len, RT.loop ? (((S.pos % RT.len) + RT.len) % RT.len) / RT.len : clamp(S.pos / RT.len, 0, 1));
-}
 let PROF = null;
 function drawProf() {
-  const c = CV.prof, d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
+  const c = CV.prof; if (!c || c.offsetParent === null) return;
+  const d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
   const info = routeInfo(), L = RT.len, N = 200;
-  if (!PROF) { PROF = []; let lo = 1e9, hi = -1e9; for (let i = 0; i <= N; i++) { const e = elev(i * L / N); PROF.push(e); lo = Math.min(lo, e); hi = Math.max(hi, e); } PROF.lo = lo; PROF.hi = hi; }
+  if (!PROF) { PROF = []; PROF.g = []; let lo = 1e9, hi = -1e9; for (let i = 0; i <= N; i++) { const e = elev(i * L / N); PROF.push(e); lo = Math.min(lo, e); hi = Math.max(hi, e); if (i < N) PROF.g.push(gradeAt((i + 0.5) * L / N) * 100); } PROF.lo = lo; PROF.hi = hi; }
   const pl = 40 * d, pr = 8 * d, pt = 10 * d, pb = 22 * d, iw = W - pl - pr, ih = H - pt - pb, span = Math.max(PROF.hi - PROF.lo, 10);
-  const X = i => pl + iw * i / N, Y = e => pt + ih * (1 - (e - PROF.lo) / span);
-  g.beginPath(); g.moveTo(X(0), pt + ih); PROF.forEach((e, i) => g.lineTo(X(i), Y(e))); g.lineTo(X(N), pt + ih); g.closePath();
-  g.globalAlpha = 0.5; g.fillStyle = COL.ground; g.fill(); g.globalAlpha = 1;
-  g.beginPath(); PROF.forEach((e, i) => i ? g.lineTo(X(i), Y(e)) : g.moveTo(X(i), Y(e))); g.lineWidth = 2 * d; g.strokeStyle = COL.ink; g.stroke();
-  for (const o of info.over) { g.beginPath(); for (let k = 0; k <= 12; k++) { const sm = o.from + (o.to - o.from) * k / 12, x = pl + iw * sm / L, y = Y(elev(sm)); k ? g.lineTo(x, y) : g.moveTo(x, y); } g.lineWidth = 3.6 * d; g.strokeStyle = COL.bad; g.stroke(); }
+  const X = i => pl + iw * i / N, Y = e => pt + ih * (1 - (e - PROF.lo) / span), lim = cfg.maxGrade;
+  const gcol = q => q < -0.5 ? COL.z2 : q < 3 ? COL.z3 : q <= lim + 0.05 ? COL.z4 : COL.z6;
+  g.globalAlpha = 0.4;
+  for (let i = 0; i < N; i++) { g.fillStyle = gcol(PROF.g[i]); g.beginPath(); g.moveTo(X(i), pt + ih); g.lineTo(X(i), Y(PROF[i])); g.lineTo(X(i + 1) + 0.6 * d, Y(PROF[i + 1])); g.lineTo(X(i + 1) + 0.6 * d, pt + ih); g.closePath(); g.fill(); }
+  g.globalAlpha = 1;
+  g.beginPath(); PROF.forEach((e, i) => i ? g.lineTo(X(i), Y(e)) : g.moveTo(X(i), Y(e))); g.lineWidth = 2 * d; g.lineJoin = 'round'; g.strokeStyle = COL.ink; g.stroke();
   g.font = (11 * d) + 'px Barlow, system-ui, sans-serif'; g.fillStyle = COL.ink2; g.textAlign = 'right'; g.textBaseline = 'middle';
   g.fillText(Math.round(PROF.hi) + ' m', pl - 6 * d, Y(PROF.hi)); g.fillText(Math.round(PROF.lo) + ' m', pl - 6 * d, Y(PROF.lo));
   g.textBaseline = 'alphabetic'; g.textAlign = 'center';
@@ -1309,11 +1321,11 @@ function drawProf() {
   for (let k = 0; k * stepKm * 1000 <= L + 1; k++) g.fillText(k * stepKm + ' km', Math.min(W - 14 * d, Math.max(pl + 8 * d, pl + iw * k * stepKm * 1000 / L)), H - 5 * d);
   const f = RT.loop ? (((S.pos % L) + L) % L) / L : clamp(S.pos / L, 0, 1), mx = pl + iw * f;
   g.strokeStyle = COL.accent; g.lineWidth = 2 * d; g.beginPath(); g.moveTo(mx, pt); g.lineTo(mx, pt + ih); g.stroke();
-  g.fillStyle = COL.accent; g.beginPath(); g.arc(mx, Y(elev(S.pos)), 5 * d, 0, 7); g.fill();
+  g.fillStyle = COL.accent; g.beginPath(); g.arc(mx, Y(elev(S.pos)), 6 * d, 0, 7); g.fill(); g.lineWidth = 2 * d; g.strokeStyle = COL.panel; g.stroke();
 }
 let lastCharts = 0;
 let frameErr = false;
-function frame(t) { try { if (!S.wk) { drawScene(); drawInset(); } else wkDraw(); if (t - lastCharts > 500) { lastCharts = t; drawPwr(); drawProf(); drawPlanMain(); } } catch (e) { if (!frameErr) { frameErr = true; log('Errore di disegno: ' + errText(e)); } } requestAnimationFrame(frame); }
+function frame(t) { try { if (!S.wk) { drawScene(); drawInset(); } else wkDraw(); if (t - lastCharts > 500) { lastCharts = t; drawPwr(); drawProf(); } } catch (e) { if (!frameErr) { frameErr = true; log('Errore di disegno: ' + errText(e)); } } requestAnimationFrame(frame); }
 requestAnimationFrame(frame);
 
 /* ======================= Allenamenti, registrazione, report, cardio ======================= */
@@ -1442,7 +1454,7 @@ function drawWk(cv, segs, total, o) {
   for (const s of segs) {
     const x0 = X(s.t0), x1 = Math.max(x0 + 1, X(s.t1) - (o.small ? 0.5 : 1) * d);
     const a = s.free ? 70 : s.p0, b = s.free ? 70 : s.p1;
-    g.globalAlpha = o.cursor != null && s.t1 <= o.cursor ? 0.42 : 1;
+    g.globalAlpha = o.live ? (o.cursor != null && s.t0 > o.cursor ? 0.4 : 1) : (o.cursor != null && s.t1 <= o.cursor ? 0.42 : 1);
     g.fillStyle = s.free ? '#8a8aa0' : ZC[zoneOf((a + b) / 2)];
     g.beginPath(); g.moveTo(x0, H); g.lineTo(x0, Y(a)); g.lineTo(x1, Y(b)); g.lineTo(x1, H); g.closePath(); g.fill();
     if (s.free) { g.globalAlpha = 0.5; g.strokeStyle = COL.bg || '#000'; g.lineWidth = d; for (let x = x0; x < x1; x += 7 * d) { g.beginPath(); g.moveTo(x, H); g.lineTo(Math.min(x1, x + 14 * d), Y(70)); g.stroke(); } }
@@ -1450,7 +1462,7 @@ function drawWk(cv, segs, total, o) {
     if (o.hi && o.hi.has(s.bi)) { g.strokeStyle = COL.ink; g.lineWidth = 2 * d; g.beginPath(); g.moveTo(x0, H); g.lineTo(x0, Y(a)); g.lineTo(x1, Y(b)); g.lineTo(x1, H); g.stroke(); }
   }
   if (o.rec && o.rec.length > 1 && o.ftp) {
-    g.beginPath(); g.lineJoin = 'round'; g.lineWidth = 1.6 * d; g.strokeStyle = COL.accent; let acc = 0;
+    g.beginPath(); g.lineJoin = 'round'; g.lineWidth = 1.6 * d; g.strokeStyle = o.live ? COL.ink : COL.accent; let acc = 0;
     o.rec.forEach((s, i) => { acc += s[0]; if (i >= 5) acc -= o.rec[i - 5][0]; const v = acc / Math.min(5, i + 1); const x = X(s[6] != null ? s[6] : i), y = Y(v / o.ftp * 100); i ? g.lineTo(x, y) : g.moveTo(x, y); });
     g.stroke();
   }
@@ -1462,7 +1474,7 @@ function recSample(src) {
   if (!S.rec.length && !S.recMeta) S.recMeta = { start: Date.now(), name: 'Giro: ' + RT.name, ftp: cfg.ftp, w: null, test: null };
   const W = S.wk, hr = hrFresh() ? S.live.hr.bpm : 0;
   let tp = 0, si = -1;
-  if (W) { const sg = W.segs[W.idx]; si = W.idx; tp = sg.free ? 0 : Math.round(pAt(sg, W.t) * W.adj * cfg.ftp / 100); }
+  if (W) { const sg = W.segs[W.idx]; si = W.idx; tp = sg.free ? 0 : Math.round(pAt(sg, W.t) * W.adj * cfg.ftp / 100); if (W.avgIdx !== W.idx) { W.avgIdx = W.idx; W.avgS = 0; W.avgN = 0; } W.avgS += src.p; W.avgN++; }
   S.rec.push([Math.round(src.p), Math.round(src.cad), hr, Math.round(S.v * 36), tp, si, W ? Math.round(W.t) : S.rec.length]);
 }
 function buildRide() {
@@ -1576,7 +1588,7 @@ function recoverLive() {
     setTimeout(() => openOvl('report', { ride, saved: WK.rides.some(r => r.id === ride.id), recovered: true }), 700);
   } catch (e) { log('Recupero sessione non riuscito: ' + errText(e)); }
 }
-function buildBackup() { return { format: 'rullo-virtuale-backup', version: 25, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH }; }
+function buildBackup() { return { format: 'rullo-virtuale-backup', version: 28, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
 function restoreBackup(o) {
   const byId = (a, b) => { const m = new Map(); for (const x of a || []) if (x && x.id) m.set(x.id, x); for (const x of b || []) if (x && x.id) m.set(x.id, x); return [...m.values()]; };
   if (o.cfg && typeof o.cfg === 'object') { Object.assign(cfg, o.cfg); saveCfg(); }
@@ -1584,12 +1596,13 @@ function restoreBackup(o) {
   if (Array.isArray(o.rides)) { WK.rides = byId(WK.rides, o.rides).sort((a, b) => b.date - a.date).slice(0, 12); saveRides(); }
   if (o.routes && Array.isArray(o.routes.list)) { RTS.list = byId(RTS.list, o.routes.list).slice(0, 30); if (o.routes.sel) RTS.sel = o.routes.sel; saveRoutes(); }
   if (Array.isArray(o.ftp)) { FH = FH.concat(o.ftp.filter(x => x && isFinite(x.ftp) && !FH.some(y => y.t === x.t))).sort((a, b) => a.t - b.t).slice(-30); try { localStorage.setItem('rv-ftp', JSON.stringify(FH)); } catch (e) {} }
+  if (o.ghost && typeof o.ghost === 'object') { for (const k in o.ghost) { const a = o.ghost[k]; if (a && Array.isArray(a.d) && a.d.length > 12 && (!GH[k] || GH[k].avg < a.avg)) GH[k] = a; } saveGh(); }
   setTimeout(() => location.reload(), 900);
 }
 async function doBackup() {
   const text = JSON.stringify(buildBackup()), name = 'rullo-backup-' + new Date().toISOString().slice(0, 10) + '.json';
   const mark = () => { try { localStorage.setItem('rv-lastbackup', String(Date.now())); } catch (e) {} if (VIEW && VIEW.view === 'lib') renderOvl(); };
-  try { const f = new File([text], name, { type: 'application/json' }); if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: 'Backup Rullo Virtuale' }); mark(); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { const f = new File([text], name, { type: 'application/json' }); if (navigator.canShare && navigator.canShare({ files: [f] })) { mark(); await navigator.share({ files: [f], title: 'Backup Rullo Virtuale' }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
   if (saveFile(name, text, 'application/json')) { mark(); note('Backup salvato come file ' + name + '. Conservalo in un posto sicuro.'); return; }
   openOvl('io', { mode: 'export', title: 'Backup dei dati', file: name, type: 'application/json', text });
 }
@@ -1834,7 +1847,7 @@ function wkStart(w) {
   S.wk = { w: clone(w), id: w.id, segs: st.segs, total: st.total, t: 0, idx: 0, paused: false, auto: false, started: false, still: 0, adj: 1, lastIdx: 0, lastRem: -1, endConfirm: false, seek: false };
   S.rec = []; S.recAcc = 0; S.recMeta = { start: Date.now(), name: w.name, ftp: cfg.ftp, w: clone(w), test: w.test || null };
   S.mode = 'erg'; $('#mode-route').classList.remove('on'); $('#mode-erg').classList.add('on'); $('#erg-box').hidden = true; $('#mode-hint').hidden = true;
-  S.wkFree = !!st.segs[0].free; $('#stage').hidden = true; $('#wkstage').hidden = false; $('#wk-seek').max = st.total; $('#wk-seek').value = 0;
+  S.wkFree = !!st.segs[0].free; $('#stage').hidden = true; $('#wkstage').hidden = false; $('.metrics').hidden = true; $('#profbox').hidden = true; $('#wk-seek').max = st.total; $('#wk-seek').value = 0;
   lastSentG = null; lastErgT = 0; gearUI(); wkTarget(true); wkUI(); wake(); log('Allenamento avviato: ' + w.name);
 }
 function wkTarget(force) {
@@ -1870,7 +1883,7 @@ function wkAdvance(dt, moving, src) {
 function wkEnd(report) {
   const W = S.wk; if (!W) return;
   const ride = buildRide();
-  S.wk = null; S.wkFree = false; $('#stage').hidden = false; $('#wkstage').hidden = true;
+  S.wk = null; S.wkFree = false; $('#stage').hidden = false; $('#wkstage').hidden = true; $('.metrics').hidden = false; $('#profbox').hidden = false; $('#wkstage').classList.remove('rest');
   beep(660, 0.4);
   if (ride && ride.rec.length >= 60) {
     const w = WK.list.find(x => x.id === W.id); if (w) { w.done = (w.done | 0) + 1; saveWk(); }
@@ -1881,31 +1894,78 @@ function wkEnd(report) {
   if (report && ride && ride.rec.length >= 20) openOvl('report', { ride, saved: WK.rides.some(r => r.id === ride.id) });
   log('Allenamento concluso');
 }
+const isRest = sg => /^Recupero/.test(sg.label || '');
 function wkUI() {
   const W = S.wk; if (!W) return;
-  const sg = W.segs[W.idx], nx = W.segs[W.idx + 1], tp = pAt(sg, W.t) * W.adj;
+  const sg = W.segs[W.idx], nx = W.segs[W.idx + 1], tp = pAt(sg, W.t) * W.adj, rest = isRest(sg);
+  const tg = sg.free ? 0 : Math.round(tp * cfg.ftp / 100), act = Math.round(S.pAvg), dvw = tg ? act - tg : 0, dv = tg ? Math.abs(dvw) / tg : 0;
+  const test = W.w.test === 'ramp' && W.idx >= 1 && W.idx < W.segs.length - 1 && !sg.free;
+  $('#wkstage').classList.toggle('rest', rest);
   setT('#wk-name', W.w.name);
   setT('#wk-time', mmss(W.t) + ' / ' + mmss(W.total) + ' · restano ' + mmss(W.total - W.t));
   setT('#wk-state', !W.started ? 'Inizia a pedalare per partire' : W.paused ? 'In pausa' : W.auto ? 'Pausa automatica: pedala per riprendere' : sg.label);
-  setT('#wk-tw', sg.free ? '—' : String(Math.round(tp * cfg.ftp / 100)));
-  setT('#wk-tp', sg.free ? 'Libero: scegli tu con le marce' : Math.round(tp) + '% FTP' + (sg.cad ? ' · cadenza ' + sg.cad + ' rpm' : ''));
+  /* conto alla rovescia */
+  setT('#wk-cdl', rest ? 'Recupero · si riparte tra' : 'Fine segmento tra');
   setT('#wk-cd', mmss(Math.ceil(sg.t1 - W.t)));
   $('#wk-fill').style.width = clamp((W.t - sg.t0) / (sg.t1 - sg.t0) * 100, 0, 100) + '%';
   $('#wk-fill').style.background = sg.free ? '#8a8aa0' : ZC[zoneOf(tp)];
-  const act = Math.round(S.pAvg), tg = sg.free ? 0 : Math.round(tp * cfg.ftp / 100), dv = tg ? Math.abs(act - tg) / tg : 0;
+  setT('#wk-seginfo', sg.label + (sg.free ? ' · libero' : ' · ' + Math.round(tp) + '% FTP') + ' · ' + mmss(clamp(W.t - sg.t0, 0, sg.t1 - sg.t0)) + ' su ' + mmss(sg.t1 - sg.t0));
+  /* potenza e barra dello scarto */
+  const pct = S.pAvg / cfg.ftp * 100, z = pct < 55 ? 0 : pct < 76 ? 1 : pct < 91 ? 2 : pct < 106 ? 3 : pct < 121 ? 4 : 5;
+  setT('#wk-pw', String(act));
+  const zl = $('#wk-zone'); setT('#wk-zone', 'Z' + (z + 1) + ' ' + ZN[z]); zl.style.background = 'var(--z' + (z + 1) + ')';
+  const gz = $('#wk-gauge'); gz.hidden = !tg;
+  if (tg) {
+    $('#wk-act').style.left = (clamp(0.5 + dvw / (tg * 0.4), 0, 1) * 100).toFixed(1) + '%';
+    const lm = $('#wk-lim'); lm.hidden = !test; if (test) lm.style.left = '12.5%';
+    setT('#wk-gl-l', test ? 'limite ' + Math.round(tg * 0.85) + ' W' : '−20%'); setT('#wk-gl-r', '+20%');
+  } else { setT('#wk-gl-l', 'Libero: scegli tu con le marce'); setT('#wk-gl-r', ''); }
+  /* obiettivo */
+  setT('#wk-tw', sg.free ? '—' : String(tg));
+  setT('#wk-tp', sg.free ? 'Nessun obiettivo di potenza' : Math.round(tp) + '% di FTP ' + cfg.ftp + ' W');
   const nowEl = $('#wk-now'); nowEl.className = !tg ? '' : dv <= 0.05 ? 'ok' : dv <= 0.1 ? 'warn' : 'bad';
-  setT('#wk-now', 'Tu: ' + act + ' W · ' + Math.round(S.src.cad) + ' rpm' + (hrFresh() ? ' · ' + S.live.hr.bpm + ' bpm' : ''));
+  setT('#wk-now', !tg ? '' : (dvw >= 0 ? '+' : '−') + Math.abs(dvw) + ' W · ' + (dv <= 0.05 ? 'nella fascia' : dvw > 0 ? 'sopra' : 'sotto'));
+  /* cadenza: valore, obiettivo e indicazione */
+  const cad = Math.round(S.src.cad), ct = sg.cad || 0; let ci = '', cc = '', cs = 'cadenza libera';
+  if (ct) {
+    const dd = cad - ct;
+    if (cad < 20) { cs = 'obiettivo ' + ct + ' rpm · pedala'; }
+    else if (Math.abs(dd) <= 5) { ci = '✓'; cc = 'ok'; cs = 'obiettivo ' + ct + ' rpm · giusta'; }
+    else if (dd < 0) { ci = '▲'; cc = dd < -15 ? 'bad' : 'warn'; cs = 'obiettivo ' + ct + ' rpm · aumenta di ' + (-dd); }
+    else { ci = '▼'; cc = dd > 15 ? 'bad' : 'warn'; cs = 'obiettivo ' + ct + ' rpm · cala di ' + dd; }
+  }
+  setT('#wk-cad', String(cad)); setT('#wk-cadi', ci); $('#wk-cadi').className = 'cadi ' + cc; setT('#wk-cadt', cs);
+  /* cuore: nel recupero mostra quanto è sceso dal picco */
+  const hrOn = hrFresh(), bpm = hrOn ? S.live.hr.bpm : 0;
+  if (!rest && hrOn) { W.hrPk = Math.max(W.pkIdx === W.idx ? (W.hrPk || 0) : 0, bpm); W.pkIdx = W.idx; }
+  setT('#wk-hr', hrOn ? String(bpm) : '—');
+  setT('#wk-hrs', !hrOn ? 'non collegato' : rest && W.hrPk ? (bpm - W.hrPk) + ' bpm dal picco (' + W.hrPk + ')' : Math.round(bpm / cfg.hrMax * 100) + '% del massimo');
+  /* media del segmento, oppure FTP stimata nel test a rampa */
+  if (test && S.rec.length > 90) {
+    const sec = Math.floor(W.t); if (W.estT !== sec) { W.estT = sec; const pw = S.rec.map(x => x[0]), e = ftpEstimate(pw, 'ramp'); W.est = e ? e.ftp : 0; W.best = bestAvgP(pw, 60) || 0; }
+    setT('#wk-avgl', 'FTP stimata ora'); setT('#wk-avg', W.est ? String(W.est) : '—'); setT('#wk-avgs', W.best ? '75% del miglior minuto (' + Math.round(W.best) + ' W)' : '\u00a0');
+  } else { setT('#wk-avgl', 'Media segmento'); setT('#wk-avg', W.avgN ? String(Math.round(W.avgS / W.avgN)) : '—'); setT('#wk-avgs', '\u00a0'); }
+  setT('#wk-tot', mmss(W.t)); setT('#wk-totu', '/ ' + mmss(W.total));
+  setT('#wk-wkg', (S.pAvg / cfg.mass).toFixed(1));
+  const gb = $('#wk-gearbox'); gb.hidden = !sg.free; if (sg.free) setT('#wk-gear', rings()[S.ring] + '×' + cogs()[S.gear]);
+  /* prossimo segmento */
   setT('#wk-next', nx ? 'Tra ' + mmss(Math.ceil(sg.t1 - W.t)) + ': ' + nx.label + ' · ' + mmss(nx.t1 - nx.t0) + (nx.free ? ' · libero' : ' · ' + Math.round(nx.p0 * W.adj * cfg.ftp / 100) + (nx.p1 !== nx.p0 ? '→' + Math.round(nx.p1 * W.adj * cfg.ftp / 100) : '') + ' W') : 'Ultimo segmento');
+  const nc = $('#wk-nxt'); nc.hidden = !(rest && nx);
+  if (rest && nx) {
+    setT('#wk-nx-w', nx.free ? 'libero' : String(Math.round(nx.p0 * W.adj * cfg.ftp / 100)));
+    setT('#wk-nx-t', nx.label + ' · ' + mmss(nx.t1 - nx.t0) + (nx.free ? '' : ' · ' + Math.round(nx.p0 * W.adj) + '% FTP'));
+    setT('#wk-nx-d', (nx.cad ? 'cadenza ' + nx.cad + ' rpm · ' : '') + 'tra ' + mmss(Math.ceil(sg.t1 - W.t)) + ' il rullo sale da solo');
+  }
   setT('#wk-adj', Math.round(W.adj * 100) + '%');
   setT('#wk-pause', W.paused ? 'Riprendi' : 'Pausa');
   const m = $('#wk-msg'), txt = sg.msg && (W.t - sg.t0 < 25 || sg.t1 - sg.t0 < 40) ? sg.msg : '';
   m.hidden = !txt; if (txt && m.textContent !== txt) m.textContent = txt;
   const sk = $('#wk-seek'); if (!W.seek && document.activeElement !== sk) sk.value = Math.floor(W.t);
-  const e = $('#wk-end'); setT('#wk-end', W.endConfirm ? 'Conferma fine' : 'Termina');
+  setT('#wk-end', W.endConfirm ? 'Conferma fine' : 'Termina');
 }
 function wkDraw() {
   const W = S.wk; if (!W) return;
-  drawWk($('#wk-prof'), W.segs, W.total, { cursor: W.t, rec: S.rec, ftp: cfg.ftp });
+  drawWk($('#wk-prof'), W.segs, W.total, { cursor: W.t, rec: S.rec, ftp: cfg.ftp, live: true });
 }
 function wkBindings() {
   $('#wk-pause').addEventListener('click', () => { const W = S.wk; if (!W) return; W.paused = !W.paused; if (!W.started) W.started = true; wkUI(); });
@@ -1919,7 +1979,7 @@ function wkBindings() {
   sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
   $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
   $('#ck-ask').addEventListener('click', askClick); $('#ck-pair').addEventListener('click', pairClick);
-  const logText = () => 'Rullo virtuale v26 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  const logText = () => 'Rullo virtuale v28 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
   $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
   $('#log-share').addEventListener('click', async () => {
     const t = logText();
@@ -2006,14 +2066,45 @@ async function setupHr(d, k) {
   await ch.startNotifications(); log('Cuore: notifiche attive (funzione non ancora provata su un cardiofrequenzimetro vero)');
 }
 function hrUI() {
-  const el = $('#m-hr'), on = hrFresh();
-  if (el.hidden === on) el.hidden = !on;
-  if (!on) return;
+  if (!hrFresh()) { setT('#v-hr', '—'); setT('#hr-sub', S.live.hr.bpm ? 'segnale perso' : 'non collegato'); return; }
   const b = S.live.hr.bpm, pc = b / cfg.hrMax * 100;
   setT('#v-hr', String(b)); setT('#hr-sub', Math.round(pc) + '% del massimo · Z' + (pc < 60 ? 1 : pc < 70 ? 2 : pc < 80 ? 3 : pc < 90 ? 4 : 5));
 }
 
 wkBindings(); loadWk();
+
+/* ---------- Fantasma del record ---------- */
+const GH = (() => { try { const o = JSON.parse(localStorage.getItem('rv-ghost') || '{}'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; } })();
+function saveGh() { try { localStorage.setItem('rv-ghost', JSON.stringify(GH)); } catch (e) { log('Record del fantasma non salvato: ' + errText(e)); } }
+/* un giro diventa record se è di almeno 5 minuti e 2 km e ha la velocità media più alta su quel percorso */
+function ghostSave() {
+  const d = S.gh, n = d.length; if (S.wk || n < 61 || d[n - 1] - d[0] < 2000) return;
+  const dist = d[n - 1] - d[0], sec = (n - 1) * 5, avg = dist / sec, old = GH[RT.id];
+  if (old && old.len === RT.len && old.avg >= avg) return;
+  GH[RT.id] = { len: RT.len, avg: Math.round(avg * 1000) / 1000, date: Date.now(), d: d.map(x => x - d[0]) };
+  saveGh(); log('Nuovo record su ' + RT.name + ': ' + mmss(sec) + ' per ' + km1(dist) + ' km');
+}
+function ghostRec() { if (!cfg.ghost || S.wk) return null; const r = GH[RT.id]; return r && r.len === RT.len && Array.isArray(r.d) && r.d.length > 12 ? r : null; }
+function ghostPos(r, t) { const d = r.d, k = t / 5, i = Math.floor(k); if (i >= d.length - 1) return null; return S.gh[0] + d[i] + (d[i + 1] - d[i]) * (k - i); }
+function ghostTimeAt(r, rel) {
+  const d = r.d; if (rel <= 0) return 0; if (rel > d[d.length - 1]) return null;
+  let lo = 0, hi = d.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (d[m] <= rel) lo = m; else hi = m; }
+  return 5 * (lo + (d[hi] === d[lo] ? 0 : (rel - d[lo]) / (d[hi] - d[lo])));
+}
+function ghostUI() {
+  const gb = $('#ghostbox'); if (!gb) return;
+  if (!cfg.ghost || S.wk) { gb.hidden = true; return; }
+  gb.hidden = false;
+  const r = ghostRec();
+  if (!r) { setT('#gh-v', 'Fantasma'); setT('#gh-s', 'Ancora nessun record su questo percorso: fai almeno 2 km in 5 minuti, poi premi Azzera giro.'); $('#gh-v').style.color = ''; return; }
+  const tg = ghostTimeAt(r, S.pos - S.gh[0]), rec = mmss((r.d.length - 1) * 5) + ' su ' + km1(r.d[r.d.length - 1]) + ' km';
+  if (tg == null) { setT('#gh-v', 'Indietro'); setT('#gh-s', 'Il record è già al traguardo (' + rec + ')'); $('#gh-v').style.color = 'var(--warn)'; return; }
+  const dt = Math.round(S.time - tg);
+  setT('#gh-v', (dt <= 0 ? '−' : '+') + mmss(Math.abs(dt))); $('#gh-v').style.color = dt <= 0 ? 'var(--ok)' : 'var(--warn)';
+  setT('#gh-s', (dt <= 0 ? 'Avanti' : 'Indietro') + ' rispetto al record (' + rec + ')');
+}
+$('#ghost-btn').addEventListener('click', () => { cfg.ghost = !cfg.ghost; saveCfg(); setT('#ghost-btn', 'Fantasma: ' + (cfg.ghost ? 'sì' : 'no')); ghostUI(); });
+setT('#ghost-btn', 'Fantasma: ' + (cfg.ghost ? 'sì' : 'no'));
 
 /* ---------- Percorsi ---------- */
 const RTS = { list: [], sel: 'demo' };
@@ -2031,15 +2122,16 @@ function routeInfo() { const k = RT.id + '|' + RT.len + '|' + cfg.maxGrade; if (
 const km1 = m => (m / 1000).toFixed(m >= 10000 ? 1 : 2);
 function routeSub() {
   const i = routeInfo();
-  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v26';
+  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v28';
 }
 function resetRide() {
-  S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.rec = []; S.recAcc = 0; S.recMeta = null;
+  S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.rec = []; S.recAcc = 0; S.recMeta = null; S.gh = [0]; S.ghAcc = 0;
   if (S.routeEnd) { S.routeEnd = false; note(''); }
   clearLive();
 }
 function useRoute(r, keepRide) {
   if (S.wk) wkEnd(false);
+  try { ghostSave(); } catch (e) {}
   setRT(r); RTS.sel = r.id; RINFO_KEY = ''; PROF = null; routeInfo();
   if (!keepRide) resetRide();
   S.mode === 'route' || setMode('route');
@@ -2099,14 +2191,13 @@ function renderRoutes(box) {
   const grid = h('div', { class: 'wk-grid' });
   for (const r of allRoutes()) {
     const info = analyzeRoute(r.z, r.loop, cfg.maxGrade), len = (r.z.length - 1) * RSTEP, cv = h('canvas', { class: 'rt-thumb' }), act = r.id === RTS.sel;
-    const pxy = planFor(r), pcv = pxy ? h('canvas', { class: 'rt-plan sm' }) : null;
-    THUMBS.push(() => { drawElevPrev(cv, r.z, r.loop, false); if (pcv) drawPlan(pcv, pxy, r.loop, info.over, len); });
+    THUMBS.push(() => drawElevPrev(cv, r.z, r.loop, false));
     const del = r.kind === 'demo' ? null : h('button', { class: 'btn', text: rtArmed === r.id ? 'Conferma' : 'Elimina', onclick: () => {
       if (rtArmed === r.id) { RTS.list = RTS.list.filter(x => x.id !== r.id); rtArmed = null; if (RTS.sel === r.id) useRoute(DEMO_ROUTE()); else saveRoutes(); } else rtArmed = r.id; renderOvl(); } });
     const edit = r.kind === 'edit' ? h('button', { class: 'btn', text: 'Modifica', onclick: () => { RED = null; openOvl('redit', { route: clone(r) }); } }) : null;
     grid.append(h('div', { class: 'wk-card' + (act ? ' act' : '') },
       h('div', { class: 'wk-cardhead' }, h('b', { text: r.name }), act ? h('span', { class: 'hint', text: 'in uso' }) : null),
-      pcv, cv,
+      cv,
       h('div', { class: 'wk-meta' }, h('span', { text: km1(len) + ' km' + (r.loop ? ' ⟲' : '') }), h('span', { text: 'D+ ' + Math.round(info.gain) + ' m' }), h('span', { text: 'max ' + (info.maxG * 100).toFixed(1) + '%' })),
       info.over.length ? h('p', { class: 'rt-warn', text: '⚠ ' + info.over.length + (info.over.length === 1 ? ' tratto oltre ' : ' tratti oltre ') + cfg.maxGrade + '%' }) : null,
       h('div', { class: 'rt-actions' }, h('button', { class: 'btn on', text: 'Usa', onclick: () => { closeOvl(); useRoute(r); } }), edit || h('span'), del || h('span'))));
@@ -2128,17 +2219,17 @@ function renderRimp(box) {
   box.append(h('div', { class: 'ovl-top' }, h('h2', { text: 'Importa percorso GPX' }), h('div', { class: 'ovl-btns' }, h('button', { class: 'btn', text: 'Indietro', onclick: () => openOvl('routes') }))), f, ta,
     h('div', { class: 'ovl-btns' }, h('button', { class: 'btn', text: 'Leggi il testo', onclick: () => tryParse(ta.value, 'Percorso incollato') })), msg);
   if (!RIMP) return;
-  const r = RIMP.r, info = analyzeRoute(r.z, r.loop, cfg.maxGrade), cv = h('canvas', { class: 'rt-prev' }), pcv = h('canvas', { class: 'rt-plan' });
-  THUMBS.push(() => { drawPlan(pcv, r.xy, r.loop, info.over, r.len); drawElevPrev(cv, r.z, r.loop, true); });
+  const r = RIMP.r, info = analyzeRoute(r.z, r.loop, cfg.maxGrade), cv = h('canvas', { class: 'rt-prev' });
+  THUMBS.push(() => drawElevPrev(cv, r.z, r.loop, true));
   const nameIn = h('input', { type: 'text', value: r.name, 'aria-label': 'Nome', onchange: e => { r.name = e.target.value.trim() || 'Percorso importato'; } });
   const save = use => {
     r.name = nameIn.value.trim() || 'Percorso importato';
     if (RTS.list.length >= 30) { msg.textContent = 'Hai già 30 percorsi: eliminane qualcuno.'; return; }
-    RTS.list.push({ id: r.id, name: r.name, kind: 'gpx', loop: r.loop, z: r.z, xy: r.xy });
+    RTS.list.push({ id: r.id, name: r.name, kind: 'gpx', loop: r.loop, z: r.z });
     if (!saveRoutes()) { RTS.list.pop(); return; }
     RIMP = null; if (use) { closeOvl(); useRoute(r); } else openOvl('routes');
   };
-  box.append(h('div', { class: 'fields' }, h('label', { class: 'field' }, 'Nome', nameIn)), pcv, cv,
+  box.append(h('div', { class: 'fields' }, h('label', { class: 'field' }, 'Nome', nameIn)), cv,
     h('p', { class: 'hint', text: statLine(info, r.len) + (r.loop ? ' · percorso ad anello: ricomincia dall\'inizio' : ' · percorso con arrivo: alla fine la strada diventa piatta') }),
     warnBox(info, r.noEle),
     h('div', { class: 'ovl-btns' }, h('button', { class: 'btn on', text: 'Salva e usa', onclick: () => save(true) }), h('button', { class: 'btn', text: 'Salva', onclick: () => save(false) })));
@@ -2152,11 +2243,11 @@ function renderRedit(box, arg) {
     else { RED = { id: uid('r'), name: 'Percorso inventato', loop: true, segs: genSegs(15, 'ondulato', cfg.maxGrade, true, 1), isNew: true, gen: { km: 15, type: 'ondulato', seed: 1 } }; }
     if (!RED.segs.length) RED.segs = genSegs(10, 'ondulato', cfg.maxGrade, RED.loop, 1);
   }
-  const R = RED, cv = h('canvas', { class: 'rt-prev' }), pcv = h('canvas', { class: 'rt-plan' }), stats = h('p', { class: 'hint' }), wb = h('div'), msg = h('p', { class: 'hint' });
+  const R = RED, cv = h('canvas', { class: 'rt-prev' }), stats = h('p', { class: 'hint' }), wb = h('div'), msg = h('p', { class: 'hint' });
   const total = () => R.segs.reduce((a, s) => a + s.len, 0);
   const refresh = () => {
     const z = segsToZ(R.segs, R.loop), info = analyzeRoute(z, R.loop, cfg.maxGrade);
-    drawPlan(pcv, synthPlan((z.length - 1) * RSTEP, R.loop, hashStr(String(R.id))), R.loop, info.over, (z.length - 1) * RSTEP); drawElevPrev(cv, z, R.loop, true); stats.textContent = statLine(info, (z.length - 1) * RSTEP);
+    drawElevPrev(cv, z, R.loop, true); stats.textContent = statLine(info, (z.length - 1) * RSTEP);
     wb.textContent = ''; wb.append(warnBox(info, false));
     rows.querySelectorAll('.sg-row').forEach((el, i) => { const s = R.segs[i], over = s && s.grade > cfg.maxGrade; el.classList.toggle('over', !!over); });
   };
@@ -2182,7 +2273,7 @@ function renderRedit(box, arg) {
   const save = () => {
     R.name = nameIn.value.trim() || 'Percorso inventato';
     if (total() < 200) { msg.textContent = 'Il percorso deve essere lungo almeno 200 m.'; return; }
-    const z = segsToZ(R.segs, R.loop).map(v => Math.round(v * 10) / 10), item = { id: R.id, name: R.name, kind: 'edit', loop: R.loop, z, segs: clone(R.segs), xy: synthPlan((z.length - 1) * RSTEP, R.loop, hashStr(String(R.id))) };
+    const z = segsToZ(R.segs, R.loop).map(v => Math.round(v * 10) / 10), item = { id: R.id, name: R.name, kind: 'edit', loop: R.loop, z, segs: clone(R.segs) };
     const k = RTS.list.findIndex(x => x.id === R.id);
     if (k >= 0) RTS.list[k] = item; else { if (RTS.list.length >= 30) { msg.textContent = 'Hai già 30 percorsi: eliminane qualcuno.'; return; } RTS.list.push(item); }
     if (!saveRoutes()) return;
@@ -2196,7 +2287,7 @@ function renderRedit(box, arg) {
     h('div', { class: 'fields' }, h('label', { class: 'field' }, 'Lunghezza (km)', km), h('label', { class: 'field' }, 'Tipo', ty)),
     h('div', { class: 'ovl-btns' }, h('button', { class: 'btn', text: 'Genera', onclick: () => gen(false) }), h('button', { class: 'btn', text: 'Un altro diverso', onclick: () => gen(true) })),
     h('p', { class: 'hint', text: 'Le salite generate non superano il ' + cfg.maxGrade + '% del tuo rullo. Poi puoi correggere i tratti a mano.' }));
-  box.append(pcv, h('p', { class: 'hint', text: 'Tracciato indicativo: la forma è di fantasia, la salita è quella dei tuoi tratti.' }), cv, stats, wb);
+  box.append(cv, stats, wb);
   box.append(h('h2', { class: 'ovl-h2', text: 'Tratti' }), h('p', { class: 'hint', text: 'Ogni tratto ha una lunghezza e una pendenza (negativa = discesa). Il profilo viene ammorbidito tra un tratto e l\'altro. In un anello la quota finale torna uguale a quella iniziale.' }), rows,
     h('div', { class: 'ovl-btns' }, h('button', { class: 'btn', text: 'Aggiungi tratto', onclick: () => { if (R.segs.length >= 200) return; R.segs.push({ len: 500, grade: 3 }); renderOvl(); } })), msg);
 }
@@ -2229,11 +2320,15 @@ function gwarnUI() {
 recoverLive();
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().then(ok => log('Archivio del browser persistente: ' + (ok ? 'sì' : 'non concesso')), () => {}); } catch (e) {}
 try {
-  const lb = Number(localStorage.getItem('rv-lastbackup') || 0), has = WK.rides.length > 0 || RTS.list.length > 0 || WK.list.some(w => !String(w.id).startsWith('s-'));
-  if (has && Date.now() - lb > 7 * 864e5 && navigator.bluetooth) note('Non fai un backup dei dati da più di 7 giorni: apri Allenamenti › Dati e backup › Salva backup.');
+  const lb = Number(localStorage.getItem('rv-lastbackup') || 0), lr = Number(localStorage.getItem('rv-lastremind') || 0), has = WK.rides.length > 0 || RTS.list.length > 0 || WK.list.some(w => !String(w.id).startsWith('s-'));
+  if (has && Date.now() - lb > 7 * 864e5 && Date.now() - lr > 3 * 864e5 && navigator.bluetooth) {
+    note('Backup dei dati: ' + (lb ? 'l\'ultimo è del ' + fmtDate(lb) : 'non ne hai ancora fatto uno') + '. Apri Allenamenti › Dati e backup › Salva backup. (Tocca per chiudere)');
+    localStorage.setItem('rv-lastremind', String(Date.now()));
+  }
 } catch (e) {}
 if (!navigator.bluetooth) note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.');
 try { roleLabels(); } catch (e) { log('Etichette Click: ' + errText(e)); }
+try { const k = cfg.keys; $('#pad-det').open = !(k.rear.plus && k.rear.minus && k.front.plus && k.front.minus); } catch (e) {}
 gearUI(); hud();
 log('Pronto. Collega rullo, potenziometro e Click con i pulsanti in alto.');
 window.__rvOk = true;
