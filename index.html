@@ -213,6 +213,8 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
 .field.chk{grid-auto-flow:column;justify-content:start;align-items:center;gap:10px}
 .gwarn{position:absolute;right:12px;bottom:12px;max-width:calc(100% - 24px);padding:6px 10px;border-radius:8px;background:var(--panel);border:1px solid var(--bad);color:var(--bad);font:600 14px/1.3 var(--f-body)}
 .gwarn[hidden]{display:none}
+.rt-plan{display:block;width:100%;height:190px;border-radius:8px;background:var(--panel2)}
+.rt-plan.sm{height:96px}
 .sumtxt p{margin:0 0 6px;font-size:15px}
 </style>
 
@@ -348,6 +350,9 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
     <div class="card wide">
       <h2>Potenza, ultimi 5 minuti</h2>
       <canvas class="chart" id="pwr"></canvas>
+      <h2 id="plan-h">Mappa del giro</h2>
+      <canvas class="chart" id="plan" style="height:210px"></canvas>
+      <p class="hint" id="plan-note"></p>
       <h2>Altimetria del giro</h2>
       <canvas class="chart" id="prof"></canvas>
     </div>
@@ -430,7 +435,7 @@ function zRaw(s) { let z = 0; for (const [k, a, p] of COMP) z += a * Math.sin(2 
 const SC = (() => { let mx = 0; for (let s = 0; s < DEMO_LEN; s += 5) mx = Math.max(mx, Math.abs((zRaw(s + 5) - zRaw(s)) / 5)); return 0.05 / mx; })();
 function demoZ() { const z = []; for (let i = 0; i <= DEMO_LEN / RSTEP; i++) z.push(210 + SC * zRaw(i * RSTEP)); return z; }
 let RT = { id: 'demo', name: 'Anello collinare', kind: 'demo', loop: true, z: Float32Array.from(demoZ()), len: DEMO_LEN };
-function setRT(r) { const z = Float32Array.from(r.z); RT = { id: r.id, name: r.name, kind: r.kind, loop: !!r.loop, z, len: (z.length - 1) * RSTEP }; }
+function setRT(r) { const z = Float32Array.from(r.z); RT = { id: r.id, name: r.name, kind: r.kind, loop: !!r.loop, z, len: (z.length - 1) * RSTEP, xy: planFor(r) }; }
 function elev(s) {
   const L = RT.len, z = RT.z; s = RT.loop ? ((s % L) + L) % L : clamp(s, 0, L);
   const f = s / RSTEP, i = Math.min(Math.floor(f), z.length - 2);
@@ -519,8 +524,8 @@ function hav(a, b) {
 }
 function pointsToRoute(pts, name) {
   if (pts.length < 2) throw new Error('servono almeno due punti');
-  const out = [{ s: 0, e: pts[0].ele }]; let s = 0, last = pts[0];
-  for (let i = 1; i < pts.length; i++) { const dd = hav(last, pts[i]); if (dd < 0.5) continue; s += dd; out.push({ s, e: pts[i].ele }); last = pts[i]; }
+  const out = [{ s: 0, e: pts[0].ele, lat: pts[0].lat, lon: pts[0].lon }]; let s = 0, last = pts[0];
+  for (let i = 1; i < pts.length; i++) { const dd = hav(last, pts[i]); if (dd < 0.5) continue; s += dd; out.push({ s, e: pts[i].ele, lat: pts[i].lat, lon: pts[i].lon }); last = pts[i]; }
   if (s < 200) throw new Error('percorso troppo corto (meno di 200 m)');
   if (s > 600000) throw new Error('percorso troppo lungo (oltre 600 km)');
   const have = out.filter(o => isFinite(o.e)).length, noEle = have < 2;
@@ -546,7 +551,7 @@ function pointsToRoute(pts, name) {
   const gap = hav(pts[0], pts[pts.length - 1]);
   const loop = gap < 200 && Math.abs(z[n] - z[0]) < 10 && n * RSTEP > 1000;
   if (loop) closeLoop(z);
-  return { name: name || 'Percorso importato', z: z.map(v => Math.round(v * 10) / 10), loop, noEle, len: n * RSTEP };
+  return { name: name || 'Percorso importato', z: z.map(v => Math.round(v * 10) / 10), loop, noEle, len: n * RSTEP, xy: planFromPoints(out, s) };
 }
 function parseGpx(txt, fallbackName) {
   const doc = new DOMParser().parseFromString(txt, 'application/xml');
@@ -614,6 +619,44 @@ function resistanceGrade(p) {
   const base = m * G * (crr * Math.cos(th) + Math.sin(th));
   const Ft = (base + Cw * v * v) * (R / Rp);
   return clamp((Ft - Cw * vt * vt) / (m * G) - crr, -0.10, maxG);
+}
+/* Piantina: tracciato in metri locali (x verso est, y verso nord), campionato in modo uniforme lungo il percorso */
+function hashStr(t) { let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function planFromPoints(out, s) {
+  const n = clamp(Math.ceil(s / 50) + 1, 20, 1200), lat0 = out.reduce((a, o) => a + o.lat, 0) / out.length, lon0 = out[0].lon;
+  const kx = Math.cos(lat0 * Math.PI / 180) * 111320, ky = 110574, xy = []; let j = 0;
+  for (let k = 0; k < n; k++) {
+    const pos = s * k / (n - 1);
+    while (j < out.length - 2 && out[j + 1].s < pos) j++;
+    const a = out[j], b = out[j + 1], f = (b.s - a.s) > 0 ? clamp((pos - a.s) / (b.s - a.s), 0, 1) : 0;
+    xy.push(Math.round((a.lon + (b.lon - a.lon) * f - lon0) * kx), Math.round((a.lat + (b.lat - a.lat) * f - lat0) * ky));
+  }
+  return xy;
+}
+/* Tracciato di fantasia per i percorsi senza coordinate (anello: curva chiusa; tratta: strada con curve dolci) */
+function synthPlan(len, loop, seed) {
+  const R = rng(seed), M = 800, p = [];
+  if (loop) {
+    const k = [[2, 0.26], [3, 0.16], [5, 0.07]].map(([m, a]) => [m, a * (0.6 + 0.8 * R()), R() * 6.283]);
+    for (let i = 0; i <= M; i++) { const th = 2 * Math.PI * i / M; let r = 1; for (const [m, a, ph] of k) r += a * Math.sin(m * th + ph); p.push([r * Math.cos(th), r * Math.sin(th) * 0.8]); }
+  } else {
+    const w = [[1, 1.3], [2.3, 0.7], [4.7, 0.3]].map(([f, a]) => [f, a * (0.5 + R()) * (R() < 0.5 ? -1 : 1), R() * 6.283]), th0 = R() * 6.283;
+    let x = 0, y = 0;
+    for (let i = 0; i <= M; i++) { const t = i / M; let th = th0; for (const [f, a, ph] of w) th += a * Math.sin(f * 2 * Math.PI * t + ph); p.push([x, y]); x += Math.cos(th) / M; y += Math.sin(th) / M; }
+  }
+  const cum = [0]; for (let i = 1; i < p.length; i++) cum.push(cum[i - 1] + Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]));
+  const tot = cum[cum.length - 1] || 1, sc = len / tot, n = clamp(Math.ceil(len / 50) + 1, 20, 1200), xy = []; let j = 0;
+  for (let k = 0; k < n; k++) {
+    const d = tot * k / (n - 1); while (j < p.length - 2 && cum[j + 1] < d) j++;
+    const f = (cum[j + 1] - cum[j]) > 0 ? clamp((d - cum[j]) / (cum[j + 1] - cum[j]), 0, 1) : 0;
+    xy.push(Math.round((p[j][0] + (p[j + 1][0] - p[j][0]) * f) * sc), Math.round((p[j][1] + (p[j + 1][1] - p[j][1]) * f) * sc));
+  }
+  return xy;
+}
+function planFor(r) {
+  if (r.xy && r.xy.length >= 6) return r.xy;
+  if (r.kind === 'gpx') return null;
+  return synthPlan((r.z.length - 1) * RSTEP, !!r.loop, hashStr(String(r.id)));
 }
 /* Migliori sforzi, FTP stimato, aderenza al programma, disaccoppiamento potenza/cuore */
 const BEST_WIN = [[5, '5 s'], [30, '30 s'], [60, '1 min'], [300, '5 min'], [600, '10 min'], [720, '12 min'], [1200, '20 min'], [3600, '60 min']];
@@ -1224,6 +1267,30 @@ function drawPwr() {
   g.globalAlpha = 0.22; g.fillStyle = COL.accent; g.fill(); g.globalAlpha = 1;
   g.beginPath(); S.hist.forEach((v, i) => i ? g.lineTo(px(i), py(v)) : g.moveTo(px(i), py(v))); g.lineWidth = 2 * d; g.strokeStyle = COL.accent; g.lineJoin = 'round'; g.stroke();
 }
+function drawPlan(cv, xy, loop, over, len, f) {
+  const d = fit(cv), g = cv.getContext('2d'), W = cv.width, H = cv.height; g.clearRect(0, 0, W, H);
+  if (!xy || xy.length < 6) return;
+  const n = xy.length / 2; let x0 = 1e18, x1 = -1e18, y0 = 1e18, y1 = -1e18;
+  for (let i = 0; i < n; i++) { const x = xy[2 * i], y = xy[2 * i + 1]; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  const pad = 16 * d, sc = Math.min((W - 2 * pad) / Math.max(1, x1 - x0), (H - 2 * pad) / Math.max(1, y1 - y0)), ox = (W - sc * (x1 - x0)) / 2, oy = (H - sc * (y1 - y0)) / 2;
+  const X = i => ox + (xy[2 * i] - x0) * sc, Y = i => H - (oy + (xy[2 * i + 1] - y0) * sc);
+  const path = (a, b) => { g.beginPath(); for (let i = a; i <= b; i++) i === a ? g.moveTo(X(i), Y(i)) : g.lineTo(X(i), Y(i)); };
+  path(0, n - 1); if (loop) g.closePath(); g.lineWidth = 3.4 * d; g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = COL.ink2; g.globalAlpha = 0.75; g.stroke(); g.globalAlpha = 1;
+  for (const o of over || []) { const a = clamp(Math.floor(o.from / len * (n - 1)), 0, n - 1), b = clamp(Math.ceil(o.to / len * (n - 1)), 0, n - 1); if (b > a) { path(a, b); g.lineWidth = 4.6 * d; g.strokeStyle = COL.bad; g.stroke(); } }
+  g.beginPath(); g.arc(X(0), Y(0), 5.5 * d, 0, 7); g.fillStyle = COL.ok; g.fill(); g.lineWidth = 1.5 * d; g.strokeStyle = COL.panel; g.stroke();
+  if (!loop) { g.beginPath(); g.rect(X(n - 1) - 5 * d, Y(n - 1) - 5 * d, 10 * d, 10 * d); g.fillStyle = COL.ink; g.fill(); g.stroke(); }
+  if (f != null) {
+    const q = clamp(f, 0, 1) * (n - 1), i = Math.min(n - 2, Math.floor(q)), t = q - i, px = X(i) + (X(i + 1) - X(i)) * t, py = Y(i) + (Y(i + 1) - Y(i)) * t;
+    g.beginPath(); g.arc(px, py, 6.5 * d, 0, 7); g.fillStyle = COL.accent; g.fill(); g.lineWidth = 2 * d; g.strokeStyle = COL.panel; g.stroke();
+  }
+}
+function drawPlanMain() {
+  const c = $('#plan'); if (!c) return;
+  const xy = RT.xy, show = !!xy; c.hidden = !show; $('#plan-h').hidden = !show; $('#plan-note').hidden = !show;
+  if (!show) return;
+  $('#plan-note').textContent = RT.kind === 'gpx' ? 'Tracciato del file GPX (nord in alto). In rosso i tratti oltre il limite del rullo.' : 'Tracciato indicativo: la forma è di fantasia, la salita è quella vera. In rosso i tratti oltre il limite del rullo.';
+  drawPlan(c, xy, RT.loop, routeInfo().over, RT.len, RT.loop ? (((S.pos % RT.len) + RT.len) % RT.len) / RT.len : clamp(S.pos / RT.len, 0, 1));
+}
 let PROF = null;
 function drawProf() {
   const c = CV.prof, d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
@@ -1246,7 +1313,7 @@ function drawProf() {
 }
 let lastCharts = 0;
 let frameErr = false;
-function frame(t) { try { if (!S.wk) { drawScene(); drawInset(); } else wkDraw(); if (t - lastCharts > 500) { lastCharts = t; drawPwr(); drawProf(); } } catch (e) { if (!frameErr) { frameErr = true; log('Errore di disegno: ' + errText(e)); } } requestAnimationFrame(frame); }
+function frame(t) { try { if (!S.wk) { drawScene(); drawInset(); } else wkDraw(); if (t - lastCharts > 500) { lastCharts = t; drawPwr(); drawProf(); drawPlanMain(); } } catch (e) { if (!frameErr) { frameErr = true; log('Errore di disegno: ' + errText(e)); } } requestAnimationFrame(frame); }
 requestAnimationFrame(frame);
 
 /* ======================= Allenamenti, registrazione, report, cardio ======================= */
@@ -1852,7 +1919,7 @@ function wkBindings() {
   sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
   $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
   $('#ck-ask').addEventListener('click', askClick); $('#ck-pair').addEventListener('click', pairClick);
-  const logText = () => 'Rullo virtuale v25 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  const logText = () => 'Rullo virtuale v26 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
   $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
   $('#log-share').addEventListener('click', async () => {
     const t = logText();
@@ -1964,7 +2031,7 @@ function routeInfo() { const k = RT.id + '|' + RT.len + '|' + cfg.maxGrade; if (
 const km1 = m => (m / 1000).toFixed(m >= 10000 ? 1 : 2);
 function routeSub() {
   const i = routeInfo();
-  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v25';
+  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v26';
 }
 function resetRide() {
   S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.rec = []; S.recAcc = 0; S.recMeta = null;
@@ -2032,13 +2099,14 @@ function renderRoutes(box) {
   const grid = h('div', { class: 'wk-grid' });
   for (const r of allRoutes()) {
     const info = analyzeRoute(r.z, r.loop, cfg.maxGrade), len = (r.z.length - 1) * RSTEP, cv = h('canvas', { class: 'rt-thumb' }), act = r.id === RTS.sel;
-    THUMBS.push(() => drawElevPrev(cv, r.z, r.loop, false));
+    const pxy = planFor(r), pcv = pxy ? h('canvas', { class: 'rt-plan sm' }) : null;
+    THUMBS.push(() => { drawElevPrev(cv, r.z, r.loop, false); if (pcv) drawPlan(pcv, pxy, r.loop, info.over, len); });
     const del = r.kind === 'demo' ? null : h('button', { class: 'btn', text: rtArmed === r.id ? 'Conferma' : 'Elimina', onclick: () => {
       if (rtArmed === r.id) { RTS.list = RTS.list.filter(x => x.id !== r.id); rtArmed = null; if (RTS.sel === r.id) useRoute(DEMO_ROUTE()); else saveRoutes(); } else rtArmed = r.id; renderOvl(); } });
     const edit = r.kind === 'edit' ? h('button', { class: 'btn', text: 'Modifica', onclick: () => { RED = null; openOvl('redit', { route: clone(r) }); } }) : null;
     grid.append(h('div', { class: 'wk-card' + (act ? ' act' : '') },
       h('div', { class: 'wk-cardhead' }, h('b', { text: r.name }), act ? h('span', { class: 'hint', text: 'in uso' }) : null),
-      cv,
+      pcv, cv,
       h('div', { class: 'wk-meta' }, h('span', { text: km1(len) + ' km' + (r.loop ? ' ⟲' : '') }), h('span', { text: 'D+ ' + Math.round(info.gain) + ' m' }), h('span', { text: 'max ' + (info.maxG * 100).toFixed(1) + '%' })),
       info.over.length ? h('p', { class: 'rt-warn', text: '⚠ ' + info.over.length + (info.over.length === 1 ? ' tratto oltre ' : ' tratti oltre ') + cfg.maxGrade + '%' }) : null,
       h('div', { class: 'rt-actions' }, h('button', { class: 'btn on', text: 'Usa', onclick: () => { closeOvl(); useRoute(r); } }), edit || h('span'), del || h('span'))));
@@ -2060,17 +2128,17 @@ function renderRimp(box) {
   box.append(h('div', { class: 'ovl-top' }, h('h2', { text: 'Importa percorso GPX' }), h('div', { class: 'ovl-btns' }, h('button', { class: 'btn', text: 'Indietro', onclick: () => openOvl('routes') }))), f, ta,
     h('div', { class: 'ovl-btns' }, h('button', { class: 'btn', text: 'Leggi il testo', onclick: () => tryParse(ta.value, 'Percorso incollato') })), msg);
   if (!RIMP) return;
-  const r = RIMP.r, info = analyzeRoute(r.z, r.loop, cfg.maxGrade), cv = h('canvas', { class: 'rt-prev' });
-  THUMBS.push(() => drawElevPrev(cv, r.z, r.loop, true));
+  const r = RIMP.r, info = analyzeRoute(r.z, r.loop, cfg.maxGrade), cv = h('canvas', { class: 'rt-prev' }), pcv = h('canvas', { class: 'rt-plan' });
+  THUMBS.push(() => { drawPlan(pcv, r.xy, r.loop, info.over, r.len); drawElevPrev(cv, r.z, r.loop, true); });
   const nameIn = h('input', { type: 'text', value: r.name, 'aria-label': 'Nome', onchange: e => { r.name = e.target.value.trim() || 'Percorso importato'; } });
   const save = use => {
     r.name = nameIn.value.trim() || 'Percorso importato';
     if (RTS.list.length >= 30) { msg.textContent = 'Hai già 30 percorsi: eliminane qualcuno.'; return; }
-    RTS.list.push({ id: r.id, name: r.name, kind: 'gpx', loop: r.loop, z: r.z });
+    RTS.list.push({ id: r.id, name: r.name, kind: 'gpx', loop: r.loop, z: r.z, xy: r.xy });
     if (!saveRoutes()) { RTS.list.pop(); return; }
     RIMP = null; if (use) { closeOvl(); useRoute(r); } else openOvl('routes');
   };
-  box.append(h('div', { class: 'fields' }, h('label', { class: 'field' }, 'Nome', nameIn)), cv,
+  box.append(h('div', { class: 'fields' }, h('label', { class: 'field' }, 'Nome', nameIn)), pcv, cv,
     h('p', { class: 'hint', text: statLine(info, r.len) + (r.loop ? ' · percorso ad anello: ricomincia dall\'inizio' : ' · percorso con arrivo: alla fine la strada diventa piatta') }),
     warnBox(info, r.noEle),
     h('div', { class: 'ovl-btns' }, h('button', { class: 'btn on', text: 'Salva e usa', onclick: () => save(true) }), h('button', { class: 'btn', text: 'Salva', onclick: () => save(false) })));
@@ -2084,11 +2152,11 @@ function renderRedit(box, arg) {
     else { RED = { id: uid('r'), name: 'Percorso inventato', loop: true, segs: genSegs(15, 'ondulato', cfg.maxGrade, true, 1), isNew: true, gen: { km: 15, type: 'ondulato', seed: 1 } }; }
     if (!RED.segs.length) RED.segs = genSegs(10, 'ondulato', cfg.maxGrade, RED.loop, 1);
   }
-  const R = RED, cv = h('canvas', { class: 'rt-prev' }), stats = h('p', { class: 'hint' }), wb = h('div'), msg = h('p', { class: 'hint' });
+  const R = RED, cv = h('canvas', { class: 'rt-prev' }), pcv = h('canvas', { class: 'rt-plan' }), stats = h('p', { class: 'hint' }), wb = h('div'), msg = h('p', { class: 'hint' });
   const total = () => R.segs.reduce((a, s) => a + s.len, 0);
   const refresh = () => {
     const z = segsToZ(R.segs, R.loop), info = analyzeRoute(z, R.loop, cfg.maxGrade);
-    drawElevPrev(cv, z, R.loop, true); stats.textContent = statLine(info, (z.length - 1) * RSTEP);
+    drawPlan(pcv, synthPlan((z.length - 1) * RSTEP, R.loop, hashStr(String(R.id))), R.loop, info.over, (z.length - 1) * RSTEP); drawElevPrev(cv, z, R.loop, true); stats.textContent = statLine(info, (z.length - 1) * RSTEP);
     wb.textContent = ''; wb.append(warnBox(info, false));
     rows.querySelectorAll('.sg-row').forEach((el, i) => { const s = R.segs[i], over = s && s.grade > cfg.maxGrade; el.classList.toggle('over', !!over); });
   };
@@ -2098,77 +2166,4 @@ function renderRedit(box, arg) {
     const gr = h('input', { type: 'number', inputmode: 'decimal', min: -15, max: 20, step: 0.5, value: s.grade, 'aria-label': 'Pendenza in percento' });
     len.addEventListener('change', () => { s.len = clamp(Math.round((Number(len.value) || 100) / 10) * 10, 50, 20000); len.value = s.len; refresh(); });
     gr.addEventListener('change', () => { let v = Number(gr.value); if (!isFinite(v)) v = 0; s.grade = clamp(Math.round(v * 10) / 10, -15, 20); gr.value = s.grade; refresh(); });
-    const mv = d => () => { const j = i + d; if (j < 0 || j >= R.segs.length) return; const t = R.segs[i]; R.segs[i] = R.segs[j]; R.segs[j] = t; renderOvl(); };
-    rows.append(h('div', { class: 'sg-row' }, h('b', { text: String(i + 1) }),
-      h('label', { class: 'ef' }, h('span', { text: 'Lunghezza (m)' }), len), h('label', { class: 'ef' }, h('span', { text: 'Pendenza (%)' }), gr),
-      h('span', { class: 'bbtn' },
-        h('button', { class: 'ibtn', text: '↑', 'aria-label': 'Sposta su', onclick: mv(-1) }), h('button', { class: 'ibtn', text: '↓', 'aria-label': 'Sposta giù', onclick: mv(1) }),
-        h('button', { class: 'ibtn', text: '✕', 'aria-label': 'Elimina tratto', onclick: () => { if (R.segs.length < 2) return; R.segs.splice(i, 1); renderOvl(); } }))));
-  });
-  THUMBS.push(refresh);
-  const nameIn = h('input', { type: 'text', value: R.name, 'aria-label': 'Nome', onchange: e => { R.name = e.target.value.trim() || 'Percorso inventato'; } });
-  const loopIn = h('input', { type: 'checkbox', checked: R.loop, onchange: e => { R.loop = e.target.checked; refresh(); } });
-  const km = h('input', { type: 'number', inputmode: 'decimal', min: 2, max: 150, step: 1, value: R.gen.km, onchange: e => { R.gen.km = clamp(Number(e.target.value) || 15, 2, 150); e.target.value = R.gen.km; } });
-  const ty = h('select', { 'aria-label': 'Tipo di percorso', onchange: e => { R.gen.type = e.target.value; } }, Object.keys(GEN_TYPES).map(k => h('option', { value: k, selected: k === R.gen.type, text: GEN_TYPES[k].name })));
-  const gen = again => { if (again) R.gen.seed = (Math.random() * 1e6) | 0; R.segs = genSegs(R.gen.km, R.gen.type, cfg.maxGrade, R.loop, R.gen.seed); renderOvl(); };
-  const save = () => {
-    R.name = nameIn.value.trim() || 'Percorso inventato';
-    if (total() < 200) { msg.textContent = 'Il percorso deve essere lungo almeno 200 m.'; return; }
-    const z = segsToZ(R.segs, R.loop).map(v => Math.round(v * 10) / 10), item = { id: R.id, name: R.name, kind: 'edit', loop: R.loop, z, segs: clone(R.segs) };
-    const k = RTS.list.findIndex(x => x.id === R.id);
-    if (k >= 0) RTS.list[k] = item; else { if (RTS.list.length >= 30) { msg.textContent = 'Hai già 30 percorsi: eliminane qualcuno.'; return; } RTS.list.push(item); }
-    if (!saveRoutes()) return;
-    const wasSel = RTS.sel === R.id; RED = null;
-    if (wasSel) { useRoute(item); closeOvl(); } else openOvl('routes');
-  };
-  box.append(h('div', { class: 'ovl-top' }, h('h2', { text: R.isNew ? 'Inventa un percorso' : 'Modifica percorso' }), h('div', { class: 'ovl-btns' },
-    h('button', { class: 'btn on', text: 'Salva', onclick: save }), h('button', { class: 'btn', text: 'Annulla', onclick: () => { RED = null; openOvl('routes'); } }))));
-  box.append(h('div', { class: 'fields' }, h('label', { class: 'field' }, 'Nome', nameIn), h('label', { class: 'field chk' }, h('span', { text: 'Anello (torna al punto di partenza)' }), loopIn)));
-  box.append(h('h2', { class: 'ovl-h2', text: 'Genera in automatico' }),
-    h('div', { class: 'fields' }, h('label', { class: 'field' }, 'Lunghezza (km)', km), h('label', { class: 'field' }, 'Tipo', ty)),
-    h('div', { class: 'ovl-btns' }, h('button', { class: 'btn', text: 'Genera', onclick: () => gen(false) }), h('button', { class: 'btn', text: 'Un altro diverso', onclick: () => gen(true) })),
-    h('p', { class: 'hint', text: 'Le salite generate non superano il ' + cfg.maxGrade + '% del tuo rullo. Poi puoi correggere i tratti a mano.' }));
-  box.append(cv, stats, wb);
-  box.append(h('h2', { class: 'ovl-h2', text: 'Tratti' }), h('p', { class: 'hint', text: 'Ogni tratto ha una lunghezza e una pendenza (negativa = discesa). Il profilo viene ammorbidito tra un tratto e l\'altro. In un anello la quota finale torna uguale a quella iniziale.' }), rows,
-    h('div', { class: 'ovl-btns' }, h('button', { class: 'btn', text: 'Aggiungi tratto', onclick: () => { if (R.segs.length >= 200) return; R.segs.push({ len: 500, grade: 3 }); renderOvl(); } })), msg);
-}
-
-/* In sella: avviso salite oltre il limite del rullo */
-function gwarnUI() {
-  const el = $('#gwarn'); if (!el) return;
-  let txt = '';
-  if (!S.wk && S.mode === 'route') {
-    const lim = cfg.maxGrade / 100;
-    for (let d = 0; d <= 400; d += 20) {
-      const g = gradeAt(S.pos + d);
-      if (g > lim + 1e-4) {
-        let mx = g; for (let e = d; e <= d + 600; e += 20) mx = Math.max(mx, gradeAt(S.pos + e));
-        txt = '⚠ ' + (d <= 20 ? 'Salita' : 'Tra ' + Math.round(d / 10) * 10 + ' m salita') + ' al ' + (mx * 100).toFixed(1) + '% · il rullo applica ' + cfg.maxGrade + '%';
-        break;
-      }
-    }
-  }
-  if (el.textContent !== txt) { el.textContent = txt; el.hidden = !txt; }
-}
-
-/* ---------- Avvio ---------- */
-(function () {
-  loadRoutes();
-  const r = allRoutes().find(x => x.id === RTS.sel);
-  if (r && r.id !== 'demo') { try { setRT(r); S.lastElev = elev(0); } catch (e) { log('Percorso salvato non utilizzabile: ' + errText(e)); RTS.sel = 'demo'; } }
-  routeSub();
-})();
-recoverLive();
-try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().then(ok => log('Archivio del browser persistente: ' + (ok ? 'sì' : 'non concesso')), () => {}); } catch (e) {}
-try {
-  const lb = Number(localStorage.getItem('rv-lastbackup') || 0), has = WK.rides.length > 0 || RTS.list.length > 0 || WK.list.some(w => !String(w.id).startsWith('s-'));
-  if (has && Date.now() - lb > 7 * 864e5 && navigator.bluetooth) note('Non fai un backup dei dati da più di 7 giorni: apri Allenamenti › Dati e backup › Salva backup.');
-} catch (e) {}
-if (!navigator.bluetooth) note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.');
-try { roleLabels(); } catch (e) { log('Etichette Click: ' + errText(e)); }
-gearUI(); hud();
-log('Pronto. Collega rullo, potenziometro e Click con i pulsanti in alto.');
-window.__rvOk = true;
-})();
-</script>
-<script>window.__rvEnd = true;</script>
+    const mv = d => () => { const j = i + d; if (j < 0 || j >= R.segs.length) return; const t = R.segs[i]; R.segs[i] = R.segs[j]; R.segs[j] =
