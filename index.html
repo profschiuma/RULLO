@@ -213,7 +213,6 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
       <button class="chip" id="chip-ck" data-k="ck"><i class="dot"></i><span><span class="nm">Zwift Click 1</span><small>Tocca per collegare</small></span></button>
       <button class="chip" id="chip-ck2" data-k="ck2"><i class="dot"></i><span><span class="nm">Zwift Click 2</span><small>Tocca per collegare</small></span></button>
       <button class="chip" id="chip-hr" data-k="hr"><i class="dot"></i><span><span class="nm">Cardio</span><small>Tocca per collegare</small></span></button>
-      <button class="chip" id="chip-mb" data-k="mb"><i class="dot"></i><span><span class="nm">micro:bit (tasti)</span><small>Tocca per collegare</small></span></button>
     </div>
   </header>
   <p class="note" id="note" hidden></p>
@@ -355,12 +354,8 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
         <label class="field">Sorgente potenza
           <select data-cfg="powerSrc"><option value="auto">Automatica (4iiii se presente)</option><option value="pm">Solo 4iiii</option><option value="trainer">Solo rullo D100</option></select>
         </label>
-        <div class="field" style="grid-column:1/-1">micro:bit come tastiera
-          <small style="display:block;opacity:.8;margin:4px 0 8px">A = pignone +, B = pignone −, A+B (o logo) = cambia corona. Sul micro:bit serve il programma Bluetooth UART, senza accoppiamento.</small>
-          <button class="btn" id="mb-copy" type="button">Copia il programma per il micro:bit</button>
-        </div>
         <label class="field">Apertura del Click (prova)
-          <select data-cfg="hs"><option value="qz">Come QZ: tutte le notifiche + RideOn</option><option value="old">Precedente: RideOn 01 02</option><option value="full">Come l'app Zwift: scambio di chiavi (prova)</option></select>
+          <select data-cfg="hs"><option value="qz">Come QZ: tutte le notifiche + RideOn</option><option value="old">Precedente: RideOn 01 02</option></select>
         </label>
       </div>
       <p class="hint">Corone e pignoni vanno scritti come numeri di denti separati da virgola, in qualsiasi ordine (per esempio 50,34). La corona fisica e il Cog sul rullo servono a calcolare quanto una marcia virtuale è più dura o più agile della marcia fisica del rullo. Il rullo usa una sua massa interna: se le salite sembrano troppo dolci o troppo dure, regola il peso.</p>
@@ -378,6 +373,7 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
       </div>
       <pre class="log" id="log" aria-live="off"></pre>
       <div class="row" style="margin-top:8px"><button class="btn" id="log-share" style="flex:1">Condividi registro</button><button class="btn" id="log-copy" style="flex:1">Copia registro</button></div>
+      <div class="row" style="margin-top:8px"><button class="btn" id="ck-ask" style="flex:1">Leggi stato del Click</button><button class="btn" id="ck-pair" style="flex:1">Prova accoppiamento sicuro</button></div>
     </details>
   </section>
 </div>
@@ -488,7 +484,7 @@ const DEF = { mass: 75, bike: 9, cda: 0.32, crr: 0.004, rho: 1.2, eff: 0.975, ft
   powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false, hs: 'qz' };
 const cfg = Object.assign({}, DEF);
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('rv-cfg2') || '{}')); } catch (e) {}
-cfg.keepAlive = false;
+cfg.keepAlive = false; if (cfg.hs !== 'old') cfg.hs = 'qz';
 /* maschere dei tasti + e − di ogni Click, imparate al primo collegamento */
 /* tasti: ogni comando (pignoni/corone, + e −) è un tasto di uno dei due Click, quindi si possono mescolare i controller */
 const nk = o => (o && (o.k === 'ck' || o.k === 'ck2') && typeof o.bit === 'number' && o.bit) ? { k: o.k, bit: o.bit >>> 0 } : null;
@@ -530,12 +526,11 @@ const errText = e => {
 const B = n => '0000' + n + '-0000-1000-8000-00805f9b34fb';
 const U = { ftms: B('1826'), bike: B('2ad2'), cp: B('2ad9'), cps: B('1818'), meas: B('2a63'), hrs: B('180d'), hrm: B('2a37'),
   z1: '00000001-19ca-4651-86e5-fa29dcdd09d1', zRide: '0000fc82-0000-1000-8000-00805f9b34fb',
-  nus: '6e400001-b5a3-f393-e0a9-e50e24dcca9e', nusTx: '6e400003-b5a3-f393-e0a9-e50e24dcca9e',
   zAsync: '00000002-19ca-4651-86e5-fa29dcdd09d1', zRx: '00000003-19ca-4651-86e5-fa29dcdd09d1', zTx: '00000004-19ca-4651-86e5-fa29dcdd09d1' };
-const NAMES = { tr: 'Rullo Van Rysel D100', pm: 'Potenziometro 4iiii', ck: 'Zwift Click 1', ck2: 'Zwift Click 2', hr: 'Cardiofrequenzimetro', mb: 'micro:bit' };
-const D = { tr: null, pm: null, ck: null, ck2: null, hr: null, mb: null };
-const userOff = { tr: false, pm: false, ck: false, ck2: false, hr: false, mb: false };
-const GEN = { tr: 0, pm: 0, ck: 0, ck2: 0, hr: 0, mb: 0 }, RECON = { tr: false, pm: false, ck: false, ck2: false, hr: false, mb: false };
+const NAMES = { tr: 'Rullo Van Rysel D100', pm: 'Potenziometro 4iiii', ck: 'Zwift Click 1', ck2: 'Zwift Click 2', hr: 'Cardiofrequenzimetro' };
+const D = { tr: null, pm: null, ck: null, ck2: null, hr: null };
+const userOff = { tr: false, pm: false, ck: false, ck2: false, hr: false };
+const GEN = { tr: 0, pm: 0, ck: 0, ck2: 0, hr: 0 }, RECON = { tr: false, pm: false, ck: false, ck2: false, hr: false };
 let CP = null, cpChain = Promise.resolve();
 
 function chip(k, state, text) {
@@ -543,7 +538,7 @@ function chip(k, state, text) {
   el.querySelector('small').textContent = text;
   try { refreshPad(); } catch (e) {}
 }
-function resetChips() { for (const k of ['tr', 'pm', 'ck', 'ck2', 'hr', 'mb']) chip(k, '', 'Tocca per collegare'); }
+function resetChips() { for (const k of ['tr', 'pm', 'ck', 'ck2', 'hr']) chip(k, '', 'Tocca per collegare'); }
 const roleOf = k => (k === 'ck2' ? cfg.role2 : cfg.role1) === 'front' ? 'front' : 'rear';
 
 function cpWrite(bytes) {
@@ -702,69 +697,20 @@ function handleRide(u, k) {
     if (m && m.k === k && (fresh & m.bit)) shift(fn, (sp === 'plus' ? 1 : -1) * (cfg.swap ? -1 : 1));
   }
 }
-/* ---------- Scambio di chiavi come l'app Zwift (ECDH P-256, HKDF-SHA256, AES-CCM con MAC di 4 byte) ----------
-   Schema ricavato dal codice pubblico di QZ (cagnulein/zwiftplay). */
-const cat = (...a) => { const o = new Uint8Array(a.reduce((n, x) => n + x.length, 0)); let p = 0; for (const x of a) { o.set(x, p); p += x.length; } return o; };
-const stripZ = b => { let i = 0; while (i < b.length - 1 && b[i] === 0) i++; return b.subarray(i); };
-async function zcNew() {
-  for (let i = 0; i < 20; i++) {
-    const kp = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
-    const pub = new Uint8Array(await crypto.subtle.exportKey('raw', kp.publicKey)).slice(1);
-    if (pub[0] !== 0 && pub[32] !== 0) return { priv: kp.privateKey, pub, ready: false, ok: 0, bad: 0 };
-  }
-  throw new Error('chiave non generata');
-}
-async function zcDerive(zc, devPub) {
-  const dk = await crypto.subtle.importKey('raw', cat(new Uint8Array([4]), devPub), { name: 'ECDH', namedCurve: 'P-256' }, false, []);
-  const secret = await crypto.subtle.deriveBits({ name: 'ECDH', public: dk }, zc.priv, 256);
-  const salt = cat(stripZ(devPub.subarray(0, 32)), stripZ(devPub.subarray(32, 64)), zc.pub);
-  const hk = await crypto.subtle.importKey('raw', secret, 'HKDF', false, ['deriveBits']);
-  const out = new Uint8Array(await crypto.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt, info: new Uint8Array(0) }, hk, 36 * 8));
-  zc.iv = out.slice(32, 36);
-  zc.kCtr = await crypto.subtle.importKey('raw', out.slice(0, 32), 'AES-CTR', false, ['encrypt']);
-  zc.kCbc = await crypto.subtle.importKey('raw', out.slice(0, 32), 'AES-CBC', false, ['encrypt']);
-  zc.ready = true;
-}
-async function ccmOpen(kCtr, kCbc, nonce, ct, tag) { /* AES-CCM, MAC 4 byte, nessun dato aggiuntivo */
-  const L = 15 - nonce.length, ab = i => { const b = new Uint8Array(16); b[0] = L - 1; b.set(nonce, 1); let v = i; for (let j = 15; j >= 16 - L; j--) { b[j] = v & 255; v = Math.floor(v / 256); } return b; };
-  const ks0 = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-CTR', counter: ab(0), length: 64 }, kCtr, new Uint8Array(16)));
-  const pt = ct.length ? new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-CTR', counter: ab(1), length: 64 }, kCtr, ct)) : new Uint8Array(0);
-  const b0 = new Uint8Array(16); b0[0] = (((4 - 2) / 2) << 3) | (L - 1); b0.set(nonce, 1); let v = pt.length; for (let j = 15; j >= 16 - L; j--) { b0[j] = v & 255; v = Math.floor(v / 256); }
-  const padded = new Uint8Array(Math.ceil(pt.length / 16) * 16); padded.set(pt);
-  const msg = cat(b0, padded), n = msg.length / 16;
-  const cbc = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-CBC', iv: new Uint8Array(16) }, kCbc, msg));
-  const mac = cbc.slice(n * 16 - 16, n * 16 - 12);
-  let ok = true; for (let i = 0; i < 4; i++) if ((mac[i] ^ ks0[i]) !== tag[i]) ok = false;
-  return { pt, ok };
-}
 function dispatchClick(u, k) {
+  if (zpDecode(u, k)) return;
   if (u[0] === 0x23) handleRide(u, k);
   else if (u[0] === 0x37) { log(NAMES[k] + ': ' + hex(u)); handleClick(pbParse(u.subarray(1)), k); }
   else if (u[0] !== 0x15 && u[0] !== 0x19) log(NAMES[k] + ', messaggio 0x' + u[0].toString(16) + ': ' + hex(u.subarray(0, 24)));
 }
 function onClick(dv, k) {
-  const st = S.ck[k]; st.lastMsg = performance.now();
-  const u = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength).slice();
-  const zc = st.zc;
-  if (!zc) { dispatchClick(u, k); return; }
-  /* modalità con chiavi: i messaggi sono cifrati (4 byte di contatore + dati + 4 byte di MAC) */
-  st.zq = (st.zq || Promise.resolve()).then(async () => {
-    if (!zc.ready) { if (++zc.early <= 3) log(NAMES[k] + ', prima delle chiavi: ' + hex(u.subarray(0, 24))); if (u[0] === 0x23 || u[0] === 0x37) dispatchClick(u, k); return; }
-    if (u.length < 9) { log(NAMES[k] + ', messaggio corto: ' + hex(u)); return; }
-    const r = await ccmOpen(zc.kCtr, zc.kCbc, cat(zc.iv, u.subarray(0, 4)), u.subarray(4, u.length - 4), u.subarray(u.length - 4));
-    if (r.ok) { if (++zc.ok === 1) log(NAMES[k] + ': scambio di chiavi riuscito, messaggi decifrati'); dispatchClick(r.pt, k); }
-    else if (++zc.bad <= 3) log(NAMES[k] + ': messaggio non decifrabile (MAC errato): ' + hex(u.subarray(0, 24)));
-  }).catch(e => log(NAMES[k] + ': errore di decifratura: ' + errText(e)));
+  S.ck[k].lastMsg = performance.now();
+  dispatchClick(new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength).slice(), k);
 }
 function onClickSync(dv, k) {
   const u = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
   if (!u.length) return;
-  const zc = S.ck[k].zc;
-  if (zc && u.length >= 72 && u[6] === 1 && u[7] === 3) {
-    log(NAMES[k] + ', risposta all\'apertura con la chiave del Click (' + u.length + ' byte)');
-    zcDerive(zc, u.slice(8, 72)).then(() => log(NAMES[k] + ': chiavi calcolate, attendo i messaggi cifrati')).catch(e => log(NAMES[k] + ': calcolo delle chiavi non riuscito: ' + errText(e)));
-    return;
-  }
+  if (zpDecode(u, k)) return;
   log(NAMES[k] + ', risposta sincrona (' + u.length + ' byte): ' + hex(u.subarray(0, 24)));
 }
 
@@ -802,7 +748,7 @@ async function setupCk(d, k) {
   tx.addEventListener('characteristicvaluechanged', e => { if (g === GEN[k]) onClickSync(e.target.value, k); });
   await as.startNotifications(); log(NAMES[k] + ': notifiche attive');
   try { await tx.startNotifications(); } catch (e) { log('Click: canale sync non attivato: ' + e.message); }
-  if (cfg.hs === 'qz' || cfg.hs === 'full') {
+  if (cfg.hs === 'qz') {
     /* come QZ: ci si abbona a ogni caratteristica con notifiche o indicazioni, anche a quelle sconosciute */
     try {
       const cnt = {};
@@ -814,25 +760,22 @@ async function setupCk(d, k) {
       }
     } catch (e) { log(NAMES[k] + ': altri canali non letti: ' + errText(e)); }
   }
-  S.ck[k].zc = null; S.ck[k].zq = null;
-  if (cfg.hs === 'full') { S.ck[k].zc = await zcNew(); S.ck[k].zc.early = 0; }
   S.ck[k].base = false; S.ck[k].prev = 0; S.mirror = false; S.dupHits = 0; S.lastPress = null; S.lastProc = null;
   const kk = cfg.keys; if (!S.learn && !(kk.rear.plus || kk.rear.minus || kk.front.plus || kk.front.minus)) startLearn('rear', true);
   refreshPad();
   const RO = [0x52, 0x69, 0x64, 0x65, 0x4f, 0x6e];
-  const hs = cfg.hs === 'full' ? cat(new Uint8Array([...RO, 0x00, 0x09]), S.ck[k].zc.pub) : new Uint8Array(cfg.hs === 'qz' ? RO : [...RO, 0x01, 0x02]);
+  const hs = new Uint8Array(cfg.hs === 'qz' ? RO : [...RO, 0x01, 0x02]);
   S.ck[k].rx = rx; S.ck[k].hs = hs; S.ck[k].t0 = performance.now(); S.ck[k].lastMsg = S.ck[k].t0; S.ck[k].lastPress = 0;
   if (rx.writeValueWithoutResponse) await rx.writeValueWithoutResponse(hs); else await rx.writeValue(hs);
-  log(NAMES[k] + ': handshake RideOn inviato (' + (cfg.hs === 'full' ? 'con scambio di chiavi, ' + hs.length + ' byte' : cfg.hs === 'qz' ? 'come QZ' : 'con 01 02') + '), ora premi un tasto');
+  log(NAMES[k] + ': handshake RideOn inviato (' + (cfg.hs === 'qz' ? 'come QZ' : 'con 01 02') + '), ora premi un tasto');
 }
-const SETUP = { tr: setupTr, pm: setupPm, ck: setupCk, ck2: setupCk, hr: setupHr, mb: setupMb };
+const SETUP = { tr: setupTr, pm: setupPm, ck: setupCk, ck2: setupCk, hr: setupHr };
 
 function reqOpts(k) {
-  if (cfg.all) return { acceptAllDevices: true, optionalServices: [U.ftms, U.cps, U.hrs, U.z1, U.zRide, U.nus] };
+  if (cfg.all) return { acceptAllDevices: true, optionalServices: [U.ftms, U.cps, U.hrs, U.z1, U.zRide] };
   if (k === 'tr') return { filters: [{ services: [U.ftms] }], optionalServices: [U.ftms] };
   if (k === 'pm') return { filters: [{ services: [U.cps] }], optionalServices: [U.cps] };
   if (k === 'hr') return { filters: [{ services: [U.hrs] }], optionalServices: [U.hrs] };
-  if (k === 'mb') return { filters: [{ namePrefix: 'BBC micro:bit' }, { namePrefix: 'micro:bit' }], optionalServices: [U.nus] };
   return { filters: [{ namePrefix: 'Zwift' }, { namePrefix: 'ZWIFT' }, { services: [U.zRide] }, { services: [U.z1] }], optionalServices: [U.z1, U.zRide] };
 }
 async function attach(k, quiet) {
@@ -888,7 +831,7 @@ function toggle(k) {
   if (el.classList.contains('on') || el.classList.contains('busy')) { userOff[k] = true; try { D[k] && D[k].gatt.disconnect(); } catch (e) {} chip(k, '', 'Tocca per collegare'); if (k === 'tr') CP = null; }
   else pick(k);
 }
-for (const k of ['tr', 'pm', 'ck', 'ck2', 'hr', 'mb']) $('#chip-' + k).addEventListener('click', () => toggle(k));
+for (const k of ['tr', 'pm', 'ck', 'ck2', 'hr']) $('#chip-' + k).addEventListener('click', () => toggle(k));
 
 let wl = null;
 async function wake() { try { if (navigator.wakeLock && !wl) { wl = await navigator.wakeLock.request('screen'); wl.addEventListener('release', () => { wl = null; }); } } catch (e) {} }
@@ -1585,8 +1528,8 @@ function wkBindings() {
   sk.addEventListener('input', () => { const W = S.wk; if (!W) return; W.seek = true; W.t = Number(sk.value); });
   sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
   $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
-  $('#mb-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(MB_PROGRAM); note('Programma copiato: incollalo in MakeCode (modalità JavaScript).'); } catch (e) { try { await navigator.share({ title: 'Programma micro:bit', text: MB_PROGRAM }); } catch (e2) { note('Copia non riuscita.'); } } });
-  const logText = () => 'Rullo virtuale v20 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  $('#ck-ask').addEventListener('click', askClick); $('#ck-pair').addEventListener('click', pairClick);
+  const logText = () => 'Rullo virtuale v21 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
   $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
   $('#log-share').addEventListener('click', async () => {
     const t = logText();
@@ -1595,6 +1538,33 @@ function wkBindings() {
     try { await navigator.clipboard.writeText(t); note('Registro copiato negli appunti.'); } catch (e) { note('Non riesco a condividere: fai uno screenshot del registro.'); }
   });
   $('#rep-btn').addEventListener('click', () => { const ride = buildRide(); if (ride) openOvl('report', { ride, saved: false }); else note('Pedala ancora un po\': il report parte da 20 secondi di dati.'); });
+}
+
+/* ---------- Domande al Click (protocollo Zwift pubblico: GET e BLE_SECURITY_REQUEST) ---------- */
+const ZP_DO = { 0: 'informazioni sul dispositivo', 1: 'versione del protocollo', 2: 'versione del firmware', 64: 'sicurezza Bluetooth', 65: 'stato della connessione sicura', 66: 'finestra della connessione sicura' };
+const ZP_SEC = ['nessuna', 'in corso', 'attiva', 'rifiutata'], ZP_WIN = ['chiusa', 'aperta'];
+function zpDecode(u, k) {
+  if (u[0] === 0x3c) { /* GET_RESPONSE */
+    const m = pbParse(u.subarray(1)), id = m[1], d = (m[2] instanceof Uint8Array) ? m[2] : new Uint8Array(0);
+    if (id === 64) { const p = pbParse(d); log(NAMES[k] + ': sicurezza Bluetooth: connessione sicura ' + (ZP_SEC[p[1] || 0] || p[1]) + ', finestra ' + (ZP_WIN[p[2] || 0] || p[2]) + '  [' + hex(d) + ']'); }
+    else log(NAMES[k] + ': risposta (' + (ZP_DO[id] || 'dato ' + id) + '): ' + hex(d) + (d.length && d.every(b => b >= 32 && b < 127) ? ' = "' + String.fromCharCode(...d) + '"' : ''));
+    return true;
+  }
+  if (u[0] === 0x3e) { log(NAMES[k] + ': risposta di stato: ' + hex(u.subarray(0, 24))); return true; }
+  return false;
+}
+const ckAny = () => ['ck', 'ck2'].find(clickOn);
+async function ckSend(k, bytes) { const st = S.ck[k]; if (!st.rx) throw new Error('canale non pronto'); if (st.rx.writeValueWithoutResponse) await st.rx.writeValueWithoutResponse(new Uint8Array(bytes)); else await st.rx.writeValue(new Uint8Array(bytes)); }
+const zpGet = id => { const v = []; let n = id; do { let b = n & 0x7f; n >>>= 7; if (n) b |= 0x80; v.push(b); } while (n); return [0x00, 0x08, ...v]; };
+async function askClick() {
+  const k = ckAny(); if (!k) { note('Collega prima un Click.'); return; }
+  note('Interrogo il Click: guarda il registro tra qualche secondo.');
+  for (const id of [64, 0, 2]) { try { log(NAMES[k] + ': chiedo ' + (ZP_DO[id] || id) + ' (' + hex(zpGet(id)) + ')'); await ckSend(k, zpGet(id)); } catch (e) { log(NAMES[k] + ': richiesta non inviata: ' + errText(e)); } await sleep(900); }
+}
+async function pairClick() {
+  const k = ckAny(); if (!k) { note('Collega prima un Click.'); return; }
+  note("Chiedo al Click di avviare la connessione sicura. Se l'iPad mostra una richiesta di accoppiamento Bluetooth, accettala.");
+  try { log(NAMES[k] + ': richiesta di connessione sicura (02 08 01)'); await ckSend(k, [0x02, 0x08, 0x01]); await sleep(1500); await ckSend(k, zpGet(64)); } catch (e) { log(NAMES[k] + ': richiesta non inviata: ' + errText(e)); }
 }
 
 /* ---------- Conto alla rovescia del sonno del Click ----------
@@ -1635,47 +1605,6 @@ const hrFresh = () => S.live.hr && performance.now() - S.live.hr.t < 6000 && S.l
 function onHr(dv) {
   try { const f = dv.getUint8(0); const v = (f & 1) ? dv.getUint16(1, true) : dv.getUint8(1); S.live.hr.t = performance.now(); S.live.hr.bpm = v; LASTV.hr = v + ' bpm'; CNT.hr++; if (CNT.hr <= 3) log('Cuore dato #' + CNT.hr + ': ' + v + ' bpm'); } catch (e) { log('Cuore: dato non leggibile ' + errText(e)); }
 }
-/* ---------- micro:bit come tastiera (servizio UART Bluetooth) ----------
-   Il programma sul micro:bit manda una riga di testo per ogni evento: A, B, AB oppure L (logo, solo v2). */
-async function setupMb(d, k) {
-  const g = ++GEN[k]; S.mbBuf = '';
-  const srv = await d.gatt.connect(); const svc = await srv.getPrimaryService(U.nus); const ch = await svc.getCharacteristic(U.nusTx);
-  ch.addEventListener('characteristicvaluechanged', e => { if (g === GEN[k]) onMb(e.target.value); });
-  await ch.startNotifications(); log('micro:bit: collegato, premi A o B');
-}
-function onMb(dv) {
-  S.mbBuf = (S.mbBuf || '') + new TextDecoder().decode(new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength));
-  let i;
-  while ((i = S.mbBuf.search(/[\r\n]/)) >= 0) {
-    const cmd = S.mbBuf.slice(0, i).trim().toUpperCase(); S.mbBuf = S.mbBuf.slice(i + 1);
-    if (cmd) mbCmd(cmd);
-  }
-}
-function mbCmd(cmd) {
-  log('micro:bit: ' + cmd);
-  $('#chip-mb small').textContent = 'Collegato · ultimo tasto ' + cmd;
-  const sg = cfg.swap ? -1 : 1;
-  if (cmd === 'A') shift('rear', 1 * sg);
-  else if (cmd === 'B') shift('rear', -1 * sg);
-  else if (cmd === 'AB' || cmd === 'L') {
-    /* una sola corona da cambiare: il tasto alterna fra le corone (in ERG alterna più e meno) */
-    const n = rings().length, ergLike = (S.wk && !S.wkFree) || (S.mode === 'erg' && !S.wkFree);
-    let dir;
-    if (n > 1 && !ergLike) dir = S.ring >= n - 1 ? -1 : 1; else { S.mbDir = -(S.mbDir || -1); dir = S.mbDir; }
-    shift('front', dir);
-  }
-}
-const MB_PROGRAM = [
-  'bluetooth.startUartService()',
-  'basic.showIcon(IconNames.Heart)',
-  'bluetooth.onBluetoothConnected(function () { basic.showIcon(IconNames.Yes) })',
-  'bluetooth.onBluetoothDisconnected(function () { basic.showIcon(IconNames.No) })',
-  'input.onButtonPressed(Button.A, function () { bluetooth.uartWriteLine("A") })',
-  'input.onButtonPressed(Button.B, function () { bluetooth.uartWriteLine("B") })',
-  'input.onButtonPressed(Button.AB, function () { bluetooth.uartWriteLine("AB") })',
-  '// solo micro:bit v2 (logo tattile): cancella la riga qui sotto se hai la v1',
-  'input.onLogoEvent(TouchButtonEvent.Pressed, function () { bluetooth.uartWriteLine("L") })'
-].join('\n');
 async function setupHr(d, k) {
   const g = ++GEN[k]; CNT.hr = 0;
   const srv = await d.gatt.connect(); const svc = await srv.getPrimaryService(U.hrs); const ch = await svc.getCharacteristic(U.hrm);
@@ -1695,7 +1624,7 @@ wkBindings(); loadWk();
 /* ---------- Avvio ---------- */
 (function () {
   let gain = 0, prev = elev(0); for (let s = 20; s <= LOOP; s += 20) { const e = elev(s); if (e > prev) gain += e - prev; prev = e; }
-  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5% · v20';
+  $('#route-sub').textContent = 'Anello collinare · 20 km · D+ ' + Math.round(gain) + ' m · pendenza max 5% · v21';
 })();
 if (!navigator.bluetooth) note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.');
 try { roleLabels(); } catch (e) { log('Etichette Click: ' + errText(e)); }
