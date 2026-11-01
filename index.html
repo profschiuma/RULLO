@@ -2166,4 +2166,77 @@ function renderRedit(box, arg) {
     const gr = h('input', { type: 'number', inputmode: 'decimal', min: -15, max: 20, step: 0.5, value: s.grade, 'aria-label': 'Pendenza in percento' });
     len.addEventListener('change', () => { s.len = clamp(Math.round((Number(len.value) || 100) / 10) * 10, 50, 20000); len.value = s.len; refresh(); });
     gr.addEventListener('change', () => { let v = Number(gr.value); if (!isFinite(v)) v = 0; s.grade = clamp(Math.round(v * 10) / 10, -15, 20); gr.value = s.grade; refresh(); });
-    const mv = d => () => { const j = i + d; if (j < 0 || j >= R.segs.length) return; const t = R.segs[i]; R.segs[i] = R.segs[j]; R.segs[j] =
+    const mv = d => () => { const j = i + d; if (j < 0 || j >= R.segs.length) return; const t = R.segs[i]; R.segs[i] = R.segs[j]; R.segs[j] = t; renderOvl(); };
+    rows.append(h('div', { class: 'sg-row' }, h('b', { text: String(i + 1) }),
+      h('label', { class: 'ef' }, h('span', { text: 'Lunghezza (m)' }), len), h('label', { class: 'ef' }, h('span', { text: 'Pendenza (%)' }), gr),
+      h('span', { class: 'bbtn' },
+        h('button', { class: 'ibtn', text: '↑', 'aria-label': 'Sposta su', onclick: mv(-1) }), h('button', { class: 'ibtn', text: '↓', 'aria-label': 'Sposta giù', onclick: mv(1) }),
+        h('button', { class: 'ibtn', text: '✕', 'aria-label': 'Elimina tratto', onclick: () => { if (R.segs.length < 2) return; R.segs.splice(i, 1); renderOvl(); } }))));
+  });
+  THUMBS.push(refresh);
+  const nameIn = h('input', { type: 'text', value: R.name, 'aria-label': 'Nome', onchange: e => { R.name = e.target.value.trim() || 'Percorso inventato'; } });
+  const loopIn = h('input', { type: 'checkbox', checked: R.loop, onchange: e => { R.loop = e.target.checked; refresh(); } });
+  const km = h('input', { type: 'number', inputmode: 'decimal', min: 2, max: 150, step: 1, value: R.gen.km, onchange: e => { R.gen.km = clamp(Number(e.target.value) || 15, 2, 150); e.target.value = R.gen.km; } });
+  const ty = h('select', { 'aria-label': 'Tipo di percorso', onchange: e => { R.gen.type = e.target.value; } }, Object.keys(GEN_TYPES).map(k => h('option', { value: k, selected: k === R.gen.type, text: GEN_TYPES[k].name })));
+  const gen = again => { if (again) R.gen.seed = (Math.random() * 1e6) | 0; R.segs = genSegs(R.gen.km, R.gen.type, cfg.maxGrade, R.loop, R.gen.seed); renderOvl(); };
+  const save = () => {
+    R.name = nameIn.value.trim() || 'Percorso inventato';
+    if (total() < 200) { msg.textContent = 'Il percorso deve essere lungo almeno 200 m.'; return; }
+    const z = segsToZ(R.segs, R.loop).map(v => Math.round(v * 10) / 10), item = { id: R.id, name: R.name, kind: 'edit', loop: R.loop, z, segs: clone(R.segs), xy: synthPlan((z.length - 1) * RSTEP, R.loop, hashStr(String(R.id))) };
+    const k = RTS.list.findIndex(x => x.id === R.id);
+    if (k >= 0) RTS.list[k] = item; else { if (RTS.list.length >= 30) { msg.textContent = 'Hai già 30 percorsi: eliminane qualcuno.'; return; } RTS.list.push(item); }
+    if (!saveRoutes()) return;
+    const wasSel = RTS.sel === R.id; RED = null;
+    if (wasSel) { useRoute(item); closeOvl(); } else openOvl('routes');
+  };
+  box.append(h('div', { class: 'ovl-top' }, h('h2', { text: R.isNew ? 'Inventa un percorso' : 'Modifica percorso' }), h('div', { class: 'ovl-btns' },
+    h('button', { class: 'btn on', text: 'Salva', onclick: save }), h('button', { class: 'btn', text: 'Annulla', onclick: () => { RED = null; openOvl('routes'); } }))));
+  box.append(h('div', { class: 'fields' }, h('label', { class: 'field' }, 'Nome', nameIn), h('label', { class: 'field chk' }, h('span', { text: 'Anello (torna al punto di partenza)' }), loopIn)));
+  box.append(h('h2', { class: 'ovl-h2', text: 'Genera in automatico' }),
+    h('div', { class: 'fields' }, h('label', { class: 'field' }, 'Lunghezza (km)', km), h('label', { class: 'field' }, 'Tipo', ty)),
+    h('div', { class: 'ovl-btns' }, h('button', { class: 'btn', text: 'Genera', onclick: () => gen(false) }), h('button', { class: 'btn', text: 'Un altro diverso', onclick: () => gen(true) })),
+    h('p', { class: 'hint', text: 'Le salite generate non superano il ' + cfg.maxGrade + '% del tuo rullo. Poi puoi correggere i tratti a mano.' }));
+  box.append(pcv, h('p', { class: 'hint', text: 'Tracciato indicativo: la forma è di fantasia, la salita è quella dei tuoi tratti.' }), cv, stats, wb);
+  box.append(h('h2', { class: 'ovl-h2', text: 'Tratti' }), h('p', { class: 'hint', text: 'Ogni tratto ha una lunghezza e una pendenza (negativa = discesa). Il profilo viene ammorbidito tra un tratto e l\'altro. In un anello la quota finale torna uguale a quella iniziale.' }), rows,
+    h('div', { class: 'ovl-btns' }, h('button', { class: 'btn', text: 'Aggiungi tratto', onclick: () => { if (R.segs.length >= 200) return; R.segs.push({ len: 500, grade: 3 }); renderOvl(); } })), msg);
+}
+
+/* In sella: avviso salite oltre il limite del rullo */
+function gwarnUI() {
+  const el = $('#gwarn'); if (!el) return;
+  let txt = '';
+  if (!S.wk && S.mode === 'route') {
+    const lim = cfg.maxGrade / 100;
+    for (let d = 0; d <= 400; d += 20) {
+      const g = gradeAt(S.pos + d);
+      if (g > lim + 1e-4) {
+        let mx = g; for (let e = d; e <= d + 600; e += 20) mx = Math.max(mx, gradeAt(S.pos + e));
+        txt = '⚠ ' + (d <= 20 ? 'Salita' : 'Tra ' + Math.round(d / 10) * 10 + ' m salita') + ' al ' + (mx * 100).toFixed(1) + '% · il rullo applica ' + cfg.maxGrade + '%';
+        break;
+      }
+    }
+  }
+  if (el.textContent !== txt) { el.textContent = txt; el.hidden = !txt; }
+}
+
+/* ---------- Avvio ---------- */
+(function () {
+  loadRoutes();
+  const r = allRoutes().find(x => x.id === RTS.sel);
+  if (r && r.id !== 'demo') { try { setRT(r); S.lastElev = elev(0); } catch (e) { log('Percorso salvato non utilizzabile: ' + errText(e)); RTS.sel = 'demo'; } }
+  routeSub();
+})();
+recoverLive();
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().then(ok => log('Archivio del browser persistente: ' + (ok ? 'sì' : 'non concesso')), () => {}); } catch (e) {}
+try {
+  const lb = Number(localStorage.getItem('rv-lastbackup') || 0), has = WK.rides.length > 0 || RTS.list.length > 0 || WK.list.some(w => !String(w.id).startsWith('s-'));
+  if (has && Date.now() - lb > 7 * 864e5 && navigator.bluetooth) note('Non fai un backup dei dati da più di 7 giorni: apri Allenamenti › Dati e backup › Salva backup.');
+} catch (e) {}
+if (!navigator.bluetooth) note('Web Bluetooth non è disponibile in questo browser. Su iPad apri questa pagina in Bluefy. La demo funziona comunque.');
+try { roleLabels(); } catch (e) { log('Etichette Click: ' + errText(e)); }
+gearUI(); hud();
+log('Pronto. Collega rullo, potenziometro e Click con i pulsanti in alto.');
+window.__rvOk = true;
+})();
+</script>
+<script>window.__rvEnd = true;</script>
