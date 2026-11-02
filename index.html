@@ -1581,29 +1581,37 @@ function scRear(g, W, H, d, minimal) {
   const haze = minimal ? COL.sky2 : P.haze, asphA = minimal ? [COL.road, COL.road] : gold ? ['#4c4650', '#524b56'] : ['#5b565f', '#625d67'];
   const forest = bw[1] + bw[2] > 0.5;
   const L2 = minimal ? [COL.ground, scMix(COL.ground, '#000000', 0.05)] : [LA, LB], R2 = minimal ? [COL.ground, scMix(COL.ground, '#000000', 0.05)] : (forest ? [scMix(LA, '#3a4a30', 0.2), scMix(LB, '#3a4a30', 0.2)] : [scMix(EA, '#ffffff', 0.04), EA]);
-  for (let y = hy; y < H; y += 2) {
-    const tt = (y - hy) / (H - hy), zw = 14 * (1 / Math.max(tt, 0.0001) - 1), band = Math.floor((zw + pos) / 5) & 1, f = Math.pow(1 - tt, 2.1), cx = cxOf(tt), hw = hwOf(tt), fa = f * 0.8;
-    g.fillStyle = scMix(L2[band], haze, fa); g.fillRect(0, y, cx, 2.6); g.fillStyle = scMix(R2[band], haze, fa); g.fillRect(cx, y, W - cx, 2.6);
-    if (!minimal) { g.fillStyle = scMix('#cdb698', haze, fa); g.fillRect(cx - hw * 1.13, y, hw * 2.26, 2.6); }
-    g.fillStyle = scMix(asphA[band], haze, f * 0.85); g.fillRect(cx - hw, y, hw * 2, 2.6);
-    if (!minimal) { g.fillStyle = 'rgba(0,0,0,' + (0.10 * (1 - f)) + ')'; g.fillRect(cx - hw * 0.62, y, hw * 0.22, 2.6); g.fillRect(cx + hw * 0.4, y, hw * 0.22, 2.6); }
-    const lc = scMix('#f1e9d4', haze, fa); g.fillStyle = lc; g.fillRect(cx - hw * 0.95, y, Math.max(1, hw * 0.03), 2.6); g.fillRect(cx + hw * 0.92, y, Math.max(1, hw * 0.03), 2.6);
-    if (band) g.fillRect(cx - hw * 0.02, y, Math.max(1, hw * 0.04), 2.6);
+  /* profilo verticale: la salita davanti a te alza la strada verso l'orizzonte, la discesa la abbassa */
+  const HC = 4, RMAX = 0.9 * (H - hy), NS = 160, T0 = 0.03;
+  const ycam = z => { const tt = t_(z), r = (H - hy) * tt * (elev(pos + z) - e0) / HC; return hy + (H - hy) * tt - RMAX * Math.tanh(r / RMAX); };
+  const ys = new Float32Array(NS + 1), zs = new Float32Array(NS + 1), cm = new Float32Array(NS + 2);
+  for (let i = 0; i <= NS; i++) { const tt = T0 + (1 - T0) * i / NS; zs[i] = 14 * (1 / tt - 1); ys[i] = ycam(zs[i]); }
+  cm[NS + 1] = 1e9; for (let i = NS; i >= 0; i--) cm[i] = Math.min(ys[i], cm[i + 1]);
+  const hiddenAt = (z, y) => { const idx = clamp(Math.round((t_(z) - T0) / (1 - T0) * NS), 0, NS); return y > cm[Math.min(idx + 1, NS)] + 2; };
+  { const y0 = Math.min(hy, ys[0]); if (ys[0] > y0) { g.fillStyle = scMix(L2[0], haze, 0.85); g.fillRect(0, Math.floor(y0), W, Math.ceil(ys[0] - y0) + 2); } }
+  for (let i = 0; i < NS; i++) {
+    const y = Math.round(ys[i]), yb = Math.round(ys[i + 1]); if (yb <= y) continue; const hn = yb - y, hg = hn + 1;
+    const tt = T0 + (1 - T0) * i / NS, zw = zs[i], alias = ys[i + 1] - ys[i] < 3.5, band = Math.floor((zw + pos) / 5) & 1, bm = alias ? 0.5 : band, f = Math.pow(1 - tt, 2.1), cx = cxOf(tt), hw = hwOf(tt), fa = f * 0.8;
+    g.fillStyle = scMix(scMix(L2[0], L2[1], bm), haze, fa); g.fillRect(0, y, cx, hg); g.fillStyle = scMix(scMix(R2[0], R2[1], bm), haze, fa); g.fillRect(cx, y, W - cx, hg);
+    if (!minimal) { g.fillStyle = scMix('#cdb698', haze, fa); g.fillRect(cx - hw * 1.13, y, hw * 2.26, hg); }
+    g.fillStyle = scMix(scMix(asphA[0], asphA[1], bm), haze, f * 0.85); g.fillRect(cx - hw, y, hw * 2, hg);
+    if (!minimal) { g.fillStyle = scMix(scMix(asphA[0], asphA[1], bm), '#000000', 0.045 * (1 - f)); g.fillRect(cx - hw * 0.62, y, hw * 0.22, hg); g.fillRect(cx + hw * 0.4, y, hw * 0.22, hg); }
+    const lc = scMix('#f1e9d4', haze, fa); g.fillStyle = lc; g.fillRect(cx - hw * 0.95, y, Math.max(1, hw * 0.03), hg); g.fillRect(cx + hw * 0.92, y, Math.max(1, hw * 0.03), hg);
+    if (band) g.fillRect(cx - hw * 0.02, y, Math.max(1, hw * 0.04), hg);
     if (!minimal && bw[0] > 0.4) {
       const va = Math.min(1, (bw[0] - 0.4) * 3), ph = Math.floor((zw + pos) / 2.4);
-      g.globalAlpha = va; g.fillStyle = scMix('#3f5e2c', haze, fa);
-      for (let j = 0; j < 14; j++) { const xl = cx - hw * (1.5 + j * 0.55); if (xl < 0) break; if ((ph + j) & 1) continue; g.fillRect(xl - Math.max(1.2, hw * 0.12), y, Math.max(2.2, hw * 0.24), 2.6); }
-      g.fillStyle = scMix(scMix(EA, '#3a1a10', 0.3), haze, fa);
-      for (let j = 0; j < 12; j++) { const xr = cx + hw * (1.5 + j * 0.7); if (xr > W) break; g.fillRect(xr, y, Math.max(1, hw * 0.05), 2.6); }
-      g.globalAlpha = 1;
+      g.fillStyle = scMix(scMix(scMix(L2[0], L2[1], bm), haze, fa), scMix('#3f5e2c', haze, fa), va);
+      for (let j = 0; j < 14; j++) { const xl = cx - hw * (1.5 + j * 0.55); if (xl < 0) break; if ((ph + j) & 1) continue; g.fillRect(xl - Math.max(1.2, hw * 0.12), y, Math.max(2.2, hw * 0.24), hg); }
+      g.fillStyle = scMix(scMix(scMix(R2[0], R2[1], bm), haze, fa), scMix(scMix(EA, '#3a1a10', 0.3), haze, fa), va);
+      for (let j = 0; j < 12; j++) { const xr = cx + hw * (1.5 + j * 0.7); if (xr > W) break; g.fillRect(xr, y, Math.max(1, hw * 0.05), hg); }
     }
   }
   /* muretti a secco: nastri continui che seguono la strada e le sue curve */
   if (!minimal && bw[0] + bw[1] > 0.3) for (const sd of [-1, 1]) {
     let pt = null;
     for (let zz = 420; zz >= -6; zz -= 3) {
-      const tt = t_(zz), y = yOf(tt), x = cxOf(tt) + sd * hwOf(tt) * 1.2, h = H * 0.05 * tt, wd = hwOf(tt) * 0.1, s2 = pos + zz;
-      const on = scBiome(elev(s2)), ok = on[0] + on[1] > 0.35 && scHash(Math.floor(s2 / 45) * 1.7 + sd) > 0.12;
+      const tt = t_(zz), y = ycam(zz), x = cxOf(tt) + sd * hwOf(tt) * 1.2, h = H * 0.05 * tt, wd = hwOf(tt) * 0.1, s2 = pos + zz;
+      const on = scBiome(elev(s2)), ok = on[0] + on[1] > 0.35 && scHash(Math.floor(s2 / 45) * 1.7 + sd) > 0.12 && !hiddenAt(zz, y);
       if (pt && ok && pt.ok) {
         const fa = Math.pow(1 - tt, 2.1) * 0.8;
         g.fillStyle = scMix(P.wall[Math.floor(s2 / 6) % 3], P.haze, fa); g.beginPath(); g.moveTo(pt.x, pt.y); g.lineTo(x, y); g.lineTo(x, y - h); g.lineTo(pt.x, pt.y - pt.h); g.closePath(); g.fill();
@@ -1630,7 +1638,8 @@ function scRear(g, W, H, d, minimal) {
   }
   for (const it of items) {
     if (it.z < -8) continue; const tt = t_(it.z), f = Math.pow(1 - tt, 2.1);
-    const y = yOf(tt), x = cxOf(tt) + it.sd * hwOf(tt) * it.off, hh = H * 0.82 * tt * (it.sz || 1);
+    const y = ycam(it.z); if (hiddenAt(it.z, y)) continue;
+    const x = cxOf(tt) + it.sd * hwOf(tt) * it.off, hh = H * 0.82 * tt * (it.sz || 1);
     if (it.kind === 'mini') { const h = H * 0.55 * tt; g.fillStyle = scMix('#5f8a78', haze, f * 0.6); g.beginPath(); g.moveTo(x, y - h); g.lineTo(x - h * 0.2, y - h * 0.12); g.lineTo(x + h * 0.2, y - h * 0.12); g.closePath(); g.fill(); g.fillRect(x - h * 0.018, y - h * 0.14, h * 0.036, h * 0.14); continue; }
     if (hh > H * 8 || x < -hh * 0.9 || x > W + hh * 0.9) continue;
     if (it.kind === 'trullo') { g.save(); g.globalAlpha = 1 - f * 0.55; scTrullo(g, x, y, hh / 180, P, it.twin); g.restore(); continue; }
@@ -1640,7 +1649,7 @@ function scRear(g, W, H, d, minimal) {
   /* fantasma davanti a te */
   const k = H * 0.0064, gr = ghostRec();
   if (gr) { const gp = ghostPos(gr, S.time);
-    if (gp != null) { const z = gp - pos; if (z > 8 && z < 260) { const tt = t_(z), y = yOf(tt), x = cxOf(tt) + 0.42 * hwOf(tt), kk = H * 0.0062 * tt; g.save(); g.translate(x, y); g.scale(kk, kk); riderBack(g, { jersey: COL.z2, crank: S.crank * 0.97 + 2, alpha: 0.5, shx: -7, shw: 14 }); g.restore(); scPill(g, x, Math.max(y - 86 * kk - 12 * d, 22 * d), 'Record', COL.z2, d); } } }
+    if (gp != null) { const z = gp - pos; if (z > 8 && z < 260) { const tt = t_(z), y = ycam(z), x = cxOf(tt) + 0.42 * hwOf(tt), kk = H * 0.0062 * tt; g.save(); g.translate(x, y); g.scale(kk, kk); riderBack(g, { jersey: COL.z2, crank: S.crank * 0.97 + 2, alpha: 0.5, shx: -7, shw: 14 }); g.restore(); scPill(g, x, Math.max(y - 86 * kk - 12 * d, 22 * d), 'Record', COL.z2, d); } } }
   /* io */
   g.save(); g.translate(W * 0.5, H * 0.985); g.scale(k, k); riderBack(g, { shx: -10, shw: 20, shcol: gold ? 'rgba(45,20,50,.34)' : 'rgba(40,30,50,.24)' }); g.restore();
   if (gold) { g.fillStyle = 'rgba(255,150,60,.08)'; g.fillRect(0, 0, W, H); }
