@@ -1532,12 +1532,10 @@ function scSideRich(g, W, H, d) {
   const frontTrees = near => {
     for (let s = Math.floor(sMin / 21) * 21; s < sMax; s += 21) {
       const w = scBiome(elev(s)), r = scHash(s * 0.31 + 1), r2 = scHash(s * 0.57 + 9), x = X(s) + (r2 - 0.5) * 18 * d, y = Y(s) + (58 + r * 40) * d;
-      if ((Math.abs(x - rx) < 150 * d) !== near) continue;
       if (r < 0.14) { const kind = scPick(w, scHash(s * 1.7)); if (kind && kind !== 'cy') scSpr(g, kind, Math.floor(r2 * 4), x, y, (kind === 'rock' ? 30 : 64 + r2 * 22) * d, P, mode); }
       else if (r < 0.24 && w[0] > 0.6) scPear(g, x, y, (15 + r2 * 8) * d);
     }
   };
-  frontTrees(true);
   const slope = (elev(pos + 4) - elev(pos - 4)) / 8;
   g.save(); g.translate(rx, ry - 3.5 * d); g.rotate(-Math.atan(slope * vex * 0.75)); g.scale(k, k); riderSide(g, { shcol: P.shadow, shx: gold ? -22 : 0, shw: gold ? 62 : 40 }); g.restore();
   frontTrees(false);
