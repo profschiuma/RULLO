@@ -1329,16 +1329,16 @@ function scRock(g, x, y, h, seed, P) {
   g.fillStyle = P.rock[1]; g.beginPath(); g.moveTo(x - w * 0.1, y - h); g.lineTo(x + w * 0.25, y - h * 0.82); g.lineTo(x + w * 0.1, y - h * 0.4); g.lineTo(x - w * 0.3, y - h * 0.5); g.closePath(); g.fill();
   g.fillStyle = P.rock[2]; g.beginPath(); g.moveTo(x + w * 0.1, y - h * 0.4); g.lineTo(x + w * 0.25, y - h * 0.82); g.lineTo(x + w * 0.5, y - h * 0.2); g.lineTo(x + w * 0.46, y); g.lineTo(x + w * 0.05, y); g.closePath(); g.fill(); g.restore();
 }
-const SPRC = new Map();
+const SPRC = new Map(); let SPRB = 0;
 const SC_W = { olive: 1.5, oak: 1.45, pine: 0.75, cy: 0.5, rock: 1.6 };
 function scSprite(kind, variant, hh, P, mode) {
-  const b = Math.max(0, Math.round(Math.log(Math.max(6, hh)) / Math.log(1.18))), key = mode + kind + variant + '|' + b;
+  const b = clamp(Math.round(Math.log(Math.max(6, hh)) / Math.log(1.18)), 0, 33), key = mode + kind + variant + '|' + b;
   let s = SPRC.get(key); if (s) return s;
   const h = Math.round(Math.pow(1.18, b)), w = Math.ceil(h * SC_W[kind]) + 8, ph = Math.ceil(h * 1.15) + 6;
   const cv = document.createElement('canvas'); cv.width = w; cv.height = ph; const g = cv.getContext('2d'), x = w / 2, y = ph - 4;
   if (kind === 'olive') scOlive(g, x, y, h, variant + 1, P, P.leaf); else if (kind === 'oak') scOak(g, x, y, h, variant + 1, P);
   else if (kind === 'pine') scPine(g, x, y, h, P); else if (kind === 'cy') scCypress(g, x, y, h, P); else scRock(g, x, y, h * 0.5, variant + 1, P);
-  if (SPRC.size > 500) SPRC.clear();
+  SPRB += w * ph * 4; if (SPRB > 40e6 || SPRC.size > 400) { SPRC.forEach(e => { e.cv.width = 0; e.cv.height = 0; }); SPRC.clear(); SPRB = w * ph * 4; }
   s = { cv, h, ax: x, ay: y }; SPRC.set(key, s); return s;
 }
 function scSpr(g, kind, variant, x, y, hh, P, mode, alpha) {
@@ -1529,15 +1529,18 @@ function scSideRich(g, W, H, d) {
         g.save(); g.translate(gx, gy - 3.5 * d); g.rotate(-Math.atan(gs * vex * 0.75)); g.scale(k, k); riderSide(g, { color: COL.z2, jersey: COL.z2, crank: S.crank * 0.97 + 2, wheel: gp / 0.33, alpha: 0.42, shadow: false }); g.restore();
         scPill(g, gx, Math.max(gy - 96 * k, 22 * d), 'Record', COL.z2, d); } }
   }
+  const frontTrees = near => {
+    for (let s = Math.floor(sMin / 21) * 21; s < sMax; s += 21) {
+      const w = scBiome(elev(s)), r = scHash(s * 0.31 + 1), r2 = scHash(s * 0.57 + 9), x = X(s) + (r2 - 0.5) * 18 * d, y = Y(s) + (58 + r * 40) * d;
+      if ((Math.abs(x - rx) < 150 * d) !== near) continue;
+      if (r < 0.14) { const kind = scPick(w, scHash(s * 1.7)); if (kind && kind !== 'cy') scSpr(g, kind, Math.floor(r2 * 4), x, y, (kind === 'rock' ? 30 : 64 + r2 * 22) * d, P, mode); }
+      else if (r < 0.24 && w[0] > 0.6) scPear(g, x, y, (15 + r2 * 8) * d);
+    }
+  };
+  frontTrees(true);
   const slope = (elev(pos + 4) - elev(pos - 4)) / 8;
   g.save(); g.translate(rx, ry - 3.5 * d); g.rotate(-Math.atan(slope * vex * 0.75)); g.scale(k, k); riderSide(g, { shcol: P.shadow, shx: gold ? -22 : 0, shw: gold ? 62 : 40 }); g.restore();
-  /* alberi in primo piano, lontani dall'omino */
-  for (let s = Math.floor(sMin / 21) * 21; s < sMax; s += 21) {
-    const w = scBiome(elev(s)), r = scHash(s * 0.31 + 1), r2 = scHash(s * 0.57 + 9), x = X(s) + (r2 - 0.5) * 18 * d, y = Y(s) + (58 + r * 40) * d;
-    if (Math.abs(x - rx) < 150 * d) continue;
-    if (r < 0.14) { const kind = scPick(w, scHash(s * 1.7)); if (kind && kind !== 'cy') scSpr(g, kind, Math.floor(r2 * 4), x, y, (kind === 'rock' ? 30 : 64 + r2 * 22) * d, P, mode); }
-    else if (r < 0.24 && w[0] > 0.6) scPear(g, x, y, (15 + r2 * 8) * d);
-  }
+  frontTrees(false);
   if (P.tint) { g.fillStyle = P.tint; g.fillRect(0, 0, W, H); }
   const vg = g.createLinearGradient(0, H * 0.82, 0, H); vg.addColorStop(0, 'rgba(30,20,30,0)'); vg.addColorStop(1, 'rgba(30,20,30,.16)'); g.fillStyle = vg; g.fillRect(0, H * 0.82, W, H * 0.18);
 }
