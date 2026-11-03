@@ -213,6 +213,26 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
 .field.chk{grid-auto-flow:column;justify-content:start;align-items:center;gap:10px}
 .gwarn{position:absolute;right:12px;bottom:12px;max-width:calc(100% - 24px);padding:6px 10px;border-radius:8px;background:var(--panel);border:1px solid var(--bad);color:var(--bad);font:600 14px/1.3 var(--f-body)}
 .gwarn[hidden]{display:none}
+.stage.gs-on .gwarn{bottom:128px}
+.gs{position:absolute;right:12px;bottom:12px;width:clamp(300px,calc(100% - 300px),460px);padding:8px 12px 9px;border-radius:12px;background:var(--panel);border:1px solid var(--line)}
+@media (max-width:620px){.gs{width:calc(100% - 24px)}}
+.gs[hidden]{display:none}
+.gs-top{display:flex;align-items:baseline;gap:10px}
+.gs-l{font:500 13px/1 var(--f-body);color:var(--ink2)}
+.gs-l b{font:700 30px/1 var(--f-num);color:var(--ink);font-variant-numeric:tabular-nums;margin-left:4px}
+.gs-l u{text-decoration:none;font-size:14px;color:var(--ink2)}
+.gs-r{margin-left:auto;font:500 13px/1 var(--f-body);color:var(--ink2)}
+.gs-r b{color:var(--ink);font-weight:700;font-size:15px}
+.gs-b{font:700 13px/1 var(--f-body);padding:5px 10px;border-radius:999px;border:1px solid var(--line)}
+.gs-b.ok{color:var(--ok);border-color:var(--ok)}
+.gs-b.no{color:var(--bad);border-color:var(--bad)}
+.gs-bar{position:relative;height:10px;margin:12px 8px 10px;border-radius:6px;background:linear-gradient(90deg,var(--ok) 0,var(--warn) 35%,#e8803a 65%,var(--bad) 100%)}
+.gs-bar i{position:absolute;top:50%;transform:translate(-50%,-50%);transition:left .35s linear}
+.gs-dot{width:18px;height:18px;border-radius:50%;background:var(--ink);border:3px solid var(--accent)}
+.gs-ring{width:20px;height:20px;border-radius:50%;border:3px solid var(--ink);box-sizing:border-box;background:var(--panel)}
+.gs-lim{width:3px;height:22px;border-radius:2px;background:var(--ink);opacity:.8}
+.gs-bot{display:flex;justify-content:space-between;font:600 14px/1.2 var(--f-body);color:var(--ink)}
+.gs-bot span:last-child{color:var(--ink2)}
 .sumtxt p{margin:0 0 6px;font-size:15px}
 .padet{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:8px 14px}
 .profbox{margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px 6px}
@@ -282,6 +302,11 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
     <canvas id="scene"></canvas>
     <canvas id="inset" aria-label="Altimetria dei prossimi chilometri"></canvas>
     <div class="gwarn" id="gwarn" hidden></div>
+    <div class="gs" id="gs" hidden aria-live="off">
+      <div class="gs-top"><span class="gs-l">Senti<b id="gs-f">–</b><u>%</u></span><span class="gs-b ok" id="gs-b">Ok</span><span class="gs-r">Percorso <b id="gs-r">–</b>%</span></div>
+      <div class="gs-bar"><i class="gs-lim" id="gs-lim"></i><i class="gs-ring" id="gs-ring"></i><i class="gs-dot" id="gs-dot"></i></div>
+      <div class="gs-bot"><span id="gs-w">– W</span><span id="gs-g">&nbsp;</span></div>
+    </div>
     <div class="ghostbox" id="ghostbox" hidden><b id="gh-v">—</b><small id="gh-s">&nbsp;</small></div>
     <div class="hud"><span id="h-km">0.00 km</span><span id="h-time">00:00:00</span><span id="h-gain">D+ 0 m</span><span id="h-alt">Quota 0 m</span></div>
   </section>
@@ -496,7 +521,7 @@ function zRaw(s) { let z = 0; for (const [k, a, p] of COMP) z += a * Math.sin(2 
 const SC = (() => { let mx = 0; for (let s = 0; s < DEMO_LEN; s += 5) mx = Math.max(mx, Math.abs((zRaw(s + 5) - zRaw(s)) / 5)); return 0.05 / mx; })();
 function demoZ() { const z = []; for (let i = 0; i <= DEMO_LEN / RSTEP; i++) z.push(210 + SC * zRaw(i * RSTEP)); return z; }
 let RT = { id: 'demo', name: 'Anello collinare', kind: 'demo', loop: true, z: Float32Array.from(demoZ()), len: DEMO_LEN };
-function setRT(r) { const z = Float32Array.from(r.z); RT = { id: r.id, name: r.name, kind: r.kind, loop: !!r.loop, z, len: (z.length - 1) * RSTEP, h: Array.isArray(r.h) && r.h.length > 3 ? r.h : null }; }
+function setRT(r) { const z = Float32Array.from(r.z); RT = { _gm: null, id: r.id, name: r.name, kind: r.kind, loop: !!r.loop, z, len: (z.length - 1) * RSTEP, h: Array.isArray(r.h) && r.h.length > 3 ? r.h : null }; }
 function elev(s) {
   const L = RT.len, z = RT.z; s = RT.loop ? ((s % L) + L) % L : clamp(s, 0, L);
   const f = s / RSTEP, i = Math.min(Math.floor(f), z.length - 2);
@@ -1176,7 +1201,7 @@ function hud() {
   setT('#h-time', pad(Math.floor(S.time / 3600)) + ':' + pad(Math.floor(S.time / 60) % 60) + ':' + pad(Math.floor(S.time) % 60));
   setT('#h-gain', 'D+ ' + Math.round(S.gain) + ' m');
   setT('#h-alt', 'Quota ' + Math.round(elev(S.pos)) + ' m');
-  gwarnUI();
+  gwarnUI(); gsUI();
   try { hrUI(); ghostUI(); if (S.wk) wkUI(); } catch (e) {}
 }
 function gearUI() {
@@ -1972,7 +1997,7 @@ function recoverLive() {
     setTimeout(() => openOvl('report', { ride, saved: WK.rides.some(r => r.id === ride.id), recovered: true }), 700);
   } catch (e) { log('Recupero sessione non riuscito: ' + errText(e)); }
 }
-function buildBackup() { return { format: 'rullo-virtuale-backup', version: 31, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
+function buildBackup() { return { format: 'rullo-virtuale-backup', version: 33, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
 function restoreBackup(o) {
   const byId = (a, b) => { const m = new Map(); for (const x of a || []) if (x && x.id) m.set(x.id, x); for (const x of b || []) if (x && x.id) m.set(x.id, x); return [...m.values()]; };
   if (o.cfg && typeof o.cfg === 'object') { Object.assign(cfg, o.cfg); saveCfg(); }
@@ -2363,7 +2388,7 @@ function wkBindings() {
   sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
   $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
   $('#ck-ask').addEventListener('click', askClick); $('#ck-pair').addEventListener('click', pairClick);
-  const logText = () => 'Rullo virtuale v31 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  const logText = () => 'Rullo virtuale v33 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
   $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
   $('#log-share').addEventListener('click', async () => {
     const t = logText();
@@ -2514,7 +2539,7 @@ function routeInfo() { const k = RT.id + '|' + RT.len + '|' + cfg.maxGrade; if (
 const km1 = m => (m / 1000).toFixed(m >= 10000 ? 1 : 2);
 function routeSub() {
   const i = routeInfo();
-  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v31';
+  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v33';
 }
 function resetRide() {
   S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.rec = []; S.recAcc = 0; S.recMeta = null; S.gh = [0]; S.ghAcc = 0;
@@ -2697,29 +2722,64 @@ function cadHint() {
   for (const rt of rg) for (const cs of cg) { const d = Math.abs(Math.log(rt / cs / want)); if (d < bd) { bd = d; b = rt + '×' + cs; } }
   return 'obiettivo ' + T + ' rpm' + (b !== rg[S.ring] + '×' + cg[S.gear] ? ' · prova ' + b : '');
 }
-function gearAdvice(gr) {
+/* Calcolo marce: a una data pendenza e cadenza, quale marcia il rullo regge */
+function gearInfo(gr) {
   const cg = cogs(), rg = rings(), m = cfg.mass + cfg.bike, Cw = 0.5 * cfg.cda * cfg.rho, Rp = cfg.physChain / cfg.physCog;
   const cad = S.src && S.src.cad > 40 ? Math.round(S.src.cad) : cadTarget(gr), th = Math.atan(gr), base = m * G * (cfg.crr * Math.cos(th) + Math.sin(th));
-  const vt = cad * Rp * cfg.circ / 60, pLim = 0.92 * Math.min(600, (m * G * (cfg.maxGrade / 100 + cfg.crr) + Cw * vt * vt) * vt);
-  let top = null, easy = null;
-  for (const rt of rg) for (const cs of cg) { const R = rt / cs, v = cad * R * cfg.circ / 60, P = (base + Cw * v * v) * v, o = { rt, cs, R, P };
-    if (!easy || R < easy.R) easy = o; if (P <= pLim && (!top || R > top.R)) top = o; }
-  const w = P => Math.round(P / 10) * 10, nm = o => o.rt + '×' + o.cs, cur = rg[S.ring] / cg[S.gear], at = ' a ' + cad + ' rpm';
-  if (!top) return ' · neppure con ' + nm(easy) + ' il rullo regge (~' + w(easy.P) + ' W' + at + ')';
-  if (cur > top.R + 1e-9) return ' · troppo dura: scala a ' + nm(top) + ' (~' + w(top.P) + ' W' + at + ') o più agile';
-  if (top === easy) return ' · marcia giusta: ' + nm(top) + ' (~' + w(top.P) + ' W' + at + ')';
-  return ' · marce utili da ' + nm(easy) + ' (~' + w(easy.P) + ' W) a ' + nm(top) + ' (~' + w(top.P) + ' W)' + at;
+  const vt = cad * Rp * cfg.circ / 60, cap = Math.min(600, (m * G * (cfg.maxGrade / 100 + cfg.crr) + Cw * vt * vt) * vt), pLim = 0.92 * cap;
+  const pw = R => { const v = cad * R * cfg.circ / 60; return (base + Cw * v * v) * v; };
+  let top = null;
+  for (const rt of rg) for (const cs of cg) { const R = rt / cs; if (pw(R) <= pLim && (!top || R > top.R)) top = { rt, cs, R, P: pw(R) }; }
+  const cur = rg[S.ring] / cg[S.gear];
+  /* pendenza massima che il rullo simula con la marcia attuale a questi giri */
+  const Ft = Math.min(m * G * (cfg.maxGrade / 100 + cfg.crr) + Cw * vt * vt, 600 / vt), v = cad * cur * cfg.circ / 60;
+  const gMax = (Ft * Rp / cur - Cw * v * v) / (m * G) - cfg.crr;
+  return { cad, cap, top, cur, gMax };
+}
+/* Pendenza "sentita": dai watt, dalla velocita' virtuale e dal peso totale */
+function feltGrade() {
+  const m = cfg.mass + cfg.bike, Cw = 0.5 * cfg.cda * cfg.rho, v = S.v;
+  if (!(v > 0.8)) return null;
+  return clamp(((S.pAvg / v) - Cw * v * v) / (m * G) - cfg.crr, -0.05, 0.30);
+}
+let gsOn = false, gsF = null, gsT = 0;
+function routeGMax() {
+  if (RT._gm == null) { let mx = 0; for (let d = 0; d <= RT.len; d += 20) mx = Math.max(mx, gradeAt(d)); RT._gm = mx; }
+  return RT._gm;
+}
+function gsUI() {
+  const el = $('#gs'); if (!el) return;
+  const g = gradeAt(S.pos), lim = cfg.maxGrade / 100;
+  let on = !S.wk && S.mode === 'route';
+  on = on && (gsOn ? g > lim - 0.005 : g > lim + 0.002);
+  gsOn = on;
+  const st = $('#stage'); if (st) st.classList.toggle('gs-on', on);
+  if (el.hidden === on) el.hidden = !on;
+  if (!on) { gsF = null; return; }
+  const now = performance.now(), dt = Math.min(1, (now - gsT) / 1000 || 0.1); gsT = now;
+  const f = feltGrade();
+  if (f != null) gsF = gsF == null ? f : gsF + (f - gsF) * (1 - Math.exp(-dt / 1.2));
+  const top = clamp(Math.ceil(routeGMax() * 100) + 1, 12, 25), pos = fr => clamp(fr * 10000 / top, 0, 100) + '%';
+  const gi = gearInfo(g), bad = g > gi.gMax - 0.002 || (gsF != null && gsF < g - 0.015);
+  setT('#gs-f', gsF == null ? '–' : (gsF * 100).toFixed(1));
+  setT('#gs-r', (g * 100).toFixed(1));
+  const bd = $('#gs-b'); setT('#gs-b', bad ? 'Scala' : 'Ok'); bd.className = 'gs-b ' + (bad ? 'no' : 'ok');
+  $('#gs-dot').style.left = gsF == null ? '0%' : pos(gsF);
+  $('#gs-ring').style.left = pos(g);
+  $('#gs-lim').style.left = pos(gi.gMax);
+  setT('#gs-w', Math.round(S.pAvg / 5) * 5 + ' W');
+  setT('#gs-g', !gi.top ? 'nessuna marcia regge' : bad && gi.cur > gi.top.R + 1e-9 ? 'scala a ' + gi.top.rt + '×' + gi.top.cs : 'max ' + gi.top.rt + '×' + gi.top.cs);
 }
 function gwarnUI() {
   const el = $('#gwarn'); if (!el) return;
   let txt = '';
   if (!S.wk && S.mode === 'route') {
-    const lim = cfg.maxGrade / 100;
+    const lim = cfg.maxGrade / 100, cur = gradeAt(S.pos), th = Math.max(lim, cur + 0.015);
     for (let d = 0; d <= 400; d += 20) {
       const g = gradeAt(S.pos + d);
-      if (g > lim + 1e-4) {
-        let mx = g; for (let e = d; e <= d + 600; e += 20) mx = Math.max(mx, gradeAt(S.pos + e));
-        txt = '⚠ ' + (d <= 20 ? 'Salita' : 'Tra ' + Math.round(d / 10) * 10 + ' m salita') + ' al ' + (mx * 100).toFixed(1) + '% · rullo al ' + cfg.maxGrade + '%' + gearAdvice(mx);
+      if (g > th + 1e-4) {
+        let mx = g; for (let e = d; e <= d + 100; e += 20) mx = Math.max(mx, gradeAt(S.pos + e));
+        txt = '⚠ ' + (d <= 20 ? 'Salita' : 'Tra ' + Math.round(d / 10) * 10 + ' m salita') + ' al ' + (mx * 100).toFixed(0) + '%';
         break;
       }
     }
