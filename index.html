@@ -430,6 +430,9 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
         <label class="field">Corona fisica sul rullo (denti)<input type="number" data-cfg="physChain" step="1"></label>
         <label class="field">Pignone del Cog (denti)<input type="number" data-cfg="physCog" step="1"></label>
         <label class="field">Pendenza massima rullo (%)<input type="number" data-cfg="maxGrade" step="0.5"></label>
+        <label class="field">Cadenza obiettivo in salita fino a questa pendenza (%)<input type="number" data-cfg="cadThr" step="0.5"></label>
+        <label class="field">Cadenza obiettivo fino a quella pendenza (rpm)<input type="number" data-cfg="cadLo" step="1"></label>
+        <label class="field">Cadenza obiettivo oltre quella pendenza (rpm)<input type="number" data-cfg="cadHi" step="1"></label>
         <label class="field">Sorgente potenza
           <select data-cfg="powerSrc"><option value="auto">Automatica (4iiii se presente)</option><option value="pm">Solo 4iiii</option><option value="trainer">Solo rullo D100</option></select>
         </label>
@@ -718,7 +721,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 /* ---------- Impostazioni ---------- */
 const DEF = { mass: 75, bike: 9, cda: 0.32, crr: 0.004, rho: 1.2, eff: 0.975, ftp: 200, rings: '50,34',
   cassette: '11,13,15,17,19,21,23,25,27,30,34', role1: 'rear', role2: 'front', circ: 2.105, maxGrade: 6, physChain: 50, physCog: 14,
-  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false, hs: 'qz', ghost: false, style: 'min', view: 'side', tod: 'auto' };
+  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false, hs: 'qz', ghost: false, style: 'min', view: 'side', tod: 'auto', cadLo: 70, cadHi: 65, cadThr: 7 };
 const cfg = Object.assign({}, DEF);
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('rv-cfg2') || '{}')); } catch (e) {}
 cfg.keepAlive = false; if (cfg.hs !== 'old') cfg.hs = 'qz';
@@ -1164,7 +1167,7 @@ function hud() {
   const zf = $('#zfill'); zf.style.width = clamp(pct / 1.5, 0, 100) + '%'; zf.style.background = 'var(--z' + (z + 1) + ')';
   setT('#p-sub', (S.pAvg / cfg.mass).toFixed(1) + ' W/kg · sorgente ' + S.src.pSrc);
   setT('#v-c', String(Math.round(S.src.cad)));
-  setT('#c-sub', S.src.cadOk ? (S.demo.on ? 'demo' : 'dal sensore') : 'nessun sensore');
+  setT('#c-sub', cadHint() || (S.src.cadOk ? (S.demo.on ? 'demo' : 'dal sensore') : 'nessun sensore'));
   setT('#v-s', (S.v * 3.6).toFixed(1));
   setT('#s-sub', S.src.cadOk && S.src.cad > 0.5 ? 'dalla cadenza e dalla marcia' : S.src.vt != null ? 'dal rullo e dalla marcia' : 'dalla potenza');
   const g = gradeAt(S.pos) * 100; setT('#v-g', (g >= 0 ? '+' : '') + g.toFixed(1));
@@ -1969,7 +1972,7 @@ function recoverLive() {
     setTimeout(() => openOvl('report', { ride, saved: WK.rides.some(r => r.id === ride.id), recovered: true }), 700);
   } catch (e) { log('Recupero sessione non riuscito: ' + errText(e)); }
 }
-function buildBackup() { return { format: 'rullo-virtuale-backup', version: 29, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
+function buildBackup() { return { format: 'rullo-virtuale-backup', version: 31, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
 function restoreBackup(o) {
   const byId = (a, b) => { const m = new Map(); for (const x of a || []) if (x && x.id) m.set(x.id, x); for (const x of b || []) if (x && x.id) m.set(x.id, x); return [...m.values()]; };
   if (o.cfg && typeof o.cfg === 'object') { Object.assign(cfg, o.cfg); saveCfg(); }
@@ -2360,7 +2363,7 @@ function wkBindings() {
   sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
   $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
   $('#ck-ask').addEventListener('click', askClick); $('#ck-pair').addEventListener('click', pairClick);
-  const logText = () => 'Rullo virtuale v29 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  const logText = () => 'Rullo virtuale v31 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
   $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
   $('#log-share').addEventListener('click', async () => {
     const t = logText();
@@ -2511,7 +2514,7 @@ function routeInfo() { const k = RT.id + '|' + RT.len + '|' + cfg.maxGrade; if (
 const km1 = m => (m / 1000).toFixed(m >= 10000 ? 1 : 2);
 function routeSub() {
   const i = routeInfo();
-  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v29';
+  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v31';
 }
 function resetRide() {
   S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.rec = []; S.recAcc = 0; S.recMeta = null; S.gh = [0]; S.ghAcc = 0;
@@ -2682,6 +2685,31 @@ function renderRedit(box, arg) {
 }
 
 /* In sella: avviso salite oltre il limite del rullo */
+/* Marcia utile sulle salite oltre il limite del rullo: i watt crescono col rapporto, quindi esiste un rapporto massimo oltre il quale il rullo (6% e 600 W) non riesce a opporre la resistenza giusta */
+const cadTarget = g => g * 100 <= cfg.cadThr ? cfg.cadLo : cfg.cadHi;
+/* Cadenza obiettivo: sotto il valore scelto suggerisce il rapporto che, a parità di sforzo, porta alla cadenza obiettivo */
+function cadHint() {
+  if (S.wk || S.mode !== 'route' || !S.src || !S.src.cadOk) return '';
+  const g = gradeAt(S.pos), cadA = S.src.cad;
+  if (g < 0.03 || cadA < 30) return '';
+  const T = cadTarget(g); if (cadA >= T - 2) return '✓ obiettivo ' + T + ' rpm';
+  const cg = cogs(), rg = rings(), cur = rg[S.ring] / cg[S.gear], want = cur * cadA / T; let b = null, bd = 1e9;
+  for (const rt of rg) for (const cs of cg) { const d = Math.abs(Math.log(rt / cs / want)); if (d < bd) { bd = d; b = rt + '×' + cs; } }
+  return 'obiettivo ' + T + ' rpm' + (b !== rg[S.ring] + '×' + cg[S.gear] ? ' · prova ' + b : '');
+}
+function gearAdvice(gr) {
+  const cg = cogs(), rg = rings(), m = cfg.mass + cfg.bike, Cw = 0.5 * cfg.cda * cfg.rho, Rp = cfg.physChain / cfg.physCog;
+  const cad = S.src && S.src.cad > 40 ? Math.round(S.src.cad) : cadTarget(gr), th = Math.atan(gr), base = m * G * (cfg.crr * Math.cos(th) + Math.sin(th));
+  const vt = cad * Rp * cfg.circ / 60, pLim = 0.92 * Math.min(600, (m * G * (cfg.maxGrade / 100 + cfg.crr) + Cw * vt * vt) * vt);
+  let top = null, easy = null;
+  for (const rt of rg) for (const cs of cg) { const R = rt / cs, v = cad * R * cfg.circ / 60, P = (base + Cw * v * v) * v, o = { rt, cs, R, P };
+    if (!easy || R < easy.R) easy = o; if (P <= pLim && (!top || R > top.R)) top = o; }
+  const w = P => Math.round(P / 10) * 10, nm = o => o.rt + '×' + o.cs, cur = rg[S.ring] / cg[S.gear], at = ' a ' + cad + ' rpm';
+  if (!top) return ' · neppure con ' + nm(easy) + ' il rullo regge (~' + w(easy.P) + ' W' + at + ')';
+  if (cur > top.R + 1e-9) return ' · troppo dura: scala a ' + nm(top) + ' (~' + w(top.P) + ' W' + at + ') o più agile';
+  if (top === easy) return ' · marcia giusta: ' + nm(top) + ' (~' + w(top.P) + ' W' + at + ')';
+  return ' · marce utili da ' + nm(easy) + ' (~' + w(easy.P) + ' W) a ' + nm(top) + ' (~' + w(top.P) + ' W)' + at;
+}
 function gwarnUI() {
   const el = $('#gwarn'); if (!el) return;
   let txt = '';
@@ -2691,7 +2719,7 @@ function gwarnUI() {
       const g = gradeAt(S.pos + d);
       if (g > lim + 1e-4) {
         let mx = g; for (let e = d; e <= d + 600; e += 20) mx = Math.max(mx, gradeAt(S.pos + e));
-        txt = '⚠ ' + (d <= 20 ? 'Salita' : 'Tra ' + Math.round(d / 10) * 10 + ' m salita') + ' al ' + (mx * 100).toFixed(1) + '% · il rullo applica ' + cfg.maxGrade + '%';
+        txt = '⚠ ' + (d <= 20 ? 'Salita' : 'Tra ' + Math.round(d / 10) * 10 + ' m salita') + ' al ' + (mx * 100).toFixed(1) + '% · rullo al ' + cfg.maxGrade + '%' + gearAdvice(mx);
         break;
       }
     }
