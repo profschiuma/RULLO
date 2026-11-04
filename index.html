@@ -213,6 +213,11 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
 .field.chk{grid-auto-flow:column;justify-content:start;align-items:center;gap:10px}
 .gwarn{position:absolute;right:12px;bottom:12px;max-width:calc(100% - 24px);padding:6px 10px;border-radius:8px;background:var(--panel);border:1px solid var(--bad);color:var(--bad);font:600 14px/1.3 var(--f-body)}
 .gwarn[hidden]{display:none}
+.stopbtn{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:40;padding:12px 18px;border-radius:12px;border:2px solid var(--bad);background:var(--panel);color:var(--bad);font:700 16px/1 var(--f-body);box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.stopbtn[hidden]{display:none}
+.stopbtn.arm{background:var(--bad);color:#fff}
+.wk-ack{display:block;margin-top:4px;color:var(--ink2);font-size:12px;line-height:1.3}
+.wk-ack.no{color:var(--bad);font-weight:700}
 .stage.gs-on .gwarn{bottom:128px}
 .gs{position:absolute;right:12px;bottom:12px;width:clamp(300px,calc(100% - 300px),460px);padding:8px 12px 9px;border-radius:12px;background:var(--panel);border:1px solid var(--line)}
 @media (max-width:620px){.gs{width:calc(100% - 24px)}}
@@ -291,6 +296,7 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
       <button class="chip" id="chip-hr" data-k="hr"><i class="dot"></i><span><span class="nm">Cardio</span><small>Tocca per collegare</small></span></button>
     </div>
   </header>
+  <button class="stopbtn" id="stop-btn" hidden>■ Stop</button>
   <p class="note" id="note" hidden></p>
 
   <section class="pad" aria-label="Tasti dei controller">
@@ -319,7 +325,7 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
       <div class="wk-box" id="wk-pbox"><div class="wk-hd"><small>Potenza</small><span class="zone" id="wk-zone">Z1</span></div><div class="wk-big"><b class="wk-pw" id="wk-pw">0</b><u>W</u></div>
         <div class="wk-gauge" id="wk-gauge"><i class="band"></i><i class="lim" id="wk-lim" hidden></i><i class="tgt"></i><i class="act" id="wk-act"></i></div>
         <div class="wk-gl"><span id="wk-gl-l">&nbsp;</span><span id="wk-gl-r">&nbsp;</span></div></div>
-      <div class="wk-box"><small>Obiettivo</small><div class="wk-big"><b id="wk-tw">0</b><u>W</u></div><small id="wk-tp">&nbsp;</small><div id="wk-now">&nbsp;</div></div>
+      <div class="wk-box"><small>Obiettivo</small><div class="wk-big"><b id="wk-tw">0</b><u>W</u></div><small id="wk-tp">&nbsp;</small><div id="wk-now">&nbsp;</div><small class="wk-ack" id="wk-ack">&nbsp;</small></div>
     </div>
     <div class="wk-nxt" id="wk-nxt" hidden><small>Il prossimo</small><div class="wk-nxrow"><div class="wk-big"><b id="wk-nx-w">0</b><u>W</u></div><div><b id="wk-nx-t">&nbsp;</b><small id="wk-nx-d">&nbsp;</small></div></div></div>
     <div class="wk-tiles">
@@ -458,6 +464,9 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
         <label class="field">Cadenza obiettivo in salita fino a questa pendenza (%)<input type="number" data-cfg="cadThr" step="0.5"></label>
         <label class="field">Cadenza obiettivo fino a quella pendenza (rpm)<input type="number" data-cfg="cadLo" step="1"></label>
         <label class="field">Cadenza obiettivo oltre quella pendenza (rpm)<input type="number" data-cfg="cadHi" step="1"></label>
+        <label class="field">ERG (potenza fissa)
+          <select data-cfg="ergMode"><option value="soft">Software: l'app regola la resistenza (consigliato)</option><option value="hw">Comando ERG del rullo</option></select>
+        </label>
         <label class="field">Sorgente potenza
           <select data-cfg="powerSrc"><option value="auto">Automatica (4iiii se presente)</option><option value="pm">Solo 4iiii</option><option value="trainer">Solo rullo D100</option></select>
         </label>
@@ -746,7 +755,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 /* ---------- Impostazioni ---------- */
 const DEF = { mass: 75, bike: 9, cda: 0.32, crr: 0.004, rho: 1.2, eff: 0.975, ftp: 200, rings: '50,34',
   cassette: '11,13,15,17,19,21,23,25,27,30,34', role1: 'rear', role2: 'front', circ: 2.105, maxGrade: 6, physChain: 50, physCog: 14,
-  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false, hs: 'qz', ghost: false, style: 'min', view: 'side', tod: 'auto', cadLo: 70, cadHi: 65, cadThr: 7 };
+  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false, hs: 'qz', ghost: false, style: 'min', view: 'side', tod: 'auto', cadLo: 70, cadHi: 65, cadThr: 7, ergMode: 'soft' };
 const cfg = Object.assign({}, DEF);
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('rv-cfg2') || '{}')); } catch (e) {}
 cfg.keepAlive = false; if (cfg.hs !== 'old') cfg.hs = 'qz';
@@ -821,8 +830,9 @@ let lastReq = 0;
 function onCp(dv) {
   if (dv.byteLength >= 3 && dv.getUint8(0) === 0x80) {
     const op = dv.getUint8(1), res = dv.getUint8(2);
-    log('Rullo: risposta al comando 0x' + op.toString(16) + ', esito ' + res);
-    if (res === 5 && performance.now() - lastReq > 3000) { lastReq = performance.now(); cpWrite(new Uint8Array([0x00])); }
+    log('Rullo: risposta al comando 0x' + op.toString(16) + ', esito ' + res + (res === 1 ? ' (ok)' : res === 2 ? ' (non supportato)' : res === 3 ? ' (parametro non valido)' : res === 4 ? ' (non riuscito)' : res === 5 ? ' (controllo non concesso)' : ''));
+    if (op === 0x05) { S.ergAck = res === 1; if (res !== 1 && performance.now() - lastKick > 8000) ergKick(); }
+    if (res === 5 && performance.now() - lastReq > 3000) { lastReq = performance.now(); lastSentG = null; cpWrite(new Uint8Array([0x00])); cpWrite(new Uint8Array([0x07])); if (S.mode === 'erg') sendErg(); }
   }
 }
 const CNT = { tr: 0, pm: 0, hr: 0 }, LASTV = { tr: '', pm: '', hr: '' };
@@ -928,7 +938,7 @@ function handleRide(u, k) {
   st.prev = pressed;
   if (!st.base) { st.base = true; if (!pressed) return; }
   if (!fresh) return;
-  log(NAMES[k] + ': premuto 0x' + fresh.toString(16) + ' (' + hex(u) + ')');
+  log(NAMES[k] + ': premuto 0x' + fresh.toString(16) + ' (' + hex(u) + ') · ' + Math.round(S.src ? S.src.cad : 0) + ' rpm');
   $('#chip-' + k + ' small').textContent = 'Collegato · ultimo tasto 0x' + fresh.toString(16);
   const now = performance.now(), lp = S.lastPress, from = k;
   S.ck[k].lastPress = now;
@@ -1115,14 +1125,35 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 let lastSentG = null, lastSentT = 0, lastErgT = 0;
 const connected = () => D.tr && D.tr.gatt && D.tr.gatt.connected && CP && !S.demo.on;
 function sendResistance(force) {
-  if (!connected() || (S.mode !== 'route' && !S.wkFree)) return;
+  if (!connected() || (S.mode !== 'route' && !S.wkFree && !(S.mode === 'erg' && ergSoft()))) return;
   const t = performance.now(), g = S.gCmd;
   if (!force && lastSentG !== null && Math.abs(g - lastSentG) < 0.0003 && t - lastSentT < 5000) return;
   lastSentG = g; lastSentT = t;
   cpWrite(buildSim(g, cfg.crr, 0.5 * cfg.cda * cfg.rho));
 }
-function sendErg() { if (!connected() || S.wkFree) return; lastErgT = performance.now(); cpWrite(buildErg(S.ergW)); }
-setInterval(() => { sendResistance(false); if (S.mode === 'erg' && !S.wkFree && performance.now() - lastErgT > 5000) sendErg(); }, 1000);
+const ergSoft = () => cfg.ergMode !== 'hw';
+function sendErg() { if (!connected() || S.wkFree || ergSoft()) return; lastErgT = performance.now(); cpWrite(buildErg(S.ergW)); }
+/* Entrando in ERG: richiesta di controllo, avvio e solo dopo la potenza (con pause tra un comando e l'altro) */
+let lastKick = 0;
+function ergKick() {
+  if (!connected()) return;
+  lastKick = performance.now(); S.ergAck = null;
+  S.eI = 0;
+  log('ERG ' + (ergSoft() ? 'software' : 'del rullo') + ': richiedo il controllo, avvio e imposto ' + S.ergW + ' W');
+  cpWrite(new Uint8Array([0x00]));
+  cpChain = cpChain.then(() => sleep(300)); cpWrite(new Uint8Array([0x07]));
+  cpChain = cpChain.then(() => sleep(300));
+  if (ergSoft()) { lastSentG = null; sendResistance(true); } else sendErg();
+}
+/* Fuori da ERG: torna alla simulazione, il rullo non resta a potenza fissa */
+function leaveErg(force) {
+  if (S.mode !== 'erg' && !force) return;
+  S.mode = 'route'; $('#mode-route').classList.add('on'); $('#mode-erg').classList.remove('on');
+  $('#erg-box').hidden = true; $('#mode-hint').hidden = false; S.ergAck = null;
+  lastSentG = null; sendResistance(true); gearUI();
+}
+setInterval(() => { if (S.mode === 'erg' && ergSoft() && !S.wkFree) sendResistance(false); }, 500);
+setInterval(() => { sendResistance(false); if (S.mode === 'erg' && !S.wkFree && performance.now() - lastErgT > 3000) sendErg(); }, 1000);
 
 /* ---------- Fisica ---------- */
 function sources(now) {
@@ -1174,7 +1205,9 @@ function tick() {
   const vt = src.vt != null ? src.vt : (src.cadOk ? src.cad * Rp * cfg.circ / 60 : null);
   const maxG = cfg.maxGrade / 100;
   let gc = free ? -0.10 : resistanceGrade({ m, grade, v, vt, R, Rp, Cw, crr: cfg.crr, maxG });
+  if (S.mode === 'erg' && !S.wkFree && ergSoft()) gc = softErg(dt, src.cad < 20, vt, m, Cw, maxG);
   S.limited = !free && vt != null && gc >= maxG - 1e-6;
+  if (S.mode === 'erg' && !S.wkFree && ergSoft()) S.limited = !!S._lim;
   S.gCmd += (gc - S.gCmd) * (1 - Math.exp(-dt / 0.7));
   hud();
 }
@@ -1185,23 +1218,39 @@ setInterval(() => { S.hist.push(S.pAvg); if (S.hist.length > 300) S.hist.shift()
 const ZN = ['Recupero', 'Resistenza', 'Tempo', 'Soglia', 'VO2max', 'Anaerobica'];
 function setT(id, t) { const el = $(id); if (el.textContent !== t) el.textContent = t; }
 const pad = n => String(n).padStart(2, '0');
+function trainerW() { const L = S.live.tr; return S.mode === 'erg' && L && L.p != null && performance.now() - L.t < 3000 ? ' · rullo ' + Math.round(L.p) + ' W' : ''; }
+function ergState(short) {
+  if (!connected()) return 'Rullo: ERG (non collegato)';
+  if (ergSoft()) return S.limited ? 'ERG: al limite, alza i giri' : 'Rullo: ERG software';
+  return S.ergAck === false ? 'ERG rifiutato dal rullo!' : S.ergAck ? (short ? 'ERG ok' : 'Rullo: ERG ok') : 'Rullo: ERG in attesa';
+}
+/* ERG software: la pendenza inviata al rullo e' scelta in modo che, ai giri attuali, la potenza sia quella obiettivo.
+   Parte da una stima (forza = potenza / velocita' del rullo) e la corregge con l'errore sui watt misurati. */
+function softErg(dt, free, vt, m, Cw, maxG) {
+  if (free) { S.eI = 0; return -0.10; }
+  if (vt == null || vt < 3) return 0;
+  const Pt = S.ergW, ff = (Pt / vt - Cw * vt * vt) / (m * G) - cfg.crr, e = Pt - S.pAvg, raw = ff + (S.eI || 0);
+  if (!((raw >= maxG && e > 0) || (raw <= -0.10 && e < 0))) S.eI = clamp((S.eI || 0) + 3e-5 * clamp(e, -30, 30) * dt, -0.05, 0.05);
+  S._lim = raw >= maxG;
+  return clamp(raw, -0.10, maxG);
+}
 function hud() {
   const pct = S.pAvg / cfg.ftp * 100, z = pct < 55 ? 0 : pct < 76 ? 1 : pct < 91 ? 2 : pct < 106 ? 3 : pct < 121 ? 4 : 5;
   setT('#v-p', String(Math.round(S.pAvg)));
   const zl = $('#zone'); zl.textContent = 'Z' + (z + 1) + ' ' + ZN[z]; zl.style.background = 'var(--z' + (z + 1) + ')';
   const zf = $('#zfill'); zf.style.width = clamp(pct / 1.5, 0, 100) + '%'; zf.style.background = 'var(--z' + (z + 1) + ')';
-  setT('#p-sub', (S.pAvg / cfg.mass).toFixed(1) + ' W/kg · sorgente ' + S.src.pSrc);
+  setT('#p-sub', (S.pAvg / cfg.mass).toFixed(1) + ' W/kg · sorgente ' + S.src.pSrc + trainerW());
   setT('#v-c', String(Math.round(S.src.cad)));
   setT('#c-sub', cadHint() || (S.src.cadOk ? (S.demo.on ? 'demo' : 'dal sensore') : 'nessun sensore'));
   setT('#v-s', (S.v * 3.6).toFixed(1));
   setT('#s-sub', S.src.cadOk && S.src.cad > 0.5 ? 'dalla cadenza e dalla marcia' : S.src.vt != null ? 'dal rullo e dalla marcia' : 'dalla potenza');
   const g = gradeAt(S.pos) * 100; setT('#v-g', (g >= 0 ? '+' : '') + g.toFixed(1));
-  setT('#g-sub', S.mode === 'erg' ? 'Rullo: potenza fissa' : S.free ? 'Rullo: scorrimento' : 'Rullo: ' + (S.gCmd * 100 >= 0 ? '+' : '') + (S.gCmd * 100).toFixed(1) + '%' + (S.limited ? ' (limite)' : ''));
+  setT('#g-sub', S.mode === 'erg' ? ergState(false) : S.free ? 'Rullo: scorrimento' : 'Rullo: ' + (S.gCmd * 100 >= 0 ? '+' : '') + (S.gCmd * 100).toFixed(1) + '%' + (S.limited ? ' (limite)' : ''));
   setT('#h-km', (S.dist / 1000).toFixed(2) + ' km');
   setT('#h-time', pad(Math.floor(S.time / 3600)) + ':' + pad(Math.floor(S.time / 60) % 60) + ':' + pad(Math.floor(S.time) % 60));
   setT('#h-gain', 'D+ ' + Math.round(S.gain) + ' m');
   setT('#h-alt', 'Quota ' + Math.round(elev(S.pos)) + ' m');
-  gwarnUI(); gsUI();
+  gwarnUI(); gsUI(); stopUI();
   try { hrUI(); ghostUI(); if (S.wk) wkUI(); } catch (e) {}
 }
 function gearUI() {
@@ -1234,7 +1283,7 @@ function setMode(m) {
   S.mode = m; $('#mode-route').classList.toggle('on', m === 'route'); $('#mode-erg').classList.toggle('on', m === 'erg');
   $('#erg-box').hidden = m !== 'erg';
   $('#mode-hint').hidden = m === 'erg';
-  if (m === 'erg') sendErg(); else { lastSentG = null; sendResistance(true); }
+  if (m === 'erg') ergKick(); else { lastSentG = null; sendResistance(true); }
   gearUI(); wake();
 }
 $('#mode-route').addEventListener('click', () => { if (S.wk) wkEnd(true); else setMode('route'); });
@@ -1997,7 +2046,7 @@ function recoverLive() {
     setTimeout(() => openOvl('report', { ride, saved: WK.rides.some(r => r.id === ride.id), recovered: true }), 700);
   } catch (e) { log('Recupero sessione non riuscito: ' + errText(e)); }
 }
-function buildBackup() { return { format: 'rullo-virtuale-backup', version: 33, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
+function buildBackup() { return { format: 'rullo-virtuale-backup', version: 35, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
 function restoreBackup(o) {
   const byId = (a, b) => { const m = new Map(); for (const x of a || []) if (x && x.id) m.set(x.id, x); for (const x of b || []) if (x && x.id) m.set(x.id, x); return [...m.values()]; };
   if (o.cfg && typeof o.cfg === 'object') { Object.assign(cfg, o.cfg); saveCfg(); }
@@ -2257,7 +2306,7 @@ function wkStart(w) {
   S.rec = []; S.recAcc = 0; S.recMeta = { start: Date.now(), name: w.name, ftp: cfg.ftp, w: clone(w), test: w.test || null };
   S.mode = 'erg'; $('#mode-route').classList.remove('on'); $('#mode-erg').classList.add('on'); $('#erg-box').hidden = true; $('#mode-hint').hidden = true;
   S.wkFree = !!st.segs[0].free; $('#stage').hidden = true; $('#wkstage').hidden = false; $('.metrics').hidden = true; $('#profbox').hidden = true; $('#wk-seek').max = st.total; $('#wk-seek').value = 0;
-  lastSentG = null; lastErgT = 0; gearUI(); wkTarget(true); wkUI(); wake(); log('Allenamento avviato: ' + w.name);
+  lastSentG = null; lastErgT = 0; S.ergAck = null; if (!S.wkFree) ergKick(); gearUI(); wkTarget(true); wkUI(); wake(); log('Allenamento avviato: ' + w.name);
 }
 function wkTarget(force) {
   const W = S.wk; if (!W) return;
@@ -2293,6 +2342,7 @@ function wkEnd(report) {
   const W = S.wk; if (!W) return;
   const ride = buildRide();
   S.wk = null; S.wkFree = false; $('#stage').hidden = false; $('#wkstage').hidden = true; $('.metrics').hidden = false; $('#profbox').hidden = false; $('#wkstage').classList.remove('rest');
+  leaveErg(false);
   beep(660, 0.4);
   if (ride && ride.rec.length >= 60) {
     const w = WK.list.find(x => x.id === W.id); if (w) { w.done = (w.done | 0) + 1; saveWk(); }
@@ -2365,6 +2415,7 @@ function wkUI() {
     setT('#wk-nx-t', nx.label + ' · ' + mmss(nx.t1 - nx.t0) + (nx.free ? '' : ' · ' + Math.round(nx.p0 * W.adj) + '% FTP'));
     setT('#wk-nx-d', (nx.cad ? 'cadenza ' + nx.cad + ' rpm · ' : '') + 'tra ' + mmss(Math.ceil(sg.t1 - W.t)) + ' il rullo sale da solo');
   }
+  { const a = $('#wk-ack'); if (a) { const t = sg.free ? '' : ergState(true) + trainerW(); setT('#wk-ack', t || '\u00a0'); a.classList.toggle('no', S.ergAck === false && !sg.free); } }
   setT('#wk-adj', Math.round(W.adj * 100) + '%');
   setT('#wk-pause', W.paused ? 'Riprendi' : 'Pausa');
   const m = $('#wk-msg'), txt = sg.msg && (W.t - sg.t0 < 25 || sg.t1 - sg.t0 < 40) ? sg.msg : '';
@@ -2388,7 +2439,7 @@ function wkBindings() {
   sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
   $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
   $('#ck-ask').addEventListener('click', askClick); $('#ck-pair').addEventListener('click', pairClick);
-  const logText = () => 'Rullo virtuale v33 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  const logText = () => 'Rullo virtuale v35 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
   $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
   $('#log-share').addEventListener('click', async () => {
     const t = logText();
@@ -2539,7 +2590,7 @@ function routeInfo() { const k = RT.id + '|' + RT.len + '|' + cfg.maxGrade; if (
 const km1 = m => (m / 1000).toFixed(m >= 10000 ? 1 : 2);
 function routeSub() {
   const i = routeInfo();
-  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v33';
+  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v35';
 }
 function resetRide() {
   S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.rec = []; S.recAcc = 0; S.recMeta = null; S.gh = [0]; S.ghAcc = 0;
@@ -2786,6 +2837,25 @@ function gwarnUI() {
   }
   if (el.textContent !== txt) { el.textContent = txt; el.hidden = !txt; }
 }
+
+/* ---------- Stop ---------- */
+let stopArm = 0;
+function stopUI() {
+  const b = $('#stop-btn'); if (!b) return;
+  const on = !!S.wk || S.dist > 20 || S.rec.length > 0, arm = stopArm && performance.now() - stopArm < 4000;
+  if (b.hidden === on) b.hidden = !on;
+  setT('#stop-btn', arm ? 'Conferma stop' : '■ Stop'); b.classList.toggle('arm', !!arm);
+}
+function stopAll() {
+  if (S.wk) wkEnd(true); else $('#reset').click();
+  S.gCmd = 0; leaveErg(true);
+  log('Stop: giro/allenamento terminato, rullo liberato');
+}
+$('#stop-btn').addEventListener('click', () => {
+  if (stopArm && performance.now() - stopArm < 4000) { stopArm = 0; stopAll(); }
+  else { stopArm = performance.now(); setTimeout(stopUI, 4100); }
+  stopUI();
+});
 
 /* ---------- Avvio ---------- */
 (function () {
