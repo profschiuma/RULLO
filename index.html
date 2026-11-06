@@ -65,7 +65,10 @@ h1{font:600 30px/1 var(--f-num);letter-spacing:.02em;margin:0}
 .val{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;min-width:0}
 .val b{font:600 clamp(32px,4vw,52px)/1 var(--f-num);font-variant-numeric:tabular-nums;letter-spacing:.01em}
 .val u{text-decoration:none;color:var(--ink2);font-size:14px}
-.m small{color:var(--ink2);font-size:16px}
+.m small{color:var(--ink2);font-size:15px;line-height:1.3}
+.m .val{flex-wrap:nowrap}
+.m .val b{font-size:clamp(30px,3.6vw,46px)}
+.m>small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;height:2.6em}
 .m-power{grid-column:span 2}
 @media (max-width:520px){.m-power{grid-column:span 1}}
 .zone{display:inline-block;padding:2px 10px;border-radius:6px;font:600 13px/1.4 var(--f-body);color:var(--bg);background:var(--z1);margin-left:auto;align-self:center}
@@ -267,7 +270,11 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
 .wk-t{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--panel2);display:grid;gap:3px;align-content:start;min-width:0}
 .wk-t>small{color:var(--ink2);font:600 14px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase}
 .wk-t .val b{font-size:clamp(30px,3.6vw,44px)}
-.wk-t>small:last-child{font:400 16px/1.3 var(--f-body);letter-spacing:0;text-transform:none}
+.wk-t>small:last-child{font:400 15px/1.3 var(--f-body);letter-spacing:0;text-transform:none}
+.wk-t .val{flex-wrap:nowrap}
+.wk-t .val u{white-space:nowrap}
+.wk-t .val b{font-size:clamp(28px,3.2vw,40px)}
+.wk-t>.val~small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;height:2.6em}
 .cadi{font:700 clamp(24px,3vw,34px)/1 var(--f-body);margin-left:4px}
 .cadi.ok{color:var(--ok)}.cadi.warn{color:var(--warn)}.cadi.bad{color:var(--bad)}
 .wk-profbox{position:relative}
@@ -335,9 +342,9 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
     <div class="wk-tiles">
       <div class="wk-t"><small>Cadenza</small><div class="val"><b id="wk-cad">0</b><u>rpm</u><span class="cadi" id="wk-cadi"></span></div><small id="wk-cadt">&nbsp;</small></div>
       <div class="wk-t"><small>Cuore</small><div class="val"><b id="wk-hr">—</b><u>bpm</u></div><small id="wk-hrs">&nbsp;</small></div>
+      <div class="wk-t"><small>Efficienza</small><div class="val"><b id="wk-eff">—</b><u>W/bpm</u></div><small id="wk-effs" class="effd">&nbsp;</small></div>
       <div class="wk-t"><small id="wk-avgl">Media segmento</small><div class="val"><b id="wk-avg">—</b><u>W</u></div><small id="wk-avgs">&nbsp;</small></div>
       <div class="wk-t"><small>Tempo totale</small><div class="val"><b id="wk-tot">0:00</b><u id="wk-totu"></u></div></div>
-      <div class="wk-t"><small>Efficienza</small><div class="val"><b id="wk-eff">—</b><u>W/bpm</u></div><small id="wk-effs" class="effd">&nbsp;</small></div>
       <div class="wk-t" id="wk-gearbox" hidden><small>Marcia</small><div class="val"><b id="wk-gear">50×19</b></div></div>
     </div>
     <div class="wk-msg" id="wk-msg" hidden></div>
@@ -2135,7 +2142,7 @@ function recoverLive() {
     setTimeout(() => openOvl('report', { ride, saved: WK.rides.some(r => r.id === ride.id), recovered: true }), 700);
   } catch (e) { log('Recupero sessione non riuscito: ' + errText(e)); }
 }
-function buildBackup() { return { format: 'rullo-virtuale-backup', version: 38, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
+function buildBackup() { return { format: 'rullo-virtuale-backup', version: 39, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
 function restoreBackup(o) {
   const byId = (a, b) => { const m = new Map(); for (const x of a || []) if (x && x.id) m.set(x.id, x); for (const x of b || []) if (x && x.id) m.set(x.id, x); return [...m.values()]; };
   if (o.cfg && typeof o.cfg === 'object') { Object.assign(cfg, o.cfg); saveCfg(); }
@@ -2576,7 +2583,7 @@ function wkBindings() {
   sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
   $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
   $('#ck-ask').addEventListener('click', askClick); $('#ck-pair').addEventListener('click', pairClick);
-  const logText = () => 'Rullo virtuale v38 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  const logText = () => 'Rullo virtuale v39 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
   $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
   $('#log-share').addEventListener('click', async () => {
     const t = logText();
@@ -2727,7 +2734,7 @@ function routeInfo() { const k = RT.id + '|' + RT.len + '|' + cfg.maxGrade; if (
 const km1 = m => (m / 1000).toFixed(m >= 10000 ? 1 : 2);
 function routeSub() {
   const i = routeInfo();
-  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v38';
+  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v39';
 }
 function resetRide() {
   S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.rec = []; S.recAcc = 0; S.recMeta = null; S.gh = [0]; S.ghAcc = 0;
