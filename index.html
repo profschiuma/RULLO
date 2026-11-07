@@ -67,6 +67,8 @@ h1{font:600 30px/1 var(--f-num);letter-spacing:.02em;margin:0}
 .val u{text-decoration:none;color:var(--ink2);font-size:14px}
 .m small{color:var(--ink2);font-size:15px;line-height:1.3}
 .m .val{flex-wrap:nowrap}
+.m .val.wrapu{flex-wrap:wrap}
+.val.wrapu u{flex-basis:100%;margin-top:3px}
 .m .val b{font-size:clamp(30px,3.6vw,46px)}
 .m>small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;height:2.6em}
 .m-power{grid-column:span 2}
@@ -117,7 +119,9 @@ input[type=checkbox]{width:22px;min-height:22px;height:22px;accent-color:var(--a
 .check{display:flex;gap:10px;align-items:center;font-size:15px;color:var(--ink)}
 .hint{margin:0;color:var(--ink2);font-size:13px}
 canvas.chart{display:block;width:100%}
-#pwr{height:150px}#prof{height:112px}
+#pwr{height:112px}
+.live2{display:block}
+#prof{height:132px}
 summary{cursor:pointer;font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);min-height:24px}
 details[open] summary{margin-bottom:12px}
 pre.log{margin:0;max-height:240px;overflow:auto;padding:10px;border-radius:8px;background:var(--panel2);font:12px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all}
@@ -245,6 +249,8 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
 .gs-bot span:last-child{color:var(--ink2)}
 .sumtxt p{margin:0 0 6px;font-size:15px}
 .padet{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:8px 14px}
+.pwr-h{font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);margin:0 0 6px}
+.pwr-h i{font-style:normal;color:var(--warn)}
 .profbox{margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px 6px}
 .profhead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px;align-items:center;margin-bottom:6px}
 .profhead h2{font:600 12px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);margin:0}
@@ -367,7 +373,7 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
       <small id="p-sub">0.0 W/kg</small>
     </div>
     <div class="m"><label>Cadenza</label><div class="val"><b id="v-c">0</b><u>rpm</u></div><small id="c-sub">&nbsp;</small></div>
-    <div class="m"><label>Velocità</label><div class="val"><b id="v-s">0.0</b><u>km/h</u></div><small id="s-sub">&nbsp;</small></div>
+    <div class="m"><label>Velocità</label><div class="val wrapu"><b id="v-s">0.0</b><u>km/h</u></div><small id="s-sub">&nbsp;</small></div>
     <div class="m"><label>Pendenza</label><div class="val"><b id="v-g">0.0</b><u>%</u></div><small id="g-sub">Rullo: n.d.</small></div>
     <div class="m m-gear" id="m-gear">
       <label>Marcia · rapporto <span id="ratio">2.63</span></label>
@@ -403,10 +409,17 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
     <div class="m" id="m-hr"><label>Cuore</label><div class="val"><b id="v-hr">—</b><u>bpm</u></div><small id="hr-sub">non collegato</small></div>
   </section>
 
+  <div class="live2">
   <section class="profbox" id="profbox" aria-label="Altimetria del giro">
-    <div class="profhead"><h2>Altimetria del giro</h2><div class="leg"><span><i style="background:var(--z2)"></i>discesa</span><span><i style="background:var(--z3)"></i>0–3%</span><span><i style="background:var(--z4)"></i>3% fino al limite del rullo</span><span><i style="background:var(--z6)"></i>oltre il limite</span></div></div>
+    <div class="profhead"><h2>Altimetria del giro</h2><div class="leg"><span><i style="background:var(--z2)"></i>discesa</span><span><i style="background:var(--z3)"></i>0–3%</span><span><i style="background:var(--z4)"></i>3% fino al limite del rullo</span><span><i style="background:var(--z6)"></i>oltre il limite</span><span id="lg-p" hidden><i style="background:var(--accent);height:3px"></i>potenza</span><span id="lg-h" hidden><i style="background:var(--warn);height:3px"></i>cuore</span></div></div>
     <canvas class="chart" id="prof"></canvas>
   </section>
+
+  <section class="profbox" id="pwrbox" hidden aria-label="Potenza e cuore, ultimi 5 minuti">
+    <h2 class="pwr-h" id="pwr-h">Potenza, ultimi 5 minuti</h2>
+    <canvas class="chart" id="pwr"></canvas>
+  </section>
+  </div>
 
   <details class="padet" id="pad-det"><summary>Associazione dei tasti (pignoni e corone)</summary>
     <div class="padrow">
@@ -450,11 +463,6 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
       <label class="field">Potenza <span id="demo-p-v">150 W</span><input type="range" id="demo-p" min="0" max="500" step="5" value="150"></label>
       <label class="field">Cadenza <span id="demo-c-v">85 rpm</span><input type="range" id="demo-c" min="0" max="130" step="1" value="85"></label>
       <p class="hint">Simula pedalata per provare marce e percorso. Con la demo attiva non viene inviato nulla al rullo.</p>
-    </div>
-
-    <div class="card wide">
-      <h2>Potenza, ultimi 5 minuti</h2>
-      <canvas class="chart" id="pwr"></canvas>
     </div>
 
     <details class="card wide">
@@ -789,7 +797,7 @@ function rings() { const a = teeth(cfg.rings).sort((x, y) => x - y); return a.le
 /* ---------- Stato ---------- */
 const S = {
   t: performance.now(), pos: 0, v: 0, dist: 0, time: 0, gain: 0, gear: 6, ring: 1, mode: 'route', ergW: 150,
-  pAvg: 0, pD: 0, cD: 0, dBuf: [], hist: [], gCmd: 0, free: false, limited: false, crank: 0, wheel: 0, lastElev: elev(0),
+  pAvg: 0, pD: 0, cD: 0, dBuf: [], hist: [], hhist: [], trace: [], gCmd: 0, free: false, limited: false, crank: 0, wheel: 0, lastElev: elev(0),
   demo: { on: false, p: 150, c: 85 }, src: { p: 0, cad: 0, cadOk: false, vt: null, pSrc: '—' },
   live: { hr: { t: 0, bpm: 0 }, pm: { t: 0, p: 0, cad: 0, hasCrank: false, crankT: 0, prev: null }, tr: { t: 0, p: 0, cad: 0, hasCad: false, v: null } },
   ck: { ck: { base: false, st: { 1: false, 2: false } }, ck2: { base: false, st: { 1: false, 2: false } } },
@@ -1229,7 +1237,9 @@ function tick() {
   hud();
 }
 setInterval(tick, 100);
-setInterval(() => { S.hist.push(S.pAvg); if (S.hist.length > 300) S.hist.shift(); }, 1000);
+setInterval(() => { S.hist.push(S.pAvg); if (S.hist.length > 300) S.hist.shift(); S.hhist.push(hrFresh() ? S.live.hr.bpm : 0); if (S.hhist.length > 300) S.hhist.shift();
+  /* traccia lungo il percorso: posizione, potenza, cuore (un punto ogni ~2 m avanzati) */
+  if (!S.wk && S.dist != null) { const T = S.trace, l = T[T.length - 1]; if (!l || Math.abs(S.pos - l[0]) > 2) { T.push([S.pos, S.pAvg, hrFresh() ? S.live.hr.bpm : 0]); if (T.length > 6000) T.shift(); } } }, 1000);
 
 /* ---------- Interfaccia ---------- */
 const ZN = ['Recupero', 'Resistenza', 'Tempo', 'Soglia', 'VO2max', 'Anaerobica'];
@@ -1260,9 +1270,9 @@ function hud() {
   setT('#v-c', String(Math.round(S.cD)));
   setT('#c-sub', cadHint() || (S.src.cadOk ? (S.demo.on ? 'demo' : 'dal sensore') : 'nessun sensore'));
   setT('#v-s', (S.v * 3.6).toFixed(1));
-  setT('#s-sub', S.src.cadOk && S.src.cad > 0.5 ? 'dalla cadenza e dalla marcia' : S.src.vt != null ? 'dal rullo e dalla marcia' : 'dalla potenza');
+  setT('#s-sub', S.src.cadOk && S.src.cad > 0.5 ? '\u00a0' : S.src.vt != null ? 'dal rullo e dalla marcia' : 'stima dalla potenza');
   const g = gradeAt(S.pos) * 100; setT('#v-g', (g >= 0 ? '+' : '') + g.toFixed(1));
-  setT('#g-sub', S.mode === 'erg' ? ergState(false) : S.free ? 'Rullo: scorrimento' : 'Rullo: ' + (S.gCmd * 100 >= 0 ? '+' : '') + (S.gCmd * 100).toFixed(1) + '%' + (S.limited ? ' (limite)' : ''));
+  setT('#g-sub', S.mode === 'erg' ? ergState(false) : S.free ? 'Rullo: scorrimento' : 'Impostato sul rullo: ' + (S.gCmd * 100 >= 0 ? '+' : '') + (S.gCmd * 100).toFixed(1) + '%' + (S.limited ? ' (limite)' : ''));
   setT('#h-km', (S.dist / 1000).toFixed(2) + ' km');
   setT('#h-time', pad(Math.floor(S.time / 3600)) + ':' + pad(Math.floor(S.time / 60) % 60) + ':' + pad(Math.floor(S.time) % 60));
   setT('#h-gain', 'D+ ' + Math.round(S.gain) + ' m');
@@ -1762,8 +1772,11 @@ function drawScene() {
   scMs += (performance.now() - now - scMs) * 0.1; window.__rvPerf = scMs;
 }
 function drawPwr() {
+  if (CV.pwr.offsetParent === null) return;
   const c = CV.pwr, d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
-  const pl = 40 * d, pr = 8 * d, pt = 10 * d, pb = 22 * d, iw = W - pl - pr, ih = H - pt - pb;
+  const hv = S.hhist.filter(v => v > 0), hasHr = hv.length > 1;
+  const pl = 40 * d, pr = (hasHr ? 40 : 8) * d, pt = 10 * d, pb = 22 * d, iw = W - pl - pr, ih = H - pt - pb;
+  { const t = $('#pwr-h'); if (t) { const want = hasHr ? 'Potenza e <i>cuore</i>, ultimi 5 minuti' : 'Potenza, ultimi 5 minuti'; if (t.dataset.k !== (hasHr ? '1' : '0')) { t.dataset.k = hasHr ? '1' : '0'; t.innerHTML = want; } } }
   const mx = Math.max(300, Math.ceil(Math.max(...S.hist, cfg.ftp * 1.2) / 100) * 100);
   g.font = (11 * d) + 'px Barlow, system-ui, sans-serif'; g.fillStyle = COL.ink2; g.textBaseline = 'middle'; g.textAlign = 'right';
   for (const f of [0, 0.5, 1]) { const y = pt + ih * (1 - f); g.strokeStyle = COL.line; g.lineWidth = d; g.beginPath(); g.moveTo(pl, y); g.lineTo(W - pr, y); g.stroke(); g.fillText(String(Math.round(mx * f)), pl - 6 * d, y); }
@@ -1775,6 +1788,17 @@ function drawPwr() {
   g.beginPath(); g.moveTo(px(0), pt + ih); S.hist.forEach((v, i) => g.lineTo(px(i), py(v))); g.lineTo(px(n - 1), pt + ih); g.closePath();
   g.globalAlpha = 0.22; g.fillStyle = COL.accent; g.fill(); g.globalAlpha = 1;
   g.beginPath(); S.hist.forEach((v, i) => i ? g.lineTo(px(i), py(v)) : g.moveTo(px(i), py(v))); g.lineWidth = 2 * d; g.strokeStyle = COL.accent; g.lineJoin = 'round'; g.stroke();
+  if (hasHr) {
+    /* cuore: asse destro, scala adattata alla finestra (almeno 40 bpm di escursione) */
+    let lo = Math.min(...hv), hi = Math.max(...hv); if (hi - lo < 40) { const m = (hi + lo) / 2; lo = m - 20; hi = m + 20; }
+    lo = Math.floor((lo - 3) / 5) * 5; hi = Math.ceil((hi + 3) / 5) * 5;
+    const hy = v => pt + ih * (1 - (v - lo) / (hi - lo)), off = n - S.hhist.length;
+    g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillStyle = COL.warn;
+    for (const f of [0, 0.5, 1]) g.fillText(String(Math.round(lo + (hi - lo) * f)), W - pr + 6 * d, pt + ih * (1 - f));
+    g.beginPath(); let pen = false;
+    S.hhist.forEach((v, i) => { if (v > 0) { const x = px(i + off), y = hy(v); pen ? g.lineTo(x, y) : g.moveTo(x, y); pen = true; } else pen = false; });
+    g.lineWidth = 2 * d; g.strokeStyle = COL.warn; g.lineJoin = 'round'; g.stroke();
+  }
 }
 let PROF = null;
 function drawProf() {
@@ -1782,7 +1806,10 @@ function drawProf() {
   const d = fit(c), g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
   const info = routeInfo(), L = RT.len, N = 200;
   if (!PROF) { PROF = []; PROF.g = []; let lo = 1e9, hi = -1e9; for (let i = 0; i <= N; i++) { const e = elev(i * L / N); PROF.push(e); lo = Math.min(lo, e); hi = Math.max(hi, e); if (i < N) PROF.g.push(gradeAt((i + 0.5) * L / N) * 100); } PROF.lo = lo; PROF.hi = hi; }
-  const pl = 40 * d, pr = 8 * d, pt = 10 * d, pb = 22 * d, iw = W - pl - pr, ih = H - pt - pb, span = Math.max(PROF.hi - PROF.lo, 10);
+  const lapOf = p => RT.loop ? Math.floor(p / L) : 0, lapNow = lapOf(S.pos);
+  const TR = (S.trace || []).filter(q => lapOf(q[0]) === lapNow), hasTr = TR.length > 3, hv = TR.map(q => q[2]).filter(v => v > 0), hasHr = hv.length > 3;
+  { const a = $('#lg-p'), b = $('#lg-h'); if (a) { a.hidden = !hasTr; b.hidden = !hasHr; } }
+  const pl = 40 * d, pr = (hasHr ? 40 : 8) * d, pt = 10 * d, pb = 22 * d, iw = W - pl - pr, ih = H - pt - pb, span = Math.max(PROF.hi - PROF.lo, 10);
   const X = i => pl + iw * i / N, Y = e => pt + ih * (1 - (e - PROF.lo) / span), lim = cfg.maxGrade;
   const gcol = q => q < -0.5 ? COL.z2 : q < 3 ? COL.z3 : q <= lim + 0.05 ? COL.z4 : COL.z6;
   g.globalAlpha = 0.4;
@@ -1795,6 +1822,27 @@ function drawProf() {
   const stepKm = [1, 2, 5, 10, 20, 50, 100].find(k => L / 1000 / k <= 5) || 200;
   for (let k = 0; k * stepKm * 1000 <= L + 1; k++) g.fillText(k * stepKm + ' km', Math.min(W - 14 * d, Math.max(pl + 8 * d, pl + iw * k * stepKm * 1000 / L)), H - 5 * d);
   const f = RT.loop ? (((S.pos % L) + L) % L) / L : clamp(S.pos / L, 0, 1), mx = pl + iw * f;
+  if (hasTr) {
+    const xs = q => pl + iw * (RT.loop ? (((q[0] % L) + L) % L) / L : clamp(q[0] / L, 0, 1));
+    const sm = (k, i) => { let a = 0, c = 0; for (let j = Math.max(0, i - 2); j <= Math.min(TR.length - 1, i + 2); j++) if (k !== 2 || TR[j][2] > 0) { a += TR[j][k]; c++; } return c ? a / c : 0; };
+    const pmax = Math.max(300, Math.ceil(Math.max(...TR.map(q => q[1]), cfg.ftp * 1.2) / 100) * 100);
+    const line = (pts, col) => {
+      if (pts.length < 2) return;
+      g.lineJoin = 'round'; g.lineCap = 'round';
+      for (const [w, c] of [[4.5 * d, COL.panel], [2 * d, col]]) { g.beginPath(); pts.forEach((p, i) => i && p.gap === false ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y)); g.lineWidth = w; g.strokeStyle = c; g.globalAlpha = w > 3 * d ? 0.7 : 1; g.stroke(); }
+      g.globalAlpha = 1;
+    };
+    line(TR.map((q, i) => ({ x: xs(q), y: pt + ih * (1 - Math.min(sm(1, i), pmax) / pmax), gap: false })), COL.accent);
+    if (hasHr) {
+      let lo = Math.min(...hv), hi = Math.max(...hv); if (hi - lo < 40) { const m = (hi + lo) / 2; lo = m - 20; hi = m + 20; }
+      lo = Math.floor((lo - 3) / 5) * 5; hi = Math.ceil((hi + 3) / 5) * 5;
+      g.font = (11 * d) + 'px Barlow, system-ui, sans-serif'; g.fillStyle = COL.warn; g.textAlign = 'left'; g.textBaseline = 'middle';
+      for (const q of [0, 0.5, 1]) g.fillText(String(Math.round(lo + (hi - lo) * q)), W - pr + 6 * d, pt + ih * (1 - q));
+      const pts = []; TR.forEach((q, i) => { if (q[2] > 0) pts.push({ x: xs(q), y: pt + ih * (1 - (sm(2, i) - lo) / (hi - lo)), gap: pts.length && TR[i - 1] && TR[i - 1][2] > 0 ? false : true }); });
+      line(pts, COL.warn);
+    }
+    const lp = $('#lg-p'); if (lp) lp.lastChild.textContent = 'potenza (0–' + pmax + ' W)';
+  }
   g.strokeStyle = COL.accent; g.lineWidth = 2 * d; g.beginPath(); g.moveTo(mx, pt); g.lineTo(mx, pt + ih); g.stroke();
   g.fillStyle = COL.accent; g.beginPath(); g.arc(mx, Y(elev(S.pos)), 6 * d, 0, 7); g.fill(); g.lineWidth = 2 * d; g.strokeStyle = COL.panel; g.stroke();
 }
@@ -2142,7 +2190,7 @@ function recoverLive() {
     setTimeout(() => openOvl('report', { ride, saved: WK.rides.some(r => r.id === ride.id), recovered: true }), 700);
   } catch (e) { log('Recupero sessione non riuscito: ' + errText(e)); }
 }
-function buildBackup() { return { format: 'rullo-virtuale-backup', version: 39, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
+function buildBackup() { return { format: 'rullo-virtuale-backup', version: 43, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
 function restoreBackup(o) {
   const byId = (a, b) => { const m = new Map(); for (const x of a || []) if (x && x.id) m.set(x.id, x); for (const x of b || []) if (x && x.id) m.set(x.id, x); return [...m.values()]; };
   if (o.cfg && typeof o.cfg === 'object') { Object.assign(cfg, o.cfg); saveCfg(); }
@@ -2430,7 +2478,7 @@ function wkStart(w) {
   S.wk = { w: clone(w), id: w.id, segs: st.segs, total: st.total, t: 0, idx: 0, paused: false, auto: false, started: false, still: 0, adj: 1, lastIdx: 0, lastRem: -1, endConfirm: false, seek: false };
   S.rec = []; S.recAcc = 0; S.recMeta = { start: Date.now(), name: w.name, ftp: cfg.ftp, w: clone(w), test: w.test || null };
   S.mode = 'erg'; $('#mode-route').classList.remove('on'); $('#mode-erg').classList.add('on'); $('#erg-box').hidden = true; $('#mode-hint').hidden = true;
-  S.wkFree = !!st.segs[0].free; $('#stage').hidden = true; $('#wkstage').hidden = false; $('.metrics').hidden = true; $('#profbox').hidden = true; $('#wk-seek').max = st.total; $('#wk-seek').value = 0;
+  S.wkFree = !!st.segs[0].free; $('#stage').hidden = true; $('#wkstage').hidden = false; $('.metrics').hidden = true; $('#profbox').hidden = true; $('#pwrbox').hidden = false; $('#wk-seek').max = st.total; $('#wk-seek').value = 0;
   lastSentG = null; lastErgT = 0; S.ergAck = null; if (!S.wkFree) ergKick(); gearUI(); wkTarget(true); wkUI(); wake(); log('Allenamento avviato: ' + w.name);
 }
 function wkTarget(force) {
@@ -2466,7 +2514,7 @@ function wkAdvance(dt, moving, src) {
 function wkEnd(report) {
   const W = S.wk; if (!W) return;
   const ride = buildRide();
-  S.wk = null; S.wkFree = false; $('#stage').hidden = false; $('#wkstage').hidden = true; $('.metrics').hidden = false; $('#profbox').hidden = false; $('#wkstage').classList.remove('rest');
+  S.wk = null; S.wkFree = false; $('#stage').hidden = false; $('#wkstage').hidden = true; $('.metrics').hidden = false; $('#profbox').hidden = false; $('#pwrbox').hidden = true; $('#wkstage').classList.remove('rest');
   leaveErg(false);
   beep(660, 0.4);
   if (ride && ride.rec.length >= 60) {
@@ -2583,7 +2631,7 @@ function wkBindings() {
   sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
   $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
   $('#ck-ask').addEventListener('click', askClick); $('#ck-pair').addEventListener('click', pairClick);
-  const logText = () => 'Rullo virtuale v39 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  const logText = () => 'Rullo virtuale v43 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
   $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
   $('#log-share').addEventListener('click', async () => {
     const t = logText();
@@ -2734,10 +2782,10 @@ function routeInfo() { const k = RT.id + '|' + RT.len + '|' + cfg.maxGrade; if (
 const km1 = m => (m / 1000).toFixed(m >= 10000 ? 1 : 2);
 function routeSub() {
   const i = routeInfo();
-  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v39';
+  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v43';
 }
 function resetRide() {
-  S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.rec = []; S.recAcc = 0; S.recMeta = null; S.gh = [0]; S.ghAcc = 0;
+  S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.hhist = []; S.trace = []; S.rec = []; S.recAcc = 0; S.recMeta = null; S.gh = [0]; S.ghAcc = 0;
   if (S.routeEnd) { S.routeEnd = false; note(''); }
   clearLive();
 }
