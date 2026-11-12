@@ -507,6 +507,7 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
           <select data-cfg="pressedVal"><option value="0">0</option><option value="1">1</option></select>
         </label>
         <label class="check"><input type="checkbox" data-cfg="swap" id="swap"><span>Inverti + e −</span></label>
+        <label class="check"><input type="checkbox" data-cfg="shiftBeep" id="shiftBeep"><span>Bip quando cambi marcia</span></label>
         <label class="check"><input type="checkbox" data-cfg="all" id="all"><span>Mostra tutti i dispositivi nella ricerca</span></label>
 
       </div>
@@ -778,7 +779,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 /* ---------- Impostazioni ---------- */
 const DEF = { mass: 75, bike: 9, cda: 0.32, crr: 0.004, rho: 1.2, eff: 0.975, ftp: 200, rings: '50,34',
   cassette: '11,13,15,17,19,21,23,25,27,30,34', role1: 'rear', role2: 'front', circ: 2.105, maxGrade: 6, physChain: 50, physCog: 14,
-  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false, hs: 'qz', ghost: false, style: 'min', view: 'side', tod: 'auto', cadLo: 70, cadHi: 65, cadThr: 7, ergMode: 'soft', avgSec: '3' };
+  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false, hs: 'qz', ghost: false, style: 'min', view: 'side', tod: 'auto', cadLo: 70, cadHi: 65, cadThr: 7, ergMode: 'soft', avgSec: '3', shiftBeep: true };
 const cfg = Object.assign({}, DEF);
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('rv-cfg2') || '{}')); } catch (e) {}
 cfg.keepAlive = false; if (cfg.hs !== 'old') cfg.hs = 'qz';
@@ -891,7 +892,18 @@ function onPower(dv) {
 }
 setInterval(() => { for (const k of ['tr', 'pm', 'hr']) { const el = $('#chip-' + k); if (el.classList.contains('on')) el.querySelector('small').textContent = CNT[k] ? 'Dati: ' + LASTV[k] + ' (#' + CNT[k] + ')' : 'Collegato · nessun dato ricevuto'; } }, 1000);
 /* kind: 'rear' = pignoni, 'front' = corone; dir: +1 più duro, -1 più agile */
+function shiftBeep(dir, ok) {
+  if (!cfg.shiftBeep) return;
+  if (!ok) beep(300, 0.08); else beep(dir > 0 ? (kind2 === 'front' ? 1100 : 990) : (kind2 === 'front' ? 700 : 770), 0.06);
+}
+let kind2 = 'rear';
 function shift(kind, dir) {
+  kind2 = kind;
+  const g0 = S.gear, r0 = S.ring, a0 = S.wk ? S.wk.adj : 0, w0 = S.ergW;
+  shift0(kind, dir);
+  shiftBeep(dir, S.gear !== g0 || S.ring !== r0 || (S.wk ? S.wk.adj : 0) !== a0 || S.ergW !== w0);
+}
+function shift0(kind, dir) {
   if (S.wk && !S.wkFree) { S.wk.adj = clamp(Math.round((S.wk.adj + dir * (kind === 'front' ? 0.10 : 0.05)) * 100) / 100, 0.5, 1.5); wkTarget(true); wkUI(); return; }
   if (S.mode === 'erg' && !S.wkFree) { S.ergW = clamp(S.ergW + dir * (kind === 'front' ? 50 : 10), 50, 600); $('#erg-w').value = S.ergW; sendErg(); }
   else {
@@ -2071,6 +2083,29 @@ function drawWk(cv, segs, total, o) {
     o.rec.forEach((s, i) => { acc += s[0]; if (i >= 5) acc -= o.rec[i - 5][0]; const v = acc / Math.min(5, i + 1); const x = X(s[6] != null ? s[6] : i), y = Y(v / o.ftp * 100); i ? g.lineTo(x, y) : g.moveTo(x, y); });
     g.stroke();
   }
+  if (o.live && o.rec && o.rec.length > 4) {
+    /* cuore sovrapposto durante l'allenamento: linea ambra, scala adattata sul lato destro */
+    const hv = o.rec.map(s => s[2]).filter(v => v > 0);
+    if (hv.length > 3) {
+      let lo = Math.min(...hv), hi = Math.max(...hv); if (hi - lo < 40) { const m = (hi + lo) / 2; lo = m - 20; hi = m + 20; }
+      lo = Math.floor((lo - 3) / 5) * 5; hi = Math.ceil((hi + 3) / 5) * 5;
+      const HY = v => H * 0.06 + H * 0.88 * (1 - (v - lo) / (hi - lo));
+      const pts = []; o.rec.forEach((s, i) => {
+        if (!(s[2] > 0)) { pts.push(null); return; }
+        let a = 0, c = 0; for (let j = Math.max(0, i - 2); j <= Math.min(o.rec.length - 1, i + 2); j++) if (o.rec[j][2] > 0) { a += o.rec[j][2]; c++; }
+        pts.push({ x: X(s[6] != null ? s[6] : i), y: HY(a / c) });
+      });
+      g.lineJoin = 'round'; g.lineCap = 'round';
+      for (const [w, col, al] of [[4.5 * d, COL.panel, 0.7], [2 * d, COL.warn, 1]]) {
+        g.beginPath(); let pen = false;
+        for (const p of pts) { if (!p) { pen = false; continue; } pen ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y); pen = true; }
+        g.lineWidth = w; g.strokeStyle = col; g.globalAlpha = al; g.stroke();
+      }
+      g.globalAlpha = 1;
+      g.font = (11 * d) + 'px Barlow, system-ui, sans-serif'; g.textAlign = 'right'; g.textBaseline = 'middle';
+      for (const [v, y] of [[hi, H * 0.06 + 6 * d], [lo, H * 0.94 - 6 * d]]) { g.lineWidth = 3 * d; g.strokeStyle = COL.panel; g.strokeText(v + ' bpm', W - 4 * d, y); g.fillStyle = COL.warn; g.fillText(v + ' bpm', W - 4 * d, y); }
+    }
+  }
   if (o.cursor != null) { g.fillStyle = COL.ink; g.fillRect(X(o.cursor) - d, 0, 2 * d, H); }
 }
 
@@ -2193,7 +2228,7 @@ function recoverLive() {
     setTimeout(() => openOvl('report', { ride, saved: WK.rides.some(r => r.id === ride.id), recovered: true }), 700);
   } catch (e) { log('Recupero sessione non riuscito: ' + errText(e)); }
 }
-function buildBackup() { return { format: 'rullo-virtuale-backup', version: 44, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
+function buildBackup() { return { format: 'rullo-virtuale-backup', version: 46, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
 function restoreBackup(o) {
   const byId = (a, b) => { const m = new Map(); for (const x of a || []) if (x && x.id) m.set(x.id, x); for (const x of b || []) if (x && x.id) m.set(x.id, x); return [...m.values()]; };
   if (o.cfg && typeof o.cfg === 'object') { Object.assign(cfg, o.cfg); saveCfg(); }
@@ -2470,6 +2505,8 @@ function renderReport(box, arg) {
 
 /* ---------- Esecuzione ---------- */
 let AC = null;
+let AC_UNLOCK = false;
+addEventListener('pointerdown', () => { if (AC_UNLOCK) return; AC_UNLOCK = true; try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); AC.resume(); } catch (e) {} }, { passive: true });
 function beep(f, d) {
   try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume();
     const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = f; g.gain.value = 0.16; o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d); } catch (e) {}
@@ -2634,7 +2671,7 @@ function wkBindings() {
   sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
   $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
   $('#ck-ask').addEventListener('click', askClick); $('#ck-pair').addEventListener('click', pairClick);
-  const logText = () => 'Rullo virtuale v44 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  const logText = () => 'Rullo virtuale v46 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
   $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
   $('#log-share').addEventListener('click', async () => {
     const t = logText();
@@ -2785,7 +2822,7 @@ function routeInfo() { const k = RT.id + '|' + RT.len + '|' + cfg.maxGrade; if (
 const km1 = m => (m / 1000).toFixed(m >= 10000 ? 1 : 2);
 function routeSub() {
   const i = routeInfo();
-  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v44';
+  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v46';
 }
 function resetRide() {
   S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.hhist = []; S.trace = []; S.rec = []; S.recAcc = 0; S.recMeta = null; S.gh = [0]; S.ghAcc = 0;
