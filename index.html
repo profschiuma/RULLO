@@ -469,10 +469,10 @@ textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--l
       <p class="hint" id="mode-hint">In Percorso il rullo simula la pendenza e la marcia virtuale. Sul Click, + è più duro e − più agile. Tastiera: ↑ e ↓ per i pignoni, → e ← per le corone.</p>
       <div class="row"><button class="btn" id="routes-btn" style="flex:1">Percorsi…</button><button class="btn" id="reset" style="flex:1">Azzera giro</button><button class="btn" id="rep-btn" style="flex:1">Report del giro</button></div>
       <div class="row"><button class="btn" id="ghost-btn" style="flex:1">Fantasma: no</button><p class="hint" style="flex:2;min-width:180px">Mostra un secondo ciclista con il tuo miglior giro su questo percorso (almeno 2 km in 5 minuti) e di quanto sei avanti o indietro.</p></div>
-      <div style="margin-top:10px"><p class="hint" style="margin:0 0 4px">Stile della scena</p><div class="seg" role="group" aria-label="Stile della scena"><button class="btn" id="st-ill">Illustrata</button><button class="btn on" id="st-min">Minimal</button><button class="btn" id="st-rich">Ricco</button></div></div>
-      <div style="margin-top:8px"><p class="hint" style="margin:0 0 4px">Vista</p><div class="seg" role="group" aria-label="Vista"><button class="btn on" id="vw-side">Laterale</button><button class="btn" id="vw-rear">Da dietro / dalla sella</button></div></div>
+      <div style="margin-top:10px"><p class="hint" style="margin:0 0 4px">Stile della scena</p><div class="seg" role="group" aria-label="Stile della scena"><button class="btn" id="st-ill">Illustrata</button><button class="btn on" id="st-min">Minimal</button><button class="btn" id="st-rich">Realistico 2D</button></div></div>
+      <div style="margin-top:8px"><p class="hint" style="margin:0 0 4px">Vista</p><div class="seg" role="group" aria-label="Vista"><button class="btn on" id="vw-side">Laterale</button><button class="btn" id="vw-rear">Prima persona · comandi</button></div></div>
       <div id="tod-box" style="margin-top:8px"><p class="hint" style="margin:0 0 4px">Luce (stile Ricco)</p><div class="seg" role="group" aria-label="Luce" style="grid-template-columns:repeat(3,1fr)"><button class="btn on" id="td-auto">Automatica</button><button class="btn" id="td-day">Giorno</button><button class="btn" id="td-gold">Dorata</button></div></div>
-      <p class="hint">Nello stile Ricco il paesaggio cambia con la quota: ulivi e muretti in pianura, querce e macchia in collina, boschi e tornanti in montagna, rocce e neve oltre i 2000 m. Le curve vengono dal tracciato GPX.</p>
+      <p class="hint">Nello stile Realistico 2D il paesaggio cambia con la quota: ulivi e muretti in pianura, querce e macchia in collina, boschi e tornanti in montagna, rocce e neve oltre i 2000 m. Le curve vengono dal tracciato GPX.</p>
     </div>
 
     <div class="card">
@@ -796,11 +796,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 /* ---------- Impostazioni ---------- */
 const DEF = { mass: 75, bike: 9, cda: 0.32, crr: 0.004, rho: 1.2, eff: 0.975, ftp: 200, rings: '50,34',
   cassette: '11,13,15,17,19,21,23,25,27,30,34', role1: 'rear', role2: 'front', circ: 2.105, maxGrade: 6, physChain: 50, physCog: 14,
-  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false, hs: 'qz', ghost: false, style: 'min', view: 'side', tod: 'auto', cadLo: 70, cadHi: 65, cadThr: 7, ergMode: 'soft', avgSec: '3', shiftBeep: true };
+  powerSrc: 'auto', pressedVal: '0', swap: false, all: false, hrMax: 185, keepAlive: false, hs: 'qz', ghost: false, style: 'rich', view: 'side', tod: 'auto', cadLo: 70, cadHi: 65, cadThr: 7, ergMode: 'soft', avgSec: '3', shiftBeep: true };
 const cfg = Object.assign({}, DEF);
 try { Object.assign(cfg, JSON.parse(localStorage.getItem('rv-cfg2') || '{}')); } catch (e) {}
 cfg.keepAlive = false; if (cfg.hs !== 'old') cfg.hs = 'qz';
-if (!cfg.ill1) { cfg.ill1 = true; cfg.style = 'ill'; } if (cfg.style !== 'rich' && cfg.style !== 'ill') cfg.style = 'min'; if (cfg.view !== 'rear') cfg.view = 'side'; if (cfg.tod !== 'day' && cfg.tod !== 'gold') cfg.tod = 'auto';
+if (!cfg.real2d1) { cfg.real2d1 = true; cfg.style = 'rich'; } if (cfg.style !== 'rich' && cfg.style !== 'ill') cfg.style = 'min'; if (cfg.view !== 'rear') cfg.view = 'side'; if (cfg.tod !== 'day' && cfg.tod !== 'gold') cfg.tod = 'auto';
 /* maschere dei tasti + e − di ogni Click, imparate al primo collegamento */
 /* tasti: ogni comando (pignoni/corone, + e −) è un tasto di uno dei due Click, quindi si possono mescolare i controller */
 const nk = o => (o && (o.k === 'ck' || o.k === 'ck2') && typeof o.bit === 'number' && o.bit) ? { k: o.k, bit: o.bit >>> 0 } : null;
@@ -1523,31 +1523,48 @@ function scPill(g, x, y, txt, col, d) {
 
 /* ---- omino visto di lato: piani in ordine (gamba lontana dietro al telaio, gamba vicina davanti) ---- */
 function riderSide(g, o) {
-  const crank = o.crank != null ? o.crank : S.crank, wheel = o.wheel != null ? o.wheel : S.wheel, st = o.stand || 0;
-  const col = o.color || COL.accent, jer = o.jersey || col, skin = '#d9a98a', skinF = '#b98e72', blk = '#241f29', blkF = '#4a4252', jd = scMix(jer, '#1f1a22', 0.25), hel = scMix(jer, '#1f1a22', 0.35);
-  const L = (x1, y1, x2, y2, w, c) => { g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.lineWidth = w; g.strokeStyle = c; g.lineCap = 'round'; g.stroke(); };
-  g.save(); if (o.alpha != null) g.globalAlpha = o.alpha;
-  if (o.shadow !== false) { g.fillStyle = o.shcol || 'rgba(30,20,40,.2)'; g.beginPath(); g.ellipse(o.shx || 0, 1, o.shw || 40, 2.6, 0, 0, 7); g.fill(); }
-  const hip = st ? [-3, -47] : [-8, -38], sh = [12 + 2 * st, -54 - 8 * st], hd = [17 + 3 * st, -60 - 9 * st], hand = [21, -37], hand2 = [20.2, -37.6];
-  const pedal = ph => { const a = crank + ph; return [7.2 * Math.cos(a), -14 + 7.2 * Math.sin(a)]; };
-  const leg = (ph, far) => { const [fx, fy] = pedal(ph), [kx, ky] = knee(hip[0], hip[1], fx, fy, 19 + 2.6 * st);
-    L(0, -14, fx, fy, 1.5, far ? '#6d6574' : '#3a3340'); L(hip[0], hip[1], kx, ky, far ? 4.6 : 5.2, far ? blkF : blk); L(kx, ky, fx, fy, far ? 3 : 3.5, far ? skinF : skin); L(fx - 1.5, fy + 0.4, fx + 4.2, fy + 0.8, far ? 2.4 : 2.8, far ? '#c9c9d0' : '#f4f4f6'); };
-  leg(Math.PI, true);
-  for (const wx of [-26, 26]) {
-    g.beginPath(); g.arc(wx, -14, 14, 0, 7); g.lineWidth = 2.2; g.strokeStyle = '#26212b'; g.stroke(); g.beginPath(); g.arc(wx, -14, 12.5, 0, 7); g.lineWidth = 0.5; g.strokeStyle = '#b9b0bd'; g.stroke();
-    for (let i = 0; i < 8; i++) { const a = wheel + i * Math.PI / 4; L(wx, -14, wx + 12.4 * Math.cos(a), -14 + 12.4 * Math.sin(a), 0.28, 'rgba(100,92,106,.85)'); }
-    g.beginPath(); g.arc(wx, -14, 1.4, 0, 7); g.fillStyle = '#645c6a'; g.fill();
+  // Realistic road cycling silhouette, 700c wheels, correct hood reach and articulated pedalling.
+  const phase=o.crank??S.crank, spin=o.wheel??S.wheel, color=o.jersey||o.color||'#e84e79';
+  const ink='#17202a', metal='#87919a', skin='#c99170', skinShade='#a86e53';
+  const line=(a,b,c,d,w,col)=>{g.strokeStyle=col;g.lineWidth=w;g.lineCap='round';g.lineJoin='round';g.beginPath();g.moveTo(a,b);g.lineTo(c,d);g.stroke();};
+  const path=(pts,w,col)=>{g.beginPath();pts.forEach((p,i)=>i?g.lineTo(...p):g.moveTo(...p));g.strokeStyle=col;g.lineWidth=w;g.lineCap='round';g.lineJoin='round';g.stroke();};
+  const dot=(x,y,r,col)=>{g.fillStyle=col;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fill();};
+  const rear=[-30,-17], front=[31,-17], bb=[0,-16], saddle=[-11,-42], head=[19,-40];
+  const pedal=a=>[bb[0]+8*Math.cos(a),bb[1]+8*Math.sin(a)];
+  const leg=(a,far)=>{const foot=pedal(a), hip=[-10,-45], kneePt=knee(hip[0],hip[1],foot[0],foot[1],21); kneePt[0]+=4;
+    path([hip,kneePt],far?5.6:6.5,far?'#384452':'#202c38');path([kneePt,foot],far?3.8:4.4,far?skinShade:skin);
+    line(foot[0]-1,foot[1]+1,foot[0]+6,foot[1]+1,2.8,far?'#66717c':'#e4e8ed');
+  };
+  g.save(); if(o.alpha!=null)g.globalAlpha=o.alpha;
+  if(o.shadow!==false){g.fillStyle=o.shcol||'rgba(12,20,30,.23)';g.beginPath();g.ellipse(o.shx||0,0,o.shw||46,2.8,0,0,Math.PI*2);g.fill();}
+  leg(phase+Math.PI,true);
+  for(const [x,y] of [rear,front]){
+    dot(x,y,16.1,'#10161d');dot(x,y,13.9,'#c2c9cf');dot(x,y,13.2,'#1c2630');
+    g.strokeStyle='rgba(222,231,238,.7)';g.lineWidth=.38;g.beginPath();for(let i=0;i<16;i++){const a=spin+i*Math.PI/8;g.moveTo(x,y);g.lineTo(x+12.8*Math.cos(a),y+12.8*Math.sin(a));}g.stroke();
+    dot(x,y,2.3,'#aeb8c0');dot(x,y,.9,'#3c454d');
   }
-  L(-26, -14, 0, -14, 1.7, col); L(0, -14, -8, -34, 1.9, col); L(-8, -34, 18, -34, 1.9, col); L(18, -34, 26, -14, 1.7, col); L(0, -14, 18, -34, 2.3, col); L(-26, -14, -8, -34, 1.4, col);
-  L(-12, -36.6, -4, -36.6, 2.1, blk); L(-8, -34, -8, -36, 1.2, '#645c6a');
-  g.beginPath(); g.arc(0, -14, 4.6, 0, 7); g.lineWidth = 0.9; g.strokeStyle = '#8a8190'; g.stroke();
-  L(18, -34, 20, -38, 1.4, blk); g.beginPath(); g.moveTo(20, -38); g.quadraticCurveTo(26, -38, 24, -31); g.lineWidth = 1.3; g.strokeStyle = blk; g.stroke();
-  const el2 = [(sh[0] + hand2[0]) / 2 + 0.6, (sh[1] + hand2[1]) / 2 + 2.8]; L(sh[0] - 1, sh[1] + 0.5, el2[0], el2[1], 3, jd); L(el2[0], el2[1], hand2[0], hand2[1], 2.5, skinF);
-  const p25 = [hip[0] + (sh[0] - hip[0]) * 0.28, hip[1] + (sh[1] - hip[1]) * 0.28];
-  L(hip[0], hip[1], p25[0], p25[1], 6.4, blk); L(p25[0], p25[1], sh[0], sh[1], 6.2, jer); L(sh[0], sh[1], hd[0] - 1, hd[1] + 4, 2.6, skin);
-  g.save(); g.translate(hd[0], hd[1]); g.rotate(-0.22); g.fillStyle = skin; g.beginPath(); g.arc(1.6, 1.6, 3.4, 0, 7); g.fill(); g.fillStyle = hel; g.beginPath(); g.ellipse(-0.4, -1.2, 6, 4, 0, 0, 7); g.fill(); g.fillStyle = 'rgba(255,255,255,.45)'; for (let i = -1; i <= 1; i++) g.fillRect(-2 + i * 2.4, -3.6, 1.1, 2.2); g.fillStyle = blk; g.fillRect(2.2, 0.2, 3.9, 1.4); g.restore();
-  const el = [(sh[0] + hand[0]) / 2 + 1.2, (sh[1] + hand[1]) / 2 + 2.6]; L(sh[0], sh[1], el[0], el[1], 3.3, jer); L(el[0], el[1], hand[0], hand[1], 2.7, skin); g.beginPath(); g.arc(hand[0], hand[1], 1.8, 0, 7); g.fillStyle = blk; g.fill();
-  leg(0, false); g.restore();
+  // Compact race frame with visible fork, rear stays, chainset and bottle.
+  path([rear,[-11,-39],bb,rear],2.1,color);path([[-11,-39],head,bb,[-11,-39]],2.9,color);
+  path([head,front],2.8,'#c2cbd2');line(18,-41,21,-43,2.8,ink);
+  line(-11,-39,-11,-44,2.1,metal);path([[-17,-45],[-7,-45]],3.2,ink);
+  path([[20,-43],[24,-45],[30,-45],[32,-42],[31,-39]],2.3,ink);
+  // Brake/shift hood at x=29, -45 (hands rest here, not on the bar top).
+  g.fillStyle='#252d35';g.beginPath();g.roundRect(26,-49,6,8,2);g.fill();
+  dot(0,-16,5.4,'#242b33');dot(0,-16,4.2,'#aab3bb');dot(0,-16,2.4,'#353d45');
+  line(-7,-33,-3,-22,1.4,'#c5cbd0');
+  const hip=[-10,-45], shoulder=[10,-62], elbow=[20,-53], hand=[29,-46];
+  // Bent athletic torso, natural neck, helmet, forward gaze.
+  path([hip,[-1,-53],shoulder],9.2,color);path([hip,[-4,-49]],8.5,'#202c38');
+  path([[7,-62],elbow],5.4,color);path([elbow,hand],3.7,skinShade);
+  path([[11,-63],[19,-69]],3.5,skin);
+  dot(21,-72,5.7,skin);g.fillStyle='#242c34';g.beginPath();g.ellipse(20,-75,7.5,4.6,-.17,Math.PI,Math.PI*2);g.lineTo(28,-74);g.quadraticCurveTo(20,-82,14,-76);g.fill();
+  path([[24,-72],[29,-71]],1.4,'#26323b');
+  path([[10,-61],[19,-53],[28,-47]],2.8,'#ef668b');
+  path([elbow,hand],3.1,skin);dot(hand[0],hand[1],2.8,'#20272f');
+  leg(phase,false);
+  // Glints on metal and subtle jersey seam.
+  line(-4,-54,7,-62,.8,'rgba(255,255,255,.42)');
+  g.restore();
 }
 /* ---- omino visto da dietro: manubrio e braccia ben visibili ---- */
 function riderBack(g, o) {
@@ -1788,11 +1805,47 @@ function scRear(g, W, H, d, minimal) {
   if (gr) { const gp = ghostPos(gr, S.time);
     if (gp != null) { const z = gp - pos; if (z > 8 && z < 260) { const tt = t_(z), y = ycam(z), x = cxOf(tt) + 0.42 * hwOf(tt), kk = H * 0.0062 * tt; g.save(); g.translate(x, y); g.scale(kk, kk); riderBack(g, { jersey: COL.z2, crank: S.crank * 0.97 + 2, alpha: 0.5, shx: -7, shw: 14 }); g.restore(); scPill(g, x, Math.max(y - 86 * kk - 12 * d, 22 * d), 'Record', COL.z2, d); } } }
   /* io */
-  g.save(); g.translate(W * 0.5, H * 0.985); g.scale(k, k); riderBack(g, { shx: -10, shw: 20, shcol: gold ? 'rgba(45,20,50,.34)' : 'rgba(40,30,50,.24)' }); g.restore();
+  scCockpitReal(g,W,H);
   if (gold) { g.fillStyle = 'rgba(255,150,60,.08)'; g.fillRect(0, 0, W, H); }
   if (!minimal) { const vg = g.createRadialGradient(W / 2, H * 0.55, H * 0.35, W / 2, H * 0.55, H * 1.0); vg.addColorStop(0, 'rgba(20,10,30,0)'); vg.addColorStop(1, 'rgba(20,10,30,' + (gold ? 0.3 : 0.15) + ')'); g.fillStyle = vg; g.fillRect(0, 0, W, H); }
 }
 
+/* First-person road-bike cockpit: both palms on the brake/shift hoods. */
+function scCockpitReal(g,W,H){
+  g.save();const sc=Math.min(W/960,H/440)*1.12;g.translate(W/2,H);g.scale(sc,sc);
+  const L=(pts,w,col)=>{g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.lineWidth=w;g.strokeStyle=col;g.lineJoin='round';g.lineCap='round';g.stroke();};
+  const poly=(pts,col)=>{g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();g.fillStyle=col;g.fill();};
+  // Carbon stem, handlebar tops, curved drops and separate brake levers.
+  poly([[-30,18],[-18,-110],[18,-110],[30,18]],'#252b32');
+  L([[-34,-105],[0,-114],[34,-105]],21,'#10151b');
+  L([[-315,-132],[-220,-142],[-120,-126],[-35,-108],[35,-108],[120,-126],[220,-142],[315,-132]],22,'#0c1117');
+  L([[-315,-138],[-220,-148],[-120,-132],[-35,-114],[35,-114],[120,-132],[220,-148],[315,-138]],5,'#4c545e');
+  for(const sd of [-1,1]){
+    const x=v=>sd*v;
+    L([[x(314),-132],[x(340),-104],[x(337),-48],[x(313),-16]],22,'#10151b');
+    L([[x(313),-16],[x(288),-3],[x(265),-18]],17,'#161d25');
+    // Shifter hood body and exposed brake lever.
+    poly([[x(277),-137],[x(283),-193],[x(295),-212],[x(313),-208],[x(326),-183],[x(330),-134]],'#20262e');
+    L([[x(308),-151],[x(311),-98],[x(303),-72]],5,'#8d969d');
+    L([[x(285),-194],[x(299),-207],[x(316),-195]],3,'#56606a');
+    // Sleeved arm enters from bottom outside; wrist bends towards the hood.
+    poly([[x(470),45],[x(395),45],[x(332),-75],[x(358),-108],[x(390),-90]],'#222b35');
+    poly([[x(390),45],[x(335),45],[x(298),-95],[x(329),-118],[x(365),-89]],'#bd8161');
+    poly([[x(386),45],[x(349),45],[x(333),-11],[x(370),-14]],'#1c2630');
+    // Gloves actually wrap the hoods, with knuckles on top.
+    poly([[x(327),-110],[x(326),-151],[x(314),-176],[x(291),-183],[x(271),-164],[x(270),-141],[x(288),-116],[x(310),-105]],'#242d37');
+    L([[x(280),-157],[x(295),-168],[x(314),-160]],3,'#58636f');
+    for(let i=0;i<3;i++)L([[x(273+i*3),-140+i*10],[x(293+i*2),-145+i*10]],2,'#141a20');
+    poly([[x(325),-108],[x(343),-91],[x(355),-100],[x(338),-124]],'#c58b69');
+    L([[x(330),-98],[x(349),-88]],3,'#a66d50');
+  }
+  // Computer mounted forward of the stem.
+  L([[0,-110],[0,-164]],9,'#151b22');
+  g.fillStyle='#111820';g.beginPath();g.roundRect(-47,-211,94,67,10);g.fill();
+  g.fillStyle='#344453';g.beginPath();g.roundRect(-40,-204,80,52,5);g.fill();
+  g.fillStyle='rgba(220,240,255,.14)';g.fillRect(-36,-200,72,5);
+  g.restore();
+}
 /* ---- regia: sceglie la scena in base a Stile e Vista; la scena ricca va a ~30 fotogrammi al secondo ---- */
 let scLast = 0, scMs = 0;
 /* ======================= v47: grafica illustrata (vista laterale e dalla sella) ======================= */
@@ -2173,7 +2226,7 @@ const ENVS = {
     sg += (clamp(gradeAt(S.pos), -0.14, 0.14) - sg) * 0.06;
     g = ctx; g.setTransform(k, 0, 0, k, w * 0.44 - CX * k, -yT * k); g.imageSmoothingEnabled = true;
     const xa = CX - w * 0.44 / k, xb = CX + w * 0.56 / k, PX = 110 * S.pos;
-    tiled(t.bg, PX * 0.012, xa, xb, 0, W, H);
+    tiled(t.bg, PX * (env === 'faggeta' ? 0.2 : 0.012), xa, xb, 0, W, H);
     g.save(); g.translate(CX, Y0); g.transform(1, -sg, 0, 1, 0, 0);
     tiled(t.mid, PX * 0.45, xa - CX, xb - CX, -960, TILEW, 900);
     tiled(t.road, PX, xa - CX, xb - CX, -78, TILEW, 228);
@@ -2209,8 +2262,8 @@ const ENVS = {
     o.flI = S1(60, 50, 30, 46, 0.3, () => flowers(8, 52, 6, 30, 4, ['#d8362f', '#f2c94c', '#ffffff']));
     o.leaf = S1(120, 40, 60, 30, 0.35, () => { for (let i = 0; i < 26; i++) ell(rr(8, 112), rr(8, 32), rr(4, 9), rr(2, 4), pick(['#b56a34', '#c98444', '#8f4f28', '#d59a55', '#a8602f']), rr(0, 3)); });
     o.post = S1(20, 70, 10, 68, 0.9, () => post(10, 68, 62));
-    o.canopy = mk(W, 470, () => { R = RNG(31); for (let i = 0; i < 70; i++) canopy(rr(-40, W + 40), rr(-30, 250) - 60 * Math.abs(rr(-1, 1)), rr(70, 150), rr(46, 90), ['#44702c', '#6c9a3a', '#a4cc52', '#d8f08a'], 9);
-      g.globalCompositeOperation = 'lighter'; for (const [x, w] of [[560, 90], [760, 60], [900, 130], [300, 70]]) { g.fillStyle = lin(0, 0, 0, 470, [[0, 'rgba(255,255,200,.22)'], [1, 'rgba(255,255,200,0)']]); g.beginPath(); g.moveTo(x, -20); g.lineTo(x + w, -20); g.lineTo(x + w - 160, 470); g.lineTo(x - 200, 470); g.fill(); } });
+    const crown = sd => S1(520, 340, 260, 330, 7, () => { R = RNG(sd); canopy(260, 190, 230, 130, ['#44702c', '#6c9a3a', '#a4cc52', '#d8f08a'], 26); });
+    o.cr0 = crown(31); o.cr1 = crown(57);
     QS = Math.max(1, q0); o.cock = mk(W + 600, 424, () => { g.translate(300, -600); cockpit(); }); QS = q0;
     T.sp = o; return o;
   }
@@ -2306,7 +2359,10 @@ const ENVS = {
       cell(13, 120, (n, z) => { if (hs(n, 11) < 0.55) add(z + 3, sp.fico, -3.25, 0); if (hs(n, 12) < 0.04) add(z + 60, sp.tr, 15, 0); });
       cell(1.6, 70, (n, z) => { add(z, sp.tI, -2.8 - hs(n, 13) * 0.7, 0); add(z + 0.8, sp.tI, 2.8 + hs(n, 14) * 0.9, 0); if (hs(n, 15) < 0.25) add(z + 0.3, sp.flI, (hs(n, 16) < 0.5 ? -1 : 1) * 3, 0); });
     } else if (env === 'faggeta') {
-      cell(3.5, 290, (n, z) => { const xl = 4.8 + hs(n, 1) * 15, xr = 4.6 + hs(n, 2) * 17; add(z + hs(n, 3) * 3, sp.beech, -xl, Math.min(3.3, (xl - 2.7) * 0.5), 0, hs(n, 4) < 0.5); add(z + hs(n, 5) * 3, sp.beech, xr, -0.8, 0, hs(n, 6) < 0.5); });
+      cell(3.5, 290, (n, z) => { const xl = 4.8 + hs(n, 1) * 15, xr = 4.6 + hs(n, 2) * 17; const yl = Math.min(3.3, (xl - 2.7) * 0.5), zl = z + hs(n, 3) * 3, zr2 = z + hs(n, 5) * 3; add(zl, sp.beech, -xl, yl, 0, hs(n, 4) < 0.5); add(zr2, sp.beech, xr, -0.8, 0, hs(n, 6) < 0.5);
+        /* chiome ancorate ai tronchi e sopra la strada: scorrono insieme al bosco */
+        add(zl - 0.4, hs(n, 21) < 0.5 ? sp.cr0 : sp.cr1, -xl + 1, yl + 7.5 + hs(n, 22) * 3, 0, hs(n, 23) < 0.5); add(zr2 - 0.4, hs(n, 24) < 0.5 ? sp.cr0 : sp.cr1, xr - 1, 7 + hs(n, 25) * 3, 0, hs(n, 26) < 0.5);
+        if (n % 2 === 0) add(z + 1.5, hs(n, 27) < 0.5 ? sp.cr0 : sp.cr1, -3 + hs(n, 28) * 6, 9.5 + hs(n, 29) * 2.5, 0, hs(n, 30) < 0.5); });
       cell(1.3, 60, (n, z) => { const t2 = hs(n, 7); add(z, sp.leaf, -2.9 - t2 * 4.4, t2 * 2.2 + 0.1, 0, t2 < 0.5); add(z + 0.6, sp.leaf, -2.9 - hs(n, 8) * 4.4, hs(n, 8) * 2.2 + 0.1); add(z + 0.3, sp.tF, 3.3 + hs(n, 9) * 2.5, -0.1); if (hs(n, 10) < 0.5) add(z, sp.tF, -2.85, 0.03); });
     } else {
       cell(25, 290, (n, z) => { add(z + 6, sp.post, -3.0, 0); add(z + 6, sp.post, 3.5, 0); });
@@ -2321,7 +2377,6 @@ const ENVS = {
       if (z > 230) g.globalAlpha = (300 - z) / 70;
       if (fl) { g.save(); g.translate(p[0], 0); g.scale(-1, 1); g.drawImage(s.c, -s.ax * sc, p[1] - s.ay * sc, dw, dh); g.restore(); } else g.drawImage(s.c, p[0] - s.ax * sc, p[1] - s.ay * sc, dw, dh);
       g.globalAlpha = 1; }
-    if (env === 'faggeta') tiled(sp.canopy, -LA[0] * 0.6, xa, xb, yT - (full ? 0 : 150), W, 470);
     /* manubrio */
     const cy = full ? 600 : 600 - 110, bob = Math.sin(S.crank * 2) * (S.v > 0.5 ? 1.5 : 0);
     g.drawImage(sp.cock, -300, cy + bob, W + 600, 424); if (!full) { g.fillStyle = '#e9ebee'; g.fillRect(622, cy + 422, 122, 200); }
@@ -2782,7 +2837,7 @@ function recoverLive() {
     setTimeout(() => openOvl('report', { ride, saved: WK.rides.some(r => r.id === ride.id), recovered: true }), 700);
   } catch (e) { log('Recupero sessione non riuscito: ' + errText(e)); }
 }
-function buildBackup() { return { format: 'rullo-virtuale-backup', version: 50, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
+function buildBackup() { return { format: 'rullo-virtuale-backup', version: 51, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
 function restoreBackup(o) {
   const byId = (a, b) => { const m = new Map(); for (const x of a || []) if (x && x.id) m.set(x.id, x); for (const x of b || []) if (x && x.id) m.set(x.id, x); return [...m.values()]; };
   if (o.cfg && typeof o.cfg === 'object') { Object.assign(cfg, o.cfg); saveCfg(); }
@@ -3226,7 +3281,7 @@ function wkBindings() {
   sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
   $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
   $('#ck-ask').addEventListener('click', askClick); $('#ck-pair').addEventListener('click', pairClick);
-  const logText = () => 'Rullo virtuale v50 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  const logText = () => 'Rullo virtuale v51 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
   $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
   $('#log-share').addEventListener('click', async () => {
     const t = logText();
@@ -3380,7 +3435,7 @@ function routeInfo() { const k = RT.id + '|' + RT.len + '|' + cfg.maxGrade; if (
 const km1 = m => (m / 1000).toFixed(m >= 10000 ? 1 : 2);
 function routeSub() {
   const i = routeInfo();
-  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v50';
+  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v51';
 }
 function resetRide() {
   S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.hhist = []; S.trace = []; S.rec = []; S.recAcc = 0; S.recMeta = null; S.gh = [0]; S.ghAcc = 0;
