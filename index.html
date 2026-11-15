@@ -1958,15 +1958,15 @@ function rider(sc, crank, wrot) {
     g.fillStyle = '#1a1b1f'; g.fillRect(-46, 62, 216, 11); if (!farSide) { g.strokeStyle = '#ff5f93'; g.lineWidth = 6; g.beginPath(); g.moveTo(30, -8); g.lineTo(60, 36); g.moveTo(66, 4); g.lineTo(96, 44); g.stroke(); circ(16, 10, 13, '#2a2b30'); circ(16, 10, 6, '#d8dade'); }
     g.restore();
     /* coscia con pantaloncino */
-    taper(hip[0], hip[1], 104, kx, ky, 56, bb);
-    const cx2 = hip[0] + (kx - hip[0]) * 0.86, cy2 = hip[1] + (ky - hip[1]) * 0.86; taper(cx2, cy2, 62, kx, ky, 51, sk);
-    g.lineWidth = 9; g.strokeStyle = farSide ? '#7d2545' : '#ff5f93'; const tx = -(ky - hip[1]) / L1, ty = (kx - hip[0]) / L1; g.beginPath(); g.moveTo(cx2 + tx * 61, cy2 + ty * 61); g.lineTo(cx2 - tx * 61, cy2 - ty * 61); g.stroke();
-    if (!farSide) { g.fillStyle = 'rgba(255,255,255,.07)'; taper(hip[0] + tx * 40 + 40, hip[1] + ty * 40, 30, kx + tx * 22, ky + ty * 22, 16); }
+    const cx2 = hip[0] + (kx - hip[0]) * 0.8, cy2 = hip[1] + (ky - hip[1]) * 0.8; taper(cx2, cy2, 60, kx, ky, 52, sk);
+    taper(hip[0], hip[1], 104, cx2, cy2, 64, bb);
+    g.lineCap = 'butt'; g.lineWidth = 11; g.strokeStyle = farSide ? '#7d2545' : '#ff5f93'; const tx = -(ky - hip[1]) / L1, ty = (kx - hip[0]) / L1; g.beginPath(); g.moveTo(cx2 + tx * 64, cy2 + ty * 64); g.lineTo(cx2 - tx * 64, cy2 - ty * 64); g.stroke(); g.lineCap = 'round';
+    if (!farSide) { g.fillStyle = 'rgba(255,255,255,.07)'; taper(hip[0] + tx * 40 + 40, hip[1] + ty * 40, 30, cx2 + tx * 26, cy2 + ty * 26, 18); }
   };
   const tube = (pts, w, c) => { g.lineWidth = w; g.strokeStyle = c; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) g.lineTo(pts[i], pts[i + 1]); g.stroke(); };
   /* gamba e braccio lontani */
   leg(crank + Math.PI, true);
-  taper(sh[0] + 14, sh[1] + 20, 44, 800, -760, 32, '#a12e57'); taper(800, -760, 31, hand[0] - 20, hand[1] - 26, 23, skinD); taper(hand[0] - 26, hand[1] - 30, 25, hand[0] + 22, hand[1] - 6, 29, '#0f1013');
+  taper(sh[0] + 40, sh[1] + 40, 38, hand[0] - 20, hand[1] - 26, 23, skinD); taper(sh[0] + 14, sh[1] + 20, 46, sh[0] + 150, sh[1] + 150, 40, '#a12e57'); taper(hand[0] - 26, hand[1] - 30, 25, hand[0] + 22, hand[1] - 6, 29, '#0f1013');
   wheel(0, wrot); wheel(FX, wrot + 0.7);
   /* telaio */
   const ST = [262, -429], HT = [792, -470], HB = [834, -332];
@@ -2006,21 +2006,23 @@ function rider(sc, crank, wrot) {
   g.strokeStyle = 'rgba(140,25,70,.55)'; g.lineWidth = 4; g.beginPath(); g.moveTo(hip[0] - 40, hip[1] - 150); g.quadraticCurveTo(hip[0] + 40, hip[1] - 120, hip[0] + 120, hip[1] - 96); g.moveTo(hip[0] + 6, hip[1] - 176); g.lineTo(hip[0] + 42, hip[1] - 118); g.moveTo(hip[0] + 70, hip[1] - 196); g.lineTo(hip[0] + 96, hip[1] - 106); g.stroke();
   g.fillStyle = '#ffffff'; g.font = '800 44px Arial'; g.save(); g.translate(360, -820); g.rotate(-0.72); g.fillText('RULLO', 0, 0); g.restore();
   /* braccio vicino */
-  const ex = 792, ey = -770, wx = hand[0] - 34, wy = hand[1] - 34;
-  taper(sh[0] + 6, sh[1] + 4, 62, sh[0] + 86, sh[1] + 104, 48, tg); g.lineWidth = 8; g.strokeStyle = '#ffffff'; g.beginPath(); g.moveTo(sh[0] + 46, sh[1] + 136); g.lineTo(sh[0] + 122, sh[1] + 74); g.stroke();
-  taper(sh[0] + 92, sh[1] + 110, 39, ex, ey, 32, skin); taper(ex, ey, 31, wx, wy, 23, skin);
-  g.fillStyle = 'rgba(255,235,215,.3)'; taper(sh[0] + 104, sh[1] + 98, 9, ex + 6, ey - 14, 7); taper(ex + 10, ey - 8, 7, wx, wy - 8, 5);
-  /* mano: guanto nero a pugno sopra il comando, dita che scendono davanti */
-  for (let i = 0; i < 4; i++) { const x0 = hand[0] + 40 - i * 21, y0 = hand[1] + 22 + (i === 0 ? -6 : 0), x1 = x0 + 12 - i * 2, y1 = y0 + 50 - i * 3; taper(x0, y0, 14, x1, y1, 11.5, '#9a6a4c'); taper(x0, y0, 12.5, x1, y1, 10, skin); g.fillStyle = 'rgba(255,238,222,.4)'; taper(x0 - 4, y0 + 6, 3, x1 - 4, y1 - 6, 2.5); }
-  g.fillStyle = '#17181c'; g.beginPath(); g.moveTo(wx - 22, wy + 8); g.quadraticCurveTo(wx - 6, wy - 34, wx + 30, wy - 26); g.quadraticCurveTo(hand[0] + 46, hand[1] - 40, hand[0] + 62, hand[1] - 6); g.quadraticCurveTo(hand[0] + 66, hand[1] + 26, hand[0] + 40, hand[1] + 34); g.quadraticCurveTo(hand[0] - 10, hand[1] + 44, hand[0] - 34, hand[1] + 34); g.quadraticCurveTo(wx - 12, wy + 40, wx - 22, wy + 8); g.fill();
-  g.fillStyle = 'rgba(255,255,255,.09)'; g.beginPath(); g.moveTo(wx, wy - 14); g.quadraticCurveTo(hand[0] + 20, hand[1] - 38, hand[0] + 52, hand[1] - 12); g.quadraticCurveTo(hand[0] + 14, hand[1] - 24, wx + 4, wy); g.fill();
-  g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = 3; for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(hand[0] + 22 - i * 21, hand[1] + 6); g.lineTo(hand[0] + 26 - i * 21, hand[1] + 34); g.stroke(); }
+  const wx = hand[0] - 34, wy = hand[1] - 34, ax0 = sh[0] + 34, ay0 = sh[1] + 30, al = Math.hypot(wx - ax0, wy - ay0), ux = (wx - ax0) / al, uy = (wy - ay0) / al;
+  const mx2 = ax0 + ux * al * 0.36, my2 = ay0 + uy * al * 0.36;
+  taper(ax0, ay0, 40, wx, wy, 24, skin);
+  g.fillStyle = 'rgba(255,235,215,.28)'; taper(mx2 - uy * 14, my2 + ux * 14 - 20, 8, wx - uy * 8, wy + ux * 8 - 12, 5);
+  taper(sh[0] + 8, sh[1] + 6, 62, mx2, my2, 44, tg);
+  g.lineCap = 'butt'; g.lineWidth = 13; g.strokeStyle = '#ffffff'; g.beginPath(); g.moveTo(mx2 - uy * 45 + ux * 40, my2 + ux * 45 + uy * 40); g.lineTo(mx2 + uy * 45 + ux * 40, my2 - ux * 45 + uy * 40); g.stroke(); g.lineCap = 'round';
+  /* guanto: prosegue la linea del braccio, dal polso alle nocche; le dita scendono dal bordo */
+  { const nx = uy, ny = -ux, c0x = wx - ux * 12, c0y = wy - uy * 12, c1x = wx + ux * 72, c1y = wy + uy * 72;
+    const lo = [c1x - nx * 40, c1y - ny * 40], up = [c1x + nx * 38, c1y + ny * 38];
+    for (let i = 0; i < 4; i++) { const t = (i + 0.5) / 4, bx = lo[0] + (up[0] - lo[0]) * t - ux * 6, by = lo[1] + (up[1] - lo[1]) * t - uy * 6, ex2 = bx + 2 - i * 3, ey2 = by + 50 - i * 5; taper(bx, by, 12.5, ex2, ey2, 10.5, '#9a6a4c'); taper(bx, by, 11, ex2, ey2, 9, skin); g.fillStyle = 'rgba(255,238,222,.4)'; taper(bx - 3, by + 10, 2.5, ex2 - 3, ey2 - 6, 2); }
+    g.beginPath(); g.moveTo(c0x + nx * 25, c0y + ny * 25); g.lineTo(up[0], up[1]); g.lineTo(lo[0], lo[1]); g.lineTo(c0x - nx * 25, c0y - ny * 25); g.closePath(); g.fillStyle = '#15161a'; g.fill(); g.lineJoin = 'round'; g.lineWidth = 10; g.strokeStyle = '#15161a'; g.stroke();
+    g.fillStyle = 'rgba(255,255,255,.10)'; g.beginPath(); g.moveTo(c0x + nx * 24 + ux * 8, c0y + ny * 24 + uy * 8); g.lineTo(c0x + nx * 30 + ux * 46, c0y + ny * 30 + uy * 46); g.lineTo(c0x + nx * 12 + ux * 52, c0y + ny * 12 + uy * 52); g.lineTo(c0x + nx * 8 + ux * 12, c0y + ny * 8 + uy * 12); g.fill();
+    g.strokeStyle = 'rgba(255,255,255,.07)'; g.lineWidth = 3; for (let i = 1; i < 4; i++) { const t = i / 4, px = lo[0] + (up[0] - lo[0]) * t, py = lo[1] + (up[1] - lo[1]) * t; g.beginPath(); g.moveTo(px - ux * 4, py - uy * 4); g.lineTo(px - ux * 40, py - uy * 40); g.stroke(); } }
   /* collo, testa, casco */
   taper(sh[0] + 20, sh[1] - 40, 46, 712, -1058, 40, skin);
-  /* spalla e colletto della maglia che coprono la base del collo */
-  taper(sh[0] - 14, sh[1] - 46, 46, sh[0] + 44, sh[1] - 44, 46, tg);
-  g.fillStyle = tg; g.beginPath(); g.moveTo(sh[0] - 40, sh[1] - 78); g.quadraticCurveTo(sh[0] + 20, sh[1] - 108, sh[0] + 76, sh[1] - 86); g.quadraticCurveTo(sh[0] + 104, sh[1] - 56, sh[0] + 84, sh[1] - 10); g.quadraticCurveTo(sh[0] + 30, sh[1] - 20, sh[0] - 40, sh[1] - 40); g.fill();
-  g.strokeStyle = 'rgba(150,30,75,.5)'; g.lineWidth = 5; g.beginPath(); g.moveTo(sh[0] + 6, sh[1] - 100); g.quadraticCurveTo(sh[0] + 50, sh[1] - 104, sh[0] + 86, sh[1] - 76); g.stroke();
+  /* la maglia copre la spalla: linea continua dalla schiena al bordo della manica */
+  g.fillStyle = tg; g.beginPath(); g.moveTo(sh[0] - 90, sh[1] - 62); g.quadraticCurveTo(sh[0] + 8, sh[1] - 96, sh[0] + 46, sh[1] - 58); g.lineTo(mx2 + uy * 44, my2 - ux * 44); g.lineTo(mx2, my2); g.lineTo(sh[0] - 30, sh[1] + 20); g.closePath(); g.fill();
   const hx = 742, hy = -1098;
   g.fillStyle = lin(hx - 60, hy - 60, hx + 70, hy + 80, [[0, '#e7b28c'], [1, '#c98f6a']]); g.beginPath(); g.ellipse(hx, hy, 76, 88, 0.28, 0, 7); g.fill();
   g.beginPath(); g.moveTo(hx + 62, hy - 6); g.quadraticCurveTo(hx + 96, hy + 14, hx + 82, hy + 30); g.quadraticCurveTo(hx + 72, hy + 34, hx + 66, hy + 30); g.fill();
@@ -2211,7 +2213,7 @@ const ENVS = {
     o.post = S1(20, 70, 10, 68, 0.9, () => post(10, 68, 62));
     const crown = sd => S1(520, 340, 260, 330, 7, () => { R = RNG(sd); canopy(260, 190, 230, 130, ['#44702c', '#6c9a3a', '#a4cc52', '#d8f08a'], 26); });
     o.cr0 = crown(31); o.cr1 = crown(57);
-    QS = Math.max(1, q0); o.cock = mk(W + 600, 424, () => { g.translate(300, -600); cockpit(); }); QS = q0;
+    QS = Math.max(1, q0); o.cock = mk(W + 1800, 424, () => { g.translate(900, -600); cockpit(); }); QS = q0;
     T.sp = o; return o;
   }
   function cockpit() {
@@ -2249,8 +2251,8 @@ const ENVS = {
       g.beginPath(); g.moveTo(X(312), 820); g.quadraticCurveTo(X(300), 700, X(326), 676); g.quadraticCurveTo(X(356), 656, X(386), 676); g.quadraticCurveTo(X(410), 700, X(398), 820); g.fill();
       g.fillStyle = 'rgba(255,255,255,.13)'; g.beginPath(); g.ellipse(X(346), 700, 22, 14, 0, 0, 7); g.fill();
       /* avambraccio che entra di lato */
-      g.fillStyle = 'rgba(0,0,0,.22)'; taper(X(1000), 1015, 110, X(492), 862, 60);
-      taper(X(1000), 1000, 106, X(486), 846, 58, '#8a5a40'); g.fillStyle = lin(0, 780, 0, 950, [[0, '#f0c19c'], [0.5, '#dba780'], [1, '#b47e5c']]); taper(X(1000), 1000, 102, X(486), 846, 54);
+      g.fillStyle = 'rgba(0,0,0,.22)'; taper(X(1700), 1225, 164, X(492), 862, 60);
+      taper(X(1700), 1210, 160, X(486), 846, 58, '#8a5a40'); g.fillStyle = lin(0, 780, 0, 950, [[0, '#f0c19c'], [0.5, '#dba780'], [1, '#b47e5c']]); taper(X(1700), 1210, 156, X(486), 846, 54);
       g.strokeStyle = 'rgba(110,70,45,.18)'; g.lineWidth = 1.4; for (let i = 0; i < 46; i++) { const u = 0.1 + 0.8 * scHash(i * 3.1 + sd), px = X(486 + 274 * u), py = 836 + 54 * u + (scHash(i * 5.7) - 0.5) * 90; g.beginPath(); g.moveTo(px, py); g.lineTo(px + sd * 7, py + 5); g.stroke(); }
       /* punte delle dita e pollice che spuntano sotto e dentro il comando */
       for (const [vx, vy, r] of [[322, 842, 15], [316, 866, 14], [322, 888, 12]]) { circ(X(vx), vy, r + 1.5, '#9a6a4c'); circ(X(vx), vy, r, skin); circ(X(vx - 3), vy - 4, r * 0.45, 'rgba(255,240,225,.4)'); }
@@ -2279,7 +2281,8 @@ const ENVS = {
     g.fillStyle = env === 'faggeta' ? '#dff0a6' : env === 'monti' ? '#2f6fc4' : '#3f8fdd'; g.fillRect(xa, yT - 2, xb - xa, 200);
     tiled(t.bg, -LA[0] * 0.6, xa, xb, dy, W, H);
     g.fillStyle = lin(0, hy, 0, H, [[0, C.v[0]], [1, C.v[1]]]); g.fillRect(xa, hy - 1, xb - xa, H - hy + 40);
-    if (env === 'faggeta') { strip(-2.7, 0, -7.5, 2.4, '#96663a'); strip(-7.5, 2.4, -60, 3.6, '#6a8440'); strip(3.4, 0, 60, -3, '#4a7432'); }
+    if (env === 'faggeta') { g.fillStyle = lin(0, hy - 330, 0, hy + 4, [[0, 'rgba(24,44,20,0)'], [0.55, 'rgba(24,44,20,.55)'], [1, 'rgba(14,28,12,.9)']]); g.fillRect(xa, hy - 330, xb - xa, 334);
+      strip(-2.7, 0, -7.5, 2.4, '#96663a'); strip(-7.5, 2.4, -60, 3.6, '#6a8440'); strip(3.4, 0, 60, -3, '#4a7432'); }
     strip(-2.7, 0, 2.7, 0, lin(0, hy, 0, H, [[0, C.r[0]], [1, C.r[1]]]));
     /* toppe e segni sull'asfalto ancorati alla strada: danno il senso della velocità */
     for (let n = Math.floor(pos / 5) + 16; n > Math.floor(pos / 5); n--) { const z = n * 5 - pos + 2; if (z < 2.2) continue; const x = -2.3 + hs(n, 1) * 3.6, wd = 0.5 + hs(n, 2) * 1.4; quad(x, 0, x + wd, 0, z, z + 0.5 + hs(n, 3) * 1.6, hs(n, 4) < 0.5 ? 'rgba(0,0,0,.10)' : 'rgba(255,255,255,.07)'); }
@@ -2306,7 +2309,7 @@ const ENVS = {
       cell(13, 120, (n, z) => { if (hs(n, 11) < 0.55) add(z + 3, sp.fico, -3.25, 0); if (hs(n, 12) < 0.04) add(z + 60, sp.tr, 15, 0); });
       cell(1.6, 70, (n, z) => { add(z, sp.tI, -2.8 - hs(n, 13) * 0.7, 0); add(z + 0.8, sp.tI, 2.8 + hs(n, 14) * 0.9, 0); if (hs(n, 15) < 0.25) add(z + 0.3, sp.flI, (hs(n, 16) < 0.5 ? -1 : 1) * 3, 0); });
     } else if (env === 'faggeta') {
-      cell(3.5, 290, (n, z) => { const xl = 4.8 + hs(n, 1) * 15, xr = 4.6 + hs(n, 2) * 17; const yl = Math.min(3.3, (xl - 2.7) * 0.5), zl = z + hs(n, 3) * 3, zr2 = z + hs(n, 5) * 3; add(zl, sp.beech, -xl, yl, 0, hs(n, 4) < 0.5); add(zr2, sp.beech, xr, -0.8, 0, hs(n, 6) < 0.5);
+      cell(3.5, 290, (n, z) => { const xl = 4.8 + hs(n, 1) * 15, xr = 4.6 + hs(n, 2) * 17; const yl = xl < 7.5 ? (xl - 2.7) * 0.5 : 2.4 + (xl - 7.5) * 0.0229, zl = z + hs(n, 3) * 3, zr2 = z + hs(n, 5) * 3; add(zl, sp.beech, -xl, yl, 0, hs(n, 4) < 0.5); add(zr2, sp.beech, xr, -0.8, 0, hs(n, 6) < 0.5);
         /* chiome ancorate ai tronchi e sopra la strada: scorrono insieme al bosco */
         add(zl - 0.4, hs(n, 21) < 0.5 ? sp.cr0 : sp.cr1, -xl + 1, yl + 7.5 + hs(n, 22) * 3, 0, hs(n, 23) < 0.5); add(zr2 - 0.4, hs(n, 24) < 0.5 ? sp.cr0 : sp.cr1, xr - 1, 7 + hs(n, 25) * 3, 0, hs(n, 26) < 0.5);
         if (n % 2 === 0) add(z + 1.5, hs(n, 27) < 0.5 ? sp.cr0 : sp.cr1, -3 + hs(n, 28) * 6, 9.5 + hs(n, 29) * 2.5, 0, hs(n, 30) < 0.5); });
@@ -2326,7 +2329,7 @@ const ENVS = {
       g.globalAlpha = 1; }
     /* manubrio */
     const cy = full ? 600 : 600 - 110, bob = Math.sin(S.crank * 2) * (S.v > 0.5 ? 1.5 : 0);
-    g.drawImage(sp.cock, -300, cy + bob, W + 600, 424); if (!full) { g.fillStyle = '#e9ebee'; g.fillRect(622, cy + 422, 122, 200); }
+    g.drawImage(sp.cock, -900, cy + bob, W + 1800, 424); if (!full) { g.fillStyle = '#e9ebee'; g.fillRect(622, cy + 422, 122, 200); }
     g.setTransform(1, 0, 0, 1, 0, 0);
   }
   const API = { force: null, env: null, draw(ctx, w, h, rear) { try { (rear ? saddle : side)(ctx, w, h); } finally { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; } }, reset() { T.key = null; T.sp = null; } };
@@ -2784,7 +2787,7 @@ function recoverLive() {
     setTimeout(() => openOvl('report', { ride, saved: WK.rides.some(r => r.id === ride.id), recovered: true }), 700);
   } catch (e) { log('Recupero sessione non riuscito: ' + errText(e)); }
 }
-function buildBackup() { return { format: 'rullo-virtuale-backup', version: 51, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
+function buildBackup() { return { format: 'rullo-virtuale-backup', version: 53, date: Date.now(), cfg, wk: { list: WK.list }, rides: WK.rides, routes: { list: RTS.list, sel: RTS.sel }, ftp: FH, ghost: GH }; }
 function restoreBackup(o) {
   const byId = (a, b) => { const m = new Map(); for (const x of a || []) if (x && x.id) m.set(x.id, x); for (const x of b || []) if (x && x.id) m.set(x.id, x); return [...m.values()]; };
   if (o.cfg && typeof o.cfg === 'object') { Object.assign(cfg, o.cfg); saveCfg(); }
@@ -3228,7 +3231,7 @@ function wkBindings() {
   sk.addEventListener('change', () => { const W = S.wk; if (W) { W.seek = false; W.t = Number(sk.value); } });
   $('#mode-wk').addEventListener('click', () => { openOvl('lib'); });
   $('#ck-ask').addEventListener('click', askClick); $('#ck-pair').addEventListener('click', pairClick);
-  const logText = () => 'Rullo virtuale v51 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
+  const logText = () => 'Rullo virtuale v53 - ' + new Date().toLocaleString('it-IT') + '\n' + LOG.join('\n');
   $('#log-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(logText()); note('Registro copiato negli appunti: incollalo in un messaggio.'); } catch (e) { note('Copia non riuscita: usa "Condividi registro".'); } });
   $('#log-share').addEventListener('click', async () => {
     const t = logText();
@@ -3382,7 +3385,7 @@ function routeInfo() { const k = RT.id + '|' + RT.len + '|' + cfg.maxGrade; if (
 const km1 = m => (m / 1000).toFixed(m >= 10000 ? 1 : 2);
 function routeSub() {
   const i = routeInfo();
-  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v51';
+  $('#route-sub').textContent = RT.name + ' · ' + km1(RT.len) + ' km' + (RT.loop ? ' (anello)' : '') + ' · D+ ' + Math.round(i.gain) + ' m · pendenza max ' + (i.maxG * 100).toFixed(1) + '%' + (i.over.length ? ' ⚠' : '') + ' · v53';
 }
 function resetRide() {
   S.pos = 0; S.v = 0; S.dist = 0; S.time = 0; S.gain = 0; S.lastElev = elev(0); S.hist = []; S.hhist = []; S.trace = []; S.rec = []; S.recAcc = 0; S.recMeta = null; S.gh = [0]; S.ghAcc = 0;
